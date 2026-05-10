@@ -8,3 +8,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder')
+
+export const createNotification = async (userId, title, body, type = 'info', metadata = {}) => {
+  try {
+    const { error } = await supabase.from('notifications').insert([{
+      user_id: userId,
+      title,
+      body,
+      type,
+      metadata
+    }]);
+    if (error) throw error;
+  } catch (err) {
+    console.error('Failed to create notification:', err);
+  }
+};

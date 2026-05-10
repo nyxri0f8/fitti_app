@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Users, ChefHat, Dumbbell, Stethoscope, ChevronRight, Package, Activity as ActivityIcon, UserPlus, Eye, X, Save, TrendingUp, Heart } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, createNotification } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import Sidebar from '../../components/shared/Sidebar';
 import Navbar from '../../components/shared/Navbar';
@@ -129,6 +129,15 @@ function UsersTab() {
 
     if (!error) {
       await supabase.from('activity_feed').insert([{ actor_id: user.id, actor_role: 'admin', customer_id: selectedCustomer.id, event_type: 'user_assigned', event_data: assignments }]);
+      
+      // Notify customer
+      createNotification(
+        selectedCustomer.id,
+        'Team Update',
+        'New staff members have been assigned to your evolution strategy.',
+        'assignment'
+      );
+
       setCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? { ...c, ...assignments } : c));
       setSelectedCustomer(null);
     }
@@ -382,7 +391,7 @@ export default function AdminDashboard() {
       <FloatingBackground role="admin" />
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
-        <Navbar title="Admin Operations" />
+        <Navbar title="" />
         <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<OverviewTab />} />

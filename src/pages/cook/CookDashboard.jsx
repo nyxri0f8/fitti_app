@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Package, Clock, CheckCircle, ChevronDown, Plus, X, Save, Utensils, Flame } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, createNotification } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import Sidebar from '../../components/shared/Sidebar';
 import Navbar from '../../components/shared/Navbar';
@@ -223,8 +223,19 @@ function OrdersTab() {
   useEffect(() => { if (user) fetchData(); }, [user]);
 
   const updateOrderStatus = async (orderId, status) => {
+    const order = orders.find(o => o.id === orderId);
     await supabase.from('orders').update({ status, updated_by: user.id, updated_at: new Date() }).eq('id', orderId);
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+    
+    // Send notification to customer
+    if (order) {
+      createNotification(
+        order.customer_id,
+        'Order Update',
+        `Your meal order status is now: ${status.replace(/_/g, ' ')}`,
+        'order_status'
+      );
+    }
   };
 
   const parseMeals = (cookNotes) => {
@@ -427,7 +438,7 @@ export default function CookDashboard() {
       <FloatingBackground role="cook" />
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
-        <Navbar title="Cook Dashboard" />
+        <Navbar title="" />
         <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<OrdersTab />} />

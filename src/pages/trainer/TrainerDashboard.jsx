@@ -247,7 +247,7 @@ export default function TrainerDashboard() {
       <FloatingBackground role="trainer"/>
       <Sidebar/>
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
-        <Navbar title="Trainer Dashboard"/>
+        <Navbar title="" />
         <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenProgress={setShowProgress} />}/>
