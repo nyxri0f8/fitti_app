@@ -14,34 +14,39 @@ export default function CallOverlay() {
     if (!user) return;
 
     // Listen for new sessions where current user is guest
-    console.log('🔔 Call Overlay Mounted for user:', user.id);
+    console.log('🔔 Call Overlay Listening for calls for user:', user.id);
     
     // Manual Test Trigger for User
     window.triggerTestCall = () => {
+      console.log('🧪 Triggering Test Call...');
       setIncomingCall({
-        roomCode: 'TEST-ROOM',
+        roomCode: 'TEST-ROOM-' + Math.random().toString(36).substring(7),
         hostId: 'test',
         hostName: 'Test Caller',
-        sessionId: 'test'
+        sessionId: 'test-' + Date.now()
       });
     };
 
-    const channel = supabase.channel('call_nexus_v2')
+    // Use a more specific channel and filter at the server level if possible
+    // Note: guest_id=eq.${user.id} filter is much more efficient
+    const channel = supabase.channel(`calls:${user.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'meet_sessions'
+        table: 'meet_sessions',
+        filter: `guest_id=eq.${user.id}`
       }, async (payload) => {
-        console.log('📡 Realtime Payload Received:', payload);
+        console.log('📡 [INSERT] New Call Received:', payload);
         const session = payload.new;
         
-        // Match user IDs precisely
-        const isGuest = String(session.guest_id).toLowerCase() === String(user.id).toLowerCase();
-        
-        if (isGuest) {
-          console.log('✅ Call matches this user! status:', session.status);
-          
-          const { data: host, error: hostErr } = await supabase.from('profiles').select('full_name').eq('id', session.host_id).single();
+        if (session.status === 'waiting') {
+          console.log('✅ Valid incoming call! Fetching host profile...');
+          const { data: host, error: hostErr } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', session.host_id)
+            .single();
+            
           if (hostErr) console.error('❌ Failed to fetch host profile:', hostErr);
 
           setIncomingCall({
@@ -50,18 +55,31 @@ export default function CallOverlay() {
             hostName: host?.full_name || 'Someone',
             sessionId: session.id
           });
-        } else {
-          console.log('⏭️ Call guest_id', session.guest_id, 'does not match user', user.id);
+        }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'meet_sessions',
+        filter: `guest_id=eq.${user.id}`
+      }, (payload) => {
+        console.log('📡 [UPDATE] Call Status Changed:', payload);
+        const session = payload.new;
+        // If the call was canceled by the host or ended
+        if (session.status === 'ended' && incomingCall?.sessionId === session.id) {
+          console.log('🛑 Call was ended/canceled by host');
+          setIncomingCall(null);
         }
       })
       .subscribe((status) => {
-        console.log('📡 Subscription Status:', status);
+        console.log('📡 Call Subscription Status:', status);
       });
 
     return () => {
+      console.log('🔕 Call Overlay Unmounting, cleaning up channel');
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, incomingCall?.sessionId]);
 
   const handleAccept = async () => {
     if (!incomingCall) return;
