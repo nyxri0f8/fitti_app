@@ -7,7 +7,6 @@ import Sidebar from '../../components/shared/Sidebar';
 import Navbar from '../../components/shared/Navbar';
 import FloatingBackground from '../../components/shared/FloatingBackground';
 import MessagingView from '../../components/chat/MessagingView';
-import VideoRoom from '../../components/meet/VideoRoom';
 import Modal from '../../components/shared/Modal';
 import { nanoid } from 'nanoid';
 
@@ -154,15 +153,15 @@ function RecordsTab() {
 }
 
 export default function DoctorDashboard() {
-  const [activeCall, setActiveCall] = useState(null);
   const [showRecord, setShowRecord] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const user = useAuthStore(state => state.user);
+  const setActiveCall = useAuthStore(state => state.setActiveCall);
 
   const startVideoCall = async (contact) => {
     const roomCode = nanoid(8);
     await supabase.from('meet_sessions').insert([{ room_code: roomCode, host_id: user.id, guest_id: contact.id, session_type: 'customer_doctor' }]);
-    setActiveCall({ roomCode, isHost: true, guestId: contact.id, name: contact.name });
+    setActiveCall({ roomCode, isHost: true, guestId: contact.id, remoteName: contact.name });
   };
 
   return (
@@ -182,7 +181,6 @@ export default function DoctorDashboard() {
       </div>
       {/* Modals rendered outside overflow container via Portal */}
       {showRecord && <CreateRecordModal patient={showRecord} doctorId={user.id} onClose={()=>setShowRecord(null)} onSaved={()=>setRefreshKey(k=>k+1)} />}
-      {activeCall && <VideoRoom roomCode={activeCall.roomCode} isHost={activeCall.isHost} guestId={activeCall.guestId} remoteName={activeCall.name} onClose={()=>setActiveCall(null)}/>}
     </div>
   );
 }
