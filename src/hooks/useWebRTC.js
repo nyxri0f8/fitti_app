@@ -53,7 +53,20 @@ export default function useWebRTC(roomCode, isHost, guestId) {
       stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
       pc.ontrack = (event) => {
-        setRemoteStream(event.streams[0]);
+        console.log('📡 Remote track received:', event.track.kind);
+        if (event.streams && event.streams[0]) {
+          setRemoteStream(event.streams[0]);
+        } else {
+          // Fallback if streams array is empty
+          setRemoteStream(new MediaStream([event.track]));
+        }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log('📡 ICE Connection State:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'failed') {
+          setError('ICE Connection failed. This usually means a firewall or network restriction is blocking the video.');
+        }
       };
 
       pc.onicecandidate = async (event) => {
