@@ -14,21 +14,36 @@ export default function CallOverlay() {
     if (!user) return;
 
     // Listen for new sessions where current user is guest
-    console.log('🔔 Call Listener active for user:', user.id);
-    const channel = supabase.channel('system_call_nexus')
+    console.log('🔔 Call Overlay Mounted for user:', user.id);
+    
+    // Manual Test Trigger for User
+    window.triggerTestCall = () => {
+      setIncomingCall({
+        roomCode: 'TEST-ROOM',
+        hostId: 'test',
+        hostName: 'Test Caller',
+        sessionId: 'test'
+      });
+    };
+
+    const channel = supabase.channel('call_nexus_v2')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'meet_sessions'
       }, async (payload) => {
-        console.log('📡 New Meet Session Inserted:', payload.new);
+        console.log('📡 Realtime Payload Received:', payload);
         const session = payload.new;
         
-        if (session.guest_id === user.id && session.status === 'pending') {
-          console.log('✅ Call matches current user! Fetching host info...');
-          // Fetch host name
-          const { data: host } = await supabase.from('profiles').select('full_name').eq('id', session.host_id).single();
+        // Match user IDs precisely
+        const isGuest = String(session.guest_id).toLowerCase() === String(user.id).toLowerCase();
+        
+        if (isGuest) {
+          console.log('✅ Call matches this user! status:', session.status);
           
+          const { data: host, error: hostErr } = await supabase.from('profiles').select('full_name').eq('id', session.host_id).single();
+          if (hostErr) console.error('❌ Failed to fetch host profile:', hostErr);
+
           setIncomingCall({
             roomCode: session.room_code,
             hostId: session.host_id,
@@ -36,11 +51,11 @@ export default function CallOverlay() {
             sessionId: session.id
           });
         } else {
-          console.log('⏭️ Call not for this user or not pending. Guest:', session.guest_id, 'User:', user.id);
+          console.log('⏭️ Call guest_id', session.guest_id, 'does not match user', user.id);
         }
       })
       .subscribe((status) => {
-        console.log('📡 Call Channel Status:', status);
+        console.log('📡 Subscription Status:', status);
       });
 
     return () => {
