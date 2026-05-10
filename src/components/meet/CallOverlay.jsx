@@ -14,27 +14,28 @@ export default function CallOverlay() {
     if (!user) return;
 
     // Listen for new sessions where current user is guest
-    const channel = supabase.channel(`calls:${user.id}`)
+    const channel = supabase.channel('global_calls')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'meet_sessions',
-        filter: `guest_id=eq.${user.id}`
+        table: 'meet_sessions'
       }, async (payload) => {
         const session = payload.new;
-        if (session.status !== 'pending') return;
-
-        // Fetch host name
-        const { data: host } = await supabase.from('profiles').select('full_name').eq('id', session.host_id).single();
         
-        setIncomingCall({
-          roomCode: session.room_code,
-          hostId: session.host_id,
-          hostName: host?.full_name || 'Someone',
-          sessionId: session.id
-        });
-
-        // Auto-play notification sound if desired
+        // Filter: only if current user is the guest AND session is fresh (last 30s)
+        const isRecent = new Date(session.created_at) > new Date(Date.now() - 30000);
+        
+        if (session.guest_id === user.id && session.status === 'pending' && isRecent) {
+          // Fetch host name
+          const { data: host } = await supabase.from('profiles').select('full_name').eq('id', session.host_id).single();
+          
+          setIncomingCall({
+            roomCode: session.room_code,
+            hostId: session.host_id,
+            hostName: host?.full_name || 'Someone',
+            sessionId: session.id
+          });
+        }
       })
       .subscribe();
 
