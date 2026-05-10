@@ -70,7 +70,7 @@ export default function NotificationBell() {
 
       {/* Floating Notification Alert */}
       {activeAlert && (
-        <div className="fixed top-24 left-8 z-[100] animate-fade-in-right">
+        <div className="fixed top-24 right-8 z-[100] animate-fade-in-left">
           <div className="bg-white/90 backdrop-blur-xl border border-fitti-border shadow-2xl rounded-[1.2rem] p-4 flex items-center gap-4 min-w-[300px]">
              <div className="h-10 w-10 bg-fitti-green/10 rounded-full flex items-center justify-center">
                 <Bell className="h-5 w-5 text-fitti-green" />
