@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Phone, PhoneOff, Video } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
@@ -10,25 +10,13 @@ export default function CallOverlay() {
   const setActiveCall = useAuthStore(state => state.setActiveCall);
   const [incomingCall, setIncomingCall] = useState(null);
 
+  const incomingCallRef = useRef(null);
+
   useEffect(() => {
     if (!user) return;
 
-    // Listen for new sessions where current user is guest
     console.log('🔔 Call Overlay Listening for calls for user:', user.id);
     
-    // Manual Test Trigger for User
-    window.triggerTestCall = () => {
-      console.log('🧪 Triggering Test Call...');
-      setIncomingCall({
-        roomCode: 'TEST-ROOM-' + Math.random().toString(36).substring(7),
-        hostId: 'test',
-        hostName: 'Test Caller',
-        sessionId: 'test-' + Date.now()
-      });
-    };
-
-    // Use a more specific channel and filter at the server level if possible
-    // Note: guest_id=eq.${user.id} filter is much more efficient
     const channel = supabase.channel(`calls:${user.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
@@ -41,20 +29,21 @@ export default function CallOverlay() {
         
         if (session.status === 'waiting') {
           console.log('✅ Valid incoming call! Fetching host profile...');
-          const { data: host, error: hostErr } = await supabase
+          const { data: host } = await supabase
             .from('profiles')
             .select('full_name')
             .eq('id', session.host_id)
             .single();
             
-          if (hostErr) console.error('❌ Failed to fetch host profile:', hostErr);
-
-          setIncomingCall({
+          const newCall = {
             roomCode: session.room_code,
             hostId: session.host_id,
             hostName: host?.full_name || 'Someone',
             sessionId: session.id
-          });
+          };
+          
+          incomingCallRef.current = session.id;
+          setIncomingCall(newCall);
         }
       })
       .on('postgres_changes', {
@@ -65,9 +54,9 @@ export default function CallOverlay() {
       }, (payload) => {
         console.log('📡 [UPDATE] Call Status Changed:', payload);
         const session = payload.new;
-        // If the call was canceled by the host or ended
-        if (session.status === 'ended' && incomingCall?.sessionId === session.id) {
+        if (session.status === 'ended' && incomingCallRef.current === session.id) {
           console.log('🛑 Call was ended/canceled by host');
+          incomingCallRef.current = null;
           setIncomingCall(null);
         }
       })
@@ -79,7 +68,7 @@ export default function CallOverlay() {
       console.log('🔕 Call Overlay Unmounting, cleaning up channel');
       supabase.removeChannel(channel);
     };
-  }, [user, incomingCall?.sessionId]);
+  }, [user]); // Removed incomingCall?.sessionId to prevent re-subscriptions
 
   const handleAccept = async () => {
     if (!incomingCall) return;

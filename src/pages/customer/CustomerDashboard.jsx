@@ -126,12 +126,34 @@ function MealsTab() {
 
   useEffect(() => {
     const fetchMeals = async () => {
-      const { data } = await supabase.from('daily_menus').select('*').order('created_at', { ascending: false });
-      setMeals(data || []);
+      const { data } = await supabase
+        .from('diet_plans')
+        .select('*')
+        .eq('customer_id', user.id)
+        .eq('active', true)
+        .order('created_at', { ascending: false });
+      
+      // diet_plans contains meal_structure as JSON
+      // If we have a plan, we use its structure
+      if (data && data.length > 0) {
+        const plan = data[0];
+        const mealList = (plan.meal_structure || []).map(m => ({
+          ...m,
+          id: plan.id + m.name,
+          meal_name: m.name,
+          meal_time: m.time,
+          calories: (m.protein * 4) + (m.carbs * 4) + (m.fat * 9),
+          macros: `P:${m.protein}g C:${m.carbs}g F:${m.fat}g`,
+          created_at: plan.created_at
+        }));
+        setMeals(mealList);
+      } else {
+        setMeals([]);
+      }
       setLoading(false);
     };
-    fetchMeals();
-  }, []);
+    if (user) fetchMeals();
+  }, [user]);
 
   return (
     <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
@@ -147,7 +169,7 @@ function MealsTab() {
       ) : meals.length === 0 ? (
         <div className="bg-white/80 backdrop-blur-md border border-fitti-border rounded-[2.5rem] p-20 text-center">
           <ChefHat className="h-20 w-20 text-fitti-border mx-auto mb-6" />
-          <p className="text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No culinary plans shared by your cook yet.</p>
+          <p className="text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No active nutrition plans detected.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
@@ -158,7 +180,7 @@ function MealsTab() {
               </div>
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-[10px] font-black text-fitti-orange uppercase tracking-[0.2em] bg-fitti-orange/10 px-4 py-2 rounded-full">Chef's Choice</span>
+                  <span className="text-[10px] font-black text-fitti-orange uppercase tracking-[0.2em] bg-fitti-orange/10 px-4 py-2 rounded-full">Evolution Meal</span>
                   <p className="text-xs font-black text-fitti-text-muted">{new Date(meal.created_at).toLocaleDateString()}</p>
                 </div>
                 <h3 className="text-2xl font-black text-fitti-text mb-4 leading-tight">{meal.meal_name}</h3>
@@ -169,11 +191,11 @@ function MealsTab() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-fitti-bg p-4 rounded-2xl">
                     <p className="text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Calories</p>
-                    <p className="text-lg font-black text-fitti-text">{meal.calories} kcal</p>
+                    <p className="text-lg font-black text-fitti-text">{Math.round(meal.calories)} kcal</p>
                   </div>
                   <div className="bg-fitti-bg p-4 rounded-2xl">
                     <p className="text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Macros</p>
-                    <p className="text-xs font-black text-fitti-text leading-relaxed">{meal.macros || 'Optimized'}</p>
+                    <p className="text-[10px] font-black text-fitti-text leading-relaxed">{meal.macros || 'Optimized'}</p>
                   </div>
                 </div>
               </div>
