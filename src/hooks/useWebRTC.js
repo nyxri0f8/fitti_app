@@ -83,7 +83,19 @@ export default function useWebRTC(roomCode, isHost, guestId) {
         if (!pcRef.current) return;
 
         try {
-          if (signal.signal_type === 'offer' && !isHost) {
+          if (signal.signal_type === 'ready' && isHost) {
+            console.log('📡 Guest is ready! Sending offer...');
+            const offer = await pcRef.current.createOffer();
+            await pcRef.current.setLocalDescription(offer);
+            await supabase.from('webrtc_signals').insert([{
+              session_id: session.id,
+              from_user: user.id,
+              to_user: signal.from_user,
+              signal_type: 'offer',
+              payload: JSON.parse(JSON.stringify(offer))
+            }]);
+          } else if (signal.signal_type === 'offer' && !isHost) {
+            console.log('📡 Offer received! Sending answer...');
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(signal.payload));
             const answer = await pcRef.current.createAnswer();
             await pcRef.current.setLocalDescription(answer);
@@ -96,8 +108,10 @@ export default function useWebRTC(roomCode, isHost, guestId) {
               payload: JSON.parse(JSON.stringify(answer))
             }]);
           } else if (signal.signal_type === 'answer' && isHost) {
+            console.log('📡 Answer received!');
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(signal.payload));
           } else if (signal.signal_type === 'ice_candidate') {
+            console.log('📡 ICE Candidate received!');
             await pcRef.current.addIceCandidate(new RTCIceCandidate(signal.payload));
           }
         } catch (sigErr) {
@@ -107,19 +121,17 @@ export default function useWebRTC(roomCode, isHost, guestId) {
 
       channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          if (isHost && pcRef.current) {
-            const offer = await pcRef.current.createOffer();
-            await pcRef.current.setLocalDescription(offer);
-
+          console.log('📡 Subscribed to signaling channel');
+          if (!isHost) {
+            // Guest tells host they are ready
+            console.log('📡 Sending ready signal to host...');
             await supabase.from('webrtc_signals').insert([{
               session_id: session.id,
               from_user: user.id,
-              to_user: guestId,
-              signal_type: 'offer',
-              payload: JSON.parse(JSON.stringify(offer))
+              to_user: session.host_id,
+              signal_type: 'ready',
+              payload: {}
             }]);
-
-            await supabase.from('meet_sessions').update({ status: 'active', started_at: new Date() }).eq('id', session.id);
           }
         }
       });
