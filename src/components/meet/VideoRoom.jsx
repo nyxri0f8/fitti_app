@@ -8,11 +8,18 @@ export default function VideoRoom({ roomCode, isHost, guestId, remoteName, onClo
   const {
     localStream,
     remoteStream,
+    callStatus,
     error,
     endCall,
     toggleMute,
     toggleVideo
   } = useWebRTC(roomCode, isHost, guestId);
+
+  useEffect(() => {
+    if (callStatus === 'ended') {
+      onClose();
+    }
+  }, [callStatus, onClose]);
 
   const handleEndCall = () => {
     endCall();

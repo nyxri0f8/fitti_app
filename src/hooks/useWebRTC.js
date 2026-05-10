@@ -8,6 +8,7 @@ export default function useWebRTC(roomCode, isHost, guestId) {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
   const [error, setError] = useState(null);
+  const [callStatus, setCallStatus] = useState('connecting');
 
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -131,6 +132,21 @@ export default function useWebRTC(roomCode, isHost, guestId) {
           console.error('Signal handling error:', sigErr);
         }
       });
+      
+      // Listen for session end
+      channel.on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'meet_sessions',
+        filter: `id=eq.${session.id}`
+      }, (payload) => {
+        if (payload.new.status === 'ended') {
+          console.log('🛑 Remote peer ended the call');
+          setCallStatus('ended');
+        } else if (payload.new.status === 'active') {
+          setCallStatus('active');
+        }
+      });
 
       channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -187,6 +203,7 @@ export default function useWebRTC(roomCode, isHost, guestId) {
   return {
     localStream,
     remoteStream,
+    callStatus,
     error,
     endCall,
     toggleMute,
