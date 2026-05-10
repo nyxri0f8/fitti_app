@@ -190,8 +190,7 @@ function CreateMealModal({ customer, onClose, onSaved, cookId }) {
           <Save className="h-4 w-4" />
           {saving ? 'Saving...' : 'Save Meal Plan & Create Order'}
         </button>
-      </div>
-    </div>
+      </Modal>
   );
 }
 
