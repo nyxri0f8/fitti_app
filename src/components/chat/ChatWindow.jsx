@@ -43,6 +43,10 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
       provider: 'google',
       options: {
         scopes: 'https://www.googleapis.com/auth/calendar.events',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
         redirectTo: window.location.href
       }
     });
