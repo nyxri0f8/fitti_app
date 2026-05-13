@@ -73,9 +73,10 @@
 }
 
 .motto-fitti {
-  font-family: 'Inter', sans-serif;
-  @apply text-fitti-text-muted font-medium tracking-tight;
-  font-size: 1.1rem;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  @apply text-fitti-text-muted/60 font-medium tracking-wide;
+  font-size: 1.25rem;
 }
 
 /* ── Animations ───────────────────────────────────────── */
