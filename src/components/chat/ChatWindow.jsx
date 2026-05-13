@@ -1,10 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Phone, Lock, MoreVertical, User } from 'lucide-react';
+import { Send, Paperclip, Phone, Lock, MoreVertical, User, Calendar, Video, X } from 'lucide-react';
+import Modal from '../shared/Modal';
+import useAuthStore from '../../store/authStore';
+import { supabase } from '../../lib/supabase';
 import MessageBubble from './MessageBubble';
 
 export default function ChatWindow({ activeContact, messages, onSendMessage }) {
   const [inputText, setInputText] = useState('');
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showMeetModal, setShowMeetModal] = useState(false);
+  const [generatingMeet, setGeneratingMeet] = useState(false);
+  
   const messagesEndRef = useRef(null);
+  const attachMenuRef = useRef(null);
+  const user = useAuthStore(state => state.user);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -13,6 +22,44 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(event.target)) {
+        setShowAttachMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleScheduleMeet = () => {
+    setShowAttachMenu(false);
+    setShowMeetModal(true);
+  };
+
+  const handleConnectGoogle = async () => {
+    await supabase.auth.linkIdentity({
+      provider: 'google',
+      options: {
+        scopes: 'https://www.googleapis.com/auth/calendar.events',
+        redirectTo: window.location.href
+      }
+    });
+  };
+
+  const handleGenerateLink = async () => {
+    setGeneratingMeet(true);
+    // Mocking the Edge Function call for now
+    setTimeout(() => {
+      const mockMeetLink = `https://meet.google.com/xyz-abcd-efg`;
+      onSendMessage(`🗓️ I've generated a Google Meet link for our session.\n\nJoin here: ${mockMeetLink}`);
+      setGeneratingMeet(false);
+      setShowMeetModal(false);
+    }, 2000);
+  };
+
+  const hasGoogleLinked = user?.identities?.some(id => id.provider === 'google');
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -85,9 +132,39 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
       {/* Input Area */}
       <div className="p-6 bg-white/70 backdrop-blur-md border-t border-fitti-border/50">
         <form onSubmit={handleSend} className="max-w-4xl mx-auto flex items-center gap-4">
-          <button type="button" className="p-4 text-fitti-text-muted hover:text-fitti-green hover:bg-fitti-green/5 rounded-2xl transition-all">
-            <Paperclip className="h-6 w-6" />
-          </button>
+          <div className="relative" ref={attachMenuRef}>
+            <button 
+              type="button" 
+              onClick={() => setShowAttachMenu(!showAttachMenu)}
+              className="p-4 text-fitti-text-muted hover:text-fitti-green hover:bg-fitti-green/5 rounded-2xl transition-all"
+            >
+              <Paperclip className="h-6 w-6" />
+            </button>
+            
+            {showAttachMenu && (
+              <div className="absolute bottom-full left-0 mb-4 w-56 bg-white/90 backdrop-blur-xl border border-fitti-border/50 rounded-2xl shadow-xl p-2 animate-fade-in-up z-50">
+                <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-bg rounded-xl text-left transition-colors group">
+                  <div className="bg-fitti-bg p-2 rounded-lg group-hover:bg-white transition-colors">
+                    <Paperclip className="h-4 w-4 text-fitti-text-muted" />
+                  </div>
+                  <div>
+                    <span className="block font-bold text-sm text-fitti-text">Upload File</span>
+                    <span className="block text-[10px] text-fitti-text-muted uppercase tracking-wider">Images & Docs</span>
+                  </div>
+                </button>
+                <div className="h-px bg-fitti-border/30 my-1 mx-2" />
+                <button onClick={handleScheduleMeet} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-green/5 rounded-xl text-left transition-colors group">
+                  <div className="bg-fitti-bg p-2 rounded-lg group-hover:bg-white transition-colors">
+                    <Video className="h-4 w-4 text-fitti-green" />
+                  </div>
+                  <div>
+                    <span className="block font-bold text-sm text-fitti-text group-hover:text-fitti-green transition-colors">Schedule GMeet</span>
+                    <span className="block text-[10px] text-fitti-text-muted uppercase tracking-wider">Auto-find free time</span>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
           <div className="flex-1 relative group">
             <input
               type="text"
@@ -106,6 +183,67 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
           </button>
         </form>
       </div>
+
+      {/* Google Meet Modal */}
+      {showMeetModal && (
+        <Modal onClose={() => setShowMeetModal(false)}>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="font-display text-2xl font-black text-fitti-text tracking-tight uppercase flex items-center gap-2">
+                <Video className="h-6 w-6 text-fitti-green" /> Schedule Meet
+              </h3>
+              <p className="font-body text-sm font-bold text-fitti-text-muted mt-1">Intelligent scheduling with {activeContact.name}</p>
+            </div>
+            <button onClick={() => setShowMeetModal(false)} className="p-3 hover:bg-fitti-bg rounded-2xl transition-all">
+              <X className="h-6 w-6 text-fitti-text-muted" />
+            </button>
+          </div>
+
+          {!hasGoogleLinked ? (
+            <div className="text-center py-8">
+              <div className="h-16 w-16 bg-fitti-bg rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Calendar className="h-8 w-8 text-fitti-text-muted" />
+              </div>
+              <h4 className="font-display text-xl font-black text-fitti-text mb-3">Calendar Access Required</h4>
+              <p className="text-sm font-bold text-fitti-text-muted mb-8 leading-relaxed max-w-sm mx-auto">
+                To automatically find a mutual free time and generate a Google Meet link, you need to link your Google account.
+              </p>
+              <button 
+                onClick={handleConnectGoogle}
+                className="w-full flex items-center justify-center gap-3 py-4 bg-fitti-text text-white font-black rounded-2xl hover:bg-black transition-all shadow-xl shadow-fitti-text/20 uppercase tracking-[0.1em]"
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="h-4 w-4" />
+                Connect Google Account
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-6 animate-fade-in-up">
+              <div className="bg-fitti-green/10 border border-fitti-green/20 rounded-2xl p-6 text-center">
+                <p className="text-sm font-bold text-fitti-green">
+                  Your Google Calendar is linked. We will check both schedules and automatically create a 30-minute Meet event at the next available mutual time slot.
+                </p>
+              </div>
+              <button 
+                onClick={handleGenerateLink}
+                disabled={generatingMeet}
+                className="w-full flex items-center justify-center gap-3 py-5 bg-fitti-green text-white font-black rounded-2xl hover:bg-fitti-green-dark transition-all shadow-xl shadow-fitti-green/20 uppercase tracking-[0.15em]"
+              >
+                {generatingMeet ? (
+                  <>
+                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Analyzing Calendars...
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="h-5 w-5" />
+                    Find Time & Generate Link
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }
