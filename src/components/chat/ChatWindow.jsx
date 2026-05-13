@@ -53,11 +53,16 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error');
     const errorCode = urlParams.get('error_code');
+    const errorDescription = urlParams.get('error_description');
     
     if (window.location.hash.includes('access_token') || error || errorCode) {
       setShowMeetModal(true);
-      if (errorCode === 'identity_already_exists') {
-        alert('This Google account is already linked to another Fitti profile. Please use a different Google account or contact support.');
+      
+      // Cleanup URL to prevent re-opening on manual refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      if (errorCode === 'identity_already_exists' || errorDescription?.includes('already linked')) {
+        alert('❌ GOOGLE ACCOUNT CONFLICT: This Google account is already linked to a different Fitti profile.\n\nTo fix this:\n1. Use a different Google account.\n2. OR log in to your other Fitti account and disconnect it first.');
       }
     }
   }, [user]);
