@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { supabase } from '../../lib/supabase';
 import { 
-  Home, Users, Package, Activity, MessageSquare, Video, Bell, 
+  Home, Users, Package, Activity, MessageSquare,  Bell, 
   Utensils, CalendarDays, LineChart, Stethoscope, ClipboardList, LogOut, Menu, X 
 } from 'lucide-react';
 

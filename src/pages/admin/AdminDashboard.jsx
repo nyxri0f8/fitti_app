@@ -8,7 +8,7 @@ import Navbar from '../../components/shared/Navbar';
 import FloatingBackground from '../../components/shared/FloatingBackground';
 import MessagingView from '../../components/chat/MessagingView';
 import Modal from '../../components/shared/Modal';
-import { nanoid } from 'nanoid';
+
 
 /* ── Overview Tab ──────────────────────────────────────── */
 function OverviewTab() {
@@ -378,13 +378,9 @@ function ActivityTab() {
 /* ── Main Admin Dashboard ─────────────────────────────── */
 export default function AdminDashboard() {
   const user = useAuthStore(state => state.user);
-  const setActiveCall = useAuthStore(state => state.setActiveCall);
+  
 
-  const startVideoCall = async (contact) => {
-    const roomCode = nanoid(8);
-    await supabase.from('meet_sessions').insert([{ room_code: roomCode, host_id: user.id, guest_id: contact.id, session_type: 'admin_any' }]);
-    setActiveCall({ roomCode, isHost: true, guestId: contact.id, remoteName: contact.name });
-  };
+  
 
   return (
     <div className="flex h-screen bg-fitti-bg relative">
@@ -398,8 +394,8 @@ export default function AdminDashboard() {
             <Route path="/users" element={<UsersTab />} />
             <Route path="/orders" element={<OrdersTab />} />
             <Route path="/activity" element={<ActivityTab />} />
-            <Route path="/messages" element={<MessagingView onStartVideoCall={startVideoCall} />} />
-            <Route path="/sessions" element={<div className="p-8"><h2 className="text-3xl font-display font-black text-fitti-text tracking-tight uppercase mb-4">Video Infrastructure</h2><div className="bg-white/80 backdrop-blur-md border border-fitti-border rounded-3xl p-16 text-center"><p className="text-fitti-text-muted font-bold">Use the Messages tab to initiate encrypted sessions.</p></div></div>} />
+            <Route path="/messages" element={<MessagingView />} />
+            
           </Routes>
         </main>
       </div>

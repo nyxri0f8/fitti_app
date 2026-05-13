@@ -9,7 +9,6 @@ import FloatingBackground from '../../components/shared/FloatingBackground';
 import MessagingView from '../../components/chat/MessagingView';
 import Modal from '../../components/shared/Modal';
 import WorkoutTracker from '../../components/workout/WorkoutTracker';
-import { nanoid } from 'nanoid';
 
 function CreateWorkoutModal({ customer, trainerId, onClose, onSaved }) {
   const [plan, setPlan] = useState({ intensity:'moderate', days:[{ day:'Monday', exercises:[{ name:'', sets:'', reps:'', rest:'' }] }] });
@@ -386,14 +385,8 @@ export default function TrainerDashboard() {
   const [showLogWorkout, setShowLogWorkout] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const user = useAuthStore(state => state.user);
-  const setActiveCall = useAuthStore(state => state.setActiveCall);
-
-  const startVideoCall = async (contact) => {
-    const roomCode = nanoid(8);
-    await supabase.from('meet_sessions').insert([{ room_code: roomCode, host_id: user.id, guest_id: contact.id, session_type:'customer_trainer' }]);
-    setActiveCall({ roomCode, isHost: true, guestId: contact.id, remoteName: contact.name });
-  };
-
+  
+  
   return (
     <div className="flex h-screen bg-fitti-bg relative">
       <FloatingBackground role="trainer"/>
@@ -405,7 +398,7 @@ export default function TrainerDashboard() {
             <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenDiet={setShowDiet} onOpenProgress={setShowProgress} onOpenLogWorkout={setShowLogWorkout} />}/>
             <Route path="/workouts" element={<WorkoutsTab key={refreshKey} />}/>
             <Route path="/progress" element={<ProgressTab key={refreshKey} />}/>
-            <Route path="/messages" element={<MessagingView onStartVideoCall={startVideoCall}/>}/>
+            <Route path="/messages" element={<MessagingView/>}/>
             <Route path="/sessions" element={<div className="p-8 animate-fade-in-up max-w-6xl mx-auto"><h2 className="font-display text-2xl font-bold text-fitti-text mb-4">Video Sessions</h2><div className="card-glass p-12 text-center"><p className="font-body text-fitti-text-muted">Use Messages tab to start a call.</p></div></div>}/>
           </Routes>
         </main>

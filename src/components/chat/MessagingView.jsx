@@ -2,7 +2,7 @@ import useChat from '../../hooks/useChat';
 import ContactsList from './ContactsList';
 import ChatWindow from './ChatWindow';
 
-export default function MessagingView({ onStartVideoCall }) {
+export default function MessagingView() {
   const {
     contacts,
     activeContact,
@@ -27,7 +27,6 @@ export default function MessagingView({ onStartVideoCall }) {
         activeContact={activeContact} 
         messages={messages} 
         onSendMessage={sendMessage}
-        onStartVideoCall={() => onStartVideoCall(activeContact)}
       />
     </div>
   );

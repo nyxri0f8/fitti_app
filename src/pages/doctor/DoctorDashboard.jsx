@@ -8,7 +8,7 @@ import Navbar from '../../components/shared/Navbar';
 import FloatingBackground from '../../components/shared/FloatingBackground';
 import MessagingView from '../../components/chat/MessagingView';
 import Modal from '../../components/shared/Modal';
-import { nanoid } from 'nanoid';
+
 
 function CreateRecordModal({ patient, doctorId, onClose, onSaved }) {
   const [rec, setRec] = useState({ health_summary:'', conditions:'', medications:'', workout_restrictions:'', dietary_restrictions:'', follow_up_date:'' });
@@ -156,13 +156,9 @@ export default function DoctorDashboard() {
   const [showRecord, setShowRecord] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const user = useAuthStore(state => state.user);
-  const setActiveCall = useAuthStore(state => state.setActiveCall);
+  
 
-  const startVideoCall = async (contact) => {
-    const roomCode = nanoid(8);
-    await supabase.from('meet_sessions').insert([{ room_code: roomCode, host_id: user.id, guest_id: contact.id, session_type: 'customer_doctor' }]);
-    setActiveCall({ roomCode, isHost: true, guestId: contact.id, remoteName: contact.name });
-  };
+  
 
   return (
     <div className="flex h-screen bg-fitti-bg relative">
@@ -174,7 +170,7 @@ export default function DoctorDashboard() {
           <Routes>
             <Route path="/" element={<PatientsTab onOpenRecord={setShowRecord} />}/>
             <Route path="/records" element={<RecordsTab key={refreshKey} />}/>
-            <Route path="/messages" element={<MessagingView onStartVideoCall={startVideoCall}/>}/>
+            <Route path="/messages" element={<MessagingView/>}/>
             <Route path="/sessions" element={<div className="p-8 animate-fade-in-up"><h2 className="text-2xl font-bold text-fitti-text mb-4">Video Sessions</h2><div className="bg-white border border-fitti-border rounded-2xl p-12 text-center"><p className="text-fitti-text-muted">Use Messages tab to start a call.</p></div></div>}/>
           </Routes>
         </main>

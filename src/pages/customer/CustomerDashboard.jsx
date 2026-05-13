@@ -10,7 +10,6 @@ import StatusBadge from '../../components/shared/StatusBadge';
 import FloatingBackground from '../../components/shared/FloatingBackground';
 import MessagingView from '../../components/chat/MessagingView';
 import WorkoutTracker from '../../components/workout/WorkoutTracker';
-import { nanoid } from 'nanoid';
 
 /* ── Home Tab ──────────────────────────────────────────── */
 function HomeTab() {
@@ -443,14 +442,8 @@ function ProgressTab() {
 /* ── Main Dashboard ───────────────────────────────────── */
 export default function CustomerDashboard() {
   const user = useAuthStore(state => state.user);
-  const setActiveCall = useAuthStore(state => state.setActiveCall);
-
-  const startVideoCall = async (contact) => {
-    const roomCode = nanoid(8);
-    await supabase.from('meet_sessions').insert([{ room_code: roomCode, host_id: user.id, guest_id: contact.id, session_type: 'customer_doctor' }]);
-    setActiveCall({ roomCode, isHost: true, guestId: contact.id, remoteName: contact.name });
-  };
-
+  
+  
   return (
     <div className="flex h-screen bg-fitti-bg relative">
       <FloatingBackground role="customer" />
@@ -464,9 +457,8 @@ export default function CustomerDashboard() {
             <Route path="/workout" element={<WorkoutTab />} />
             <Route path="/health" element={<HealthTab />} />
             <Route path="/progress" element={<ProgressTab />} />
-            <Route path="/messages" element={<MessagingView onStartVideoCall={startVideoCall} />} />
-            <Route path="/sessions" element={<div className="p-8"><h2 className="font-display text-3xl font-black text-fitti-text tracking-tight uppercase mb-4">Secure Link</h2><div className="card-glass p-20 text-center"><p className="font-body text-fitti-text-muted font-bold">Use the Messages tab to establish a video node.</p></div></div>} />
-          </Routes>
+            <Route path="/messages" element={<MessagingView />} />
+                      </Routes>
         </main>
       </div>
     </div>

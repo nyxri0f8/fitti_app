@@ -12,7 +12,6 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import CookDashboard from './pages/cook/CookDashboard';
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
 import TrainerDashboard from './pages/trainer/TrainerDashboard';
-import CallOverlay from './components/meet/CallOverlay';
 
 function App() {
   const setSession = useAuthStore(state => state.setSession);
@@ -51,7 +50,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <CallOverlay />
+
       <Routes>
         <Route path="/login" element={session && profile ? <Navigate to={`/${profile.role}`} replace /> : <Login />} />
         <Route path="/onboarding" element={<Onboarding />} />

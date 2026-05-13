@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Video, Phone, Lock, MoreVertical, User } from 'lucide-react';
+import { Send, Paperclip, Phone, Lock, MoreVertical, User } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 
-export default function ChatWindow({ activeContact, messages, onSendMessage, onStartVideoCall }) {
+export default function ChatWindow({ activeContact, messages, onSendMessage }) {
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -32,8 +32,6 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onS
     );
   }
 
-  // Cook cannot have video calls
-  const canVideoCall = activeContact.role !== 'cook' && activeContact.id !== 'admin';
 
   return (
     <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-fitti-bg">
@@ -60,14 +58,6 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onS
         </div>
         
         <div className="flex items-center gap-3">
-          {canVideoCall && (
-            <button 
-              onClick={onStartVideoCall} 
-              className="p-3 text-fitti-green bg-fitti-green/5 hover:bg-fitti-green hover:text-white rounded-2xl transition-all duration-300 active:scale-95"
-            >
-              <Video className="h-5 w-5" />
-            </button>
-          )}
           <button className="p-3 text-fitti-text-muted hover:bg-fitti-bg rounded-2xl transition-all">
             <MoreVertical className="h-5 w-5" />
           </button>
