@@ -48,6 +48,18 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
 
   useEffect(() => {
     checkIdentity();
+    
+    // Auto-open modal if returning from a Google link attempt
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorCode = urlParams.get('error_code');
+    
+    if (window.location.hash.includes('access_token') || error || errorCode) {
+      setShowMeetModal(true);
+      if (errorCode === 'identity_already_exists') {
+        alert('This Google account is already linked to another Fitti profile. Please use a different Google account or contact support.');
+      }
+    }
   }, [user]);
 
   const handleConnectGoogle = async () => {
