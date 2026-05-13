@@ -47,36 +47,40 @@ serve(async (req) => {
     const { guestId } = await req.json()
     if (!guestId) throw new Error('Guest ID is required')
 
-    // 3. Fetch Google OAuth tokens from identities table (in auth schema)
-    let hostIdentities = null;
+    // 3. Fetch ALL Google OAuth tokens from identities table (in auth schema)
+    let token = null;
     try {
-      const { data, error: identityError } = await supabaseClient
+      const { data: identities, error: identityError } = await supabaseClient
         .schema('auth')
         .from('identities')
         .select('*')
         .eq('user_id', user.id)
         .eq('provider', 'google')
-        .maybeSingle()
       
       if (identityError) console.error('Identity Error:', identityError);
-      if (data) {
-        console.log('Found Identity. Keys in data:', Object.keys(data.identity_data || {}));
-        hostIdentities = data;
+      
+      if (identities && identities.length > 0) {
+        for (const identity of identities) {
+          const data = identity.identity_data || {};
+          // Check every possible field name for the token
+          token = data.provider_token || data.access_token || data.token || identity.provider_token;
+          if (token) {
+            console.log('REAL TOKEN FOUND in identity index:', identities.indexOf(identity));
+            break;
+          }
+        }
       }
     } catch (e) {
       console.error('Database lookup exception:', e);
     }
     
-    // Check for token in different possible fields
-    const token = hostIdentities?.identity_data?.provider_token || hostIdentities?.identity_data?.access_token;
-    
     if (!token) {
-      console.log('NO TOKEN FOUND in identity_data. Returning mock.');
+      console.log('STILL NO TOKEN FOUND. Returning mock.');
       return new Response(
         JSON.stringify({ 
           success: true, 
           mockLink: 'https://meet.google.com/fitti-test-session',
-          message: 'Real token missing. Re-link Google and GRANT CALENDAR PERMISSION.'
+          message: 'Permission not found. Please RE-LINK and check the CALENDAR box.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
