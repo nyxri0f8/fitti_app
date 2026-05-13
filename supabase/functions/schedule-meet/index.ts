@@ -47,24 +47,21 @@ serve(async (req) => {
     const { guestId } = await req.json()
     if (!guestId) throw new Error('Guest ID is required')
 
-    // 3. Fetch ALL Google OAuth tokens from identities table (in auth schema)
+    // 3. Fetch user identities using the Admin API
     let token = null;
     try {
-      const { data: identities, error: identityError } = await supabaseClient
-        .schema('auth')
-        .from('identities')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('provider', 'google')
+      const { data: { user: adminUser }, error: adminError } = await supabaseClient
+        .auth.admin.getUserById(user.id);
       
-      if (identityError) throw new Error(`Database Error: ${identityError.message}`);
+      if (adminError) throw new Error(`Admin API Error: ${adminError.message}`);
       
-      if (identities && identities.length > 0) {
-        for (const identity of identities) {
-          const data = identity.identity_data || {};
-          // Try to find the token in any known field
-          token = data.provider_token || data.access_token || data.token || identity.provider_token;
-          if (token) break;
+      if (adminUser?.identities && adminUser.identities.length > 0) {
+        for (const identity of adminUser.identities) {
+          if (identity.provider === 'google') {
+            const data = identity.identity_data || {};
+            token = data.provider_token || data.access_token || data.token;
+            if (token) break;
+          }
         }
       }
     } catch (e) {

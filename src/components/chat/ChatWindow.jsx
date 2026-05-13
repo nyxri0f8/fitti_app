@@ -38,6 +38,18 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
     setShowMeetModal(true);
   };
 
+  const [hasGoogleLinked, setHasGoogleLinked] = useState(false);
+
+  const checkIdentity = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const isLinked = user?.identities?.some(id => id.provider === 'google');
+    setHasGoogleLinked(!!isLinked);
+  };
+
+  useEffect(() => {
+    checkIdentity();
+  }, [user]);
+
   const handleConnectGoogle = async () => {
     await supabase.auth.linkIdentity({
       provider: 'google',
@@ -59,8 +71,10 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
       if (googleIdentity) {
         const { error } = await supabase.auth.unlinkIdentity(googleIdentity);
         if (error) throw error;
+        setHasGoogleLinked(false);
+        // Reset the session locally to clear cached identities
+        await supabase.auth.getSession(); 
         alert('Google Account Disconnected. You can now connect again.');
-        window.location.reload();
       }
     } catch (err) {
       console.error('Unlink Error:', err);
@@ -75,7 +89,6 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
         body: { guestId: activeContact.id }
       });
       
-      // Handle Supabase Function Errors
       if (error) {
         const errorMsg = await error.context?.json() || { error: error.message };
         throw new Error(errorMsg.error || error.message);
@@ -88,7 +101,6 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
       onSendMessage(`🗓️ I've generated a Google Meet link for our session.\n\nJoin here: ${data.meetLink}`);
     } catch (err) {
       console.error('Meet Generation Error:', err);
-      // Check if it's a permission error
       if (err.message.includes('TOKEN MISSING') || err.message.includes('Identity')) {
         onSendMessage(`❌ Permissions Required: Click "Connect Google Account" above and make sure to CHECK THE BOX for "Google Calendar" access.`);
       } else {
@@ -99,8 +111,6 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
       setShowMeetModal(false);
     }
   };
-
-  const hasGoogleLinked = user?.identities?.some(id => id.provider === 'google');
 
   const handleSend = (e) => {
     e.preventDefault();
