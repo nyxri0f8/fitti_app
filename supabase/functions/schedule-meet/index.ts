@@ -16,10 +16,12 @@ const ALLOWED_ORIGINS = [
 
 serve(async (req) => {
   const origin = req.headers.get('origin');
-  const isAllowed = ALLOWED_ORIGINS.includes(origin);
+  const isVercel = origin?.endsWith('.vercel.app');
+  const isLocal = origin?.includes('localhost');
+  const isProduction = origin === 'https://fitti.org.in';
   
   const corsHeaders = {
-    'Access-Control-Allow-Origin': isAllowed ? origin : 'https://fitti.org.in',
+    'Access-Control-Allow-Origin': (isVercel || isLocal || isProduction) ? origin : 'https://fitti.org.in',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   }
