@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Video, Phone, Lock, MoreVertical } from 'lucide-react';
+import { Send, Paperclip, Video, Phone, Lock, MoreVertical, User } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 
 export default function ChatWindow({ activeContact, messages, onSendMessage, onStartVideoCall }) {
@@ -41,8 +41,8 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onS
       <header className="h-20 px-8 bg-white/70 backdrop-blur-md border-b border-fitti-border/50 flex items-center justify-between sticky top-0 z-10 animate-fade-in-up">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="h-12 w-12 rounded-2xl bg-fitti-green shadow-lg shadow-fitti-green/20 flex items-center justify-center text-white font-black text-xl">
-              {activeContact.name.charAt(0)}
+            <div className="h-12 w-12 rounded-2xl bg-fitti-green shadow-lg shadow-fitti-green/20 flex items-center justify-center text-white">
+              <User className="h-6 w-6" />
             </div>
             {activeContact.online && (
               <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-fitti-green border-4 border-white rounded-full animate-pulse" />

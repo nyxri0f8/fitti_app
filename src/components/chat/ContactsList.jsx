@@ -1,4 +1,4 @@
-import { Search, ShieldCheck } from 'lucide-react';
+import { Search, ShieldCheck, User } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function ContactsList({ contacts, activeContactId, onSelectContact }) {
@@ -33,8 +33,8 @@ export default function ContactsList({ contacts, activeContactId, onSelectContac
             )}
             
             <div className="relative flex-shrink-0">
-              <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg transition-transform group-hover:scale-105 duration-300 ${activeContactId === contact.id ? 'bg-fitti-green shadow-fitti-green/20' : 'bg-fitti-text/80 shadow-fitti-text/10'}`}>
-                {contact.name.charAt(0)}
+              <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-105 duration-300 ${activeContactId === contact.id ? 'bg-fitti-green shadow-fitti-green/20' : 'bg-fitti-text/80 shadow-fitti-text/10'}`}>
+                <User className="h-7 w-7" />
               </div>
               {contact.online && (
                 <span className="absolute -bottom-1 -right-1 block h-4 w-4 rounded-full bg-fitti-green border-4 border-white shadow-sm"></span>
