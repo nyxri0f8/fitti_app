@@ -1,398 +1,321 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import { 
   Dumbbell, Plus, X, Clock, Flame, Target, Timer, Trophy,
-  ChevronDown, Check, Trash2, Save, Play, Pause, RotateCcw
+  ChevronDown, Check, Trash2, Save, Play, Pause, RotateCcw,
+  Activity, MapPin, PlayCircle, StopCircle, Flag
 } from 'lucide-react';
 
-const EXERCISE_CATEGORIES = {
-  'Chest': ['Bench Press', 'Incline Press', 'Decline Press', 'Cable Fly', 'Push-Up', 'Dumbbell Fly', 'Chest Dip'],
-  'Back': ['Deadlift', 'Pull-Up', 'Barbell Row', 'Lat Pulldown', 'Cable Row', 'T-Bar Row', 'Face Pull'],
-  'Shoulders': ['Overhead Press', 'Lateral Raise', 'Front Raise', 'Rear Delt Fly', 'Arnold Press', 'Shrugs'],
-  'Arms': ['Bicep Curl', 'Tricep Extension', 'Hammer Curl', 'Skull Crusher', 'Preacher Curl', 'Dip'],
-  'Legs': ['Squat', 'Leg Press', 'Lunges', 'Leg Extension', 'Leg Curl', 'Calf Raise', 'Bulgarian Split Squat', 'Hip Thrust'],
-  'Core': ['Plank', 'Crunch', 'Russian Twist', 'Leg Raise', 'Mountain Climber', 'Ab Wheel', 'Bicycle Crunch'],
-  'Cardio': ['Running', 'Cycling', 'Jump Rope', 'Rowing', 'Stair Climber', 'Burpees', 'HIIT Sprint', 'Swimming'],
-};
-
-// Calorie estimates per minute for common activities at moderate intensity
-const CALORIE_PER_MIN = {
-  'Chest': 6, 'Back': 7, 'Shoulders': 5, 'Arms': 4, 'Legs': 8, 'Core': 5, 'Cardio': 10,
-};
-
-function RestTimer({ initialSeconds = 60, onDone }) {
-  const [seconds, setSeconds] = useState(initialSeconds);
-  const [isRunning, setIsRunning] = useState(false);
-
-  useEffect(() => {
-    let interval;
-    if (isRunning && seconds > 0) {
-      interval = setInterval(() => setSeconds(s => s - 1), 1000);
-    } else if (seconds === 0) {
-      setIsRunning(false);
-      onDone?.();
-    }
-    return () => clearInterval(interval);
-  }, [isRunning, seconds]);
-
-  const reset = () => { setSeconds(initialSeconds); setIsRunning(false); };
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-
-  return (
-    <div className="flex items-center gap-3">
-      <div className={`font-mono text-2xl font-bold tabular-nums transition-colors duration-300 ${seconds <= 10 && isRunning ? 'text-red-500 animate-pulse-soft' : 'text-fitti-text'}`}>
-        {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
-      </div>
-      <div className="flex gap-1">
-        <button onClick={() => setIsRunning(!isRunning)} className={`p-2 rounded-xl transition-all duration-300 ${isRunning ? 'bg-amber-100 text-amber-600' : 'bg-fitti-green/10 text-fitti-green'} hover:scale-105`}>
-          {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-        </button>
-        <button onClick={reset} className="p-2 rounded-xl bg-fitti-bg text-fitti-text-muted hover:bg-fitti-border/50 hover:scale-105 transition-all duration-300">
-          <RotateCcw className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
+// --- Utility: Haversine distance in km ---
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
 }
 
-function ExerciseRow({ exercise, index, onUpdate, onRemove }) {
-  const [showCategories, setShowCategories] = useState(false);
-  const [showExercises, setShowExercises] = useState(false);
-  const [showTimer, setShowTimer] = useState(false);
-
-  const estimatedCalories = exercise.category
-    ? Math.round((CALORIE_PER_MIN[exercise.category] || 5) * (parseInt(exercise.time) || 0))
-    : exercise.calories || 0;
-
-  return (
-    <div className="group bg-white border-2 border-fitti-border/40 rounded-2xl p-4 hover:border-fitti-green/30 transition-all duration-300 hover:shadow-lg hover:shadow-fitti-green/5 animate-fade-in-up" style={{ animationDelay: `${index * 0.05}s` }}>
-      <div className="flex items-start gap-4">
-        {/* Exercise Number */}
-        <div className="h-10 w-10 rounded-xl bg-fitti-green/10 flex items-center justify-center flex-shrink-0">
-          <span className="font-mono text-sm font-bold text-fitti-green">{String(index + 1).padStart(2, '0')}</span>
-        </div>
-
-        <div className="flex-1 space-y-3">
-          {/* Category & Exercise Name */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="relative">
-              <label className="label-spaced block mb-1.5">Category</label>
-              <button 
-                onClick={() => { setShowCategories(!showCategories); setShowExercises(false); }}
-                className="w-full flex items-center justify-between bg-fitti-bg/50 border border-fitti-border rounded-xl px-3 py-2.5 text-sm font-body hover:border-fitti-green/40 transition-colors"
-              >
-                <span className={exercise.category ? 'text-fitti-text font-medium' : 'text-fitti-text-muted'}>{exercise.category || 'Select...'}</span>
-                <ChevronDown className={`h-4 w-4 text-fitti-text-muted transition-transform ${showCategories ? 'rotate-180' : ''}`} />
-              </button>
-              {showCategories && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-fitti-border rounded-xl shadow-xl z-20 overflow-hidden animate-scale-in">
-                  {Object.keys(EXERCISE_CATEGORIES).map(cat => (
-                    <button key={cat} onClick={() => { onUpdate('category', cat); onUpdate('name', ''); setShowCategories(false); }} className="w-full text-left px-4 py-2.5 text-sm font-body hover:bg-fitti-green/5 hover:text-fitti-green transition-colors">
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <label className="label-spaced block mb-1.5">Exercise</label>
-              <button 
-                onClick={() => { if (exercise.category) { setShowExercises(!showExercises); setShowCategories(false); }}}
-                className={`w-full flex items-center justify-between bg-fitti-bg/50 border border-fitti-border rounded-xl px-3 py-2.5 text-sm font-body transition-colors ${exercise.category ? 'hover:border-fitti-green/40' : 'opacity-50 cursor-not-allowed'}`}
-              >
-                <span className={exercise.name ? 'text-fitti-text font-medium' : 'text-fitti-text-muted'}>{exercise.name || 'Select...'}</span>
-                <ChevronDown className={`h-4 w-4 text-fitti-text-muted transition-transform ${showExercises ? 'rotate-180' : ''}`} />
-              </button>
-              {showExercises && exercise.category && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-fitti-border rounded-xl shadow-xl z-20 overflow-hidden max-h-48 overflow-y-auto animate-scale-in">
-                  {EXERCISE_CATEGORIES[exercise.category]?.map(ex => (
-                    <button key={ex} onClick={() => { onUpdate('name', ex); setShowExercises(false); }} className="w-full text-left px-4 py-2.5 text-sm font-body hover:bg-fitti-green/5 hover:text-fitti-green transition-colors">
-                      {ex}
-                    </button>
-                  ))}
-                  {/* Custom input option */}
-                  <div className="border-t border-fitti-border p-2">
-                    <input
-                      placeholder="Custom exercise..."
-                      className="w-full px-3 py-2 text-sm border border-fitti-border rounded-lg focus:border-fitti-green focus:outline-none"
-                      onKeyDown={(e) => { if (e.key === 'Enter') { onUpdate('name', e.target.value); setShowExercises(false); }}}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Metrics */}
-          <div className="grid grid-cols-4 gap-3">
-            <div>
-              <label className="label-spaced block mb-1.5 flex items-center gap-1">
-                <Timer className="h-3 w-3" /> Time
-              </label>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={exercise.time || ''}
-                  onChange={(e) => onUpdate('time', e.target.value)}
-                  className="w-full bg-fitti-bg/50 border border-fitti-border rounded-xl px-3 py-2.5 font-mono text-sm focus:border-fitti-green focus:outline-none transition-all"
-                />
-                <span className="text-[9px] font-mono text-fitti-text-muted">min</span>
-              </div>
-            </div>
-            <div>
-              <label className="label-spaced block mb-1.5 flex items-center gap-1">
-                <Target className="h-3 w-3" /> Reps
-              </label>
-              <input
-                type="number"
-                placeholder="0"
-                value={exercise.reps || ''}
-                onChange={(e) => onUpdate('reps', e.target.value)}
-                className="w-full bg-fitti-bg/50 border border-fitti-border rounded-xl px-3 py-2.5 font-mono text-sm focus:border-fitti-green focus:outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label className="label-spaced block mb-1.5 flex items-center gap-1">
-                <Dumbbell className="h-3 w-3" /> Sets
-              </label>
-              <input
-                type="number"
-                placeholder="0"
-                value={exercise.sets || ''}
-                onChange={(e) => onUpdate('sets', e.target.value)}
-                className="w-full bg-fitti-bg/50 border border-fitti-border rounded-xl px-3 py-2.5 font-mono text-sm focus:border-fitti-green focus:outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label className="label-spaced block mb-1.5 flex items-center gap-1">
-                <Flame className="h-3 w-3" /> Calories
-              </label>
-              <input
-                type="number"
-                placeholder={estimatedCalories || '0'}
-                value={exercise.calories || ''}
-                onChange={(e) => onUpdate('calories', e.target.value)}
-                className="w-full bg-fitti-bg/50 border border-fitti-border rounded-xl px-3 py-2.5 font-mono text-sm focus:border-fitti-green focus:outline-none transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Rest Timer Toggle */}
-          <div className="flex items-center justify-between pt-1">
-            <button onClick={() => setShowTimer(!showTimer)} className="text-[10px] font-mono font-bold text-fitti-green hover:text-fitti-green-dark transition-colors flex items-center gap-1.5 uppercase tracking-widest">
-              <Clock className="h-3 w-3" /> {showTimer ? 'Hide Timer' : 'Rest Timer'}
-            </button>
-            {estimatedCalories > 0 && !exercise.calories && (
-              <span className="text-[10px] font-mono text-fitti-text-muted">
-                Est. ~{estimatedCalories} kcal
-              </span>
-            )}
-          </div>
-
-          {showTimer && (
-            <div className="bg-fitti-bg/50 rounded-xl p-4 animate-scale-in">
-              <RestTimer initialSeconds={60} />
-            </div>
-          )}
-        </div>
-
-        {/* Remove button */}
-        <button onClick={onRemove} className="p-2 rounded-xl text-fitti-text-muted/40 hover:text-red-500 hover:bg-red-50 transition-all duration-300 opacity-0 group-hover:opacity-100">
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
+const MET_VALUES = {
+  'Walking': 3.5,
+  'Jogging': 7.0,
+  'Running': 10.0,
+  'Strength': 5.0,
+  'Yoga': 2.5
+};
 
 export default function WorkoutTracker({ customerId, isTrainerView = false, customerName = '' }) {
   const user = useAuthStore(state => state.user);
-  const [exercises, setExercises] = useState([createEmptyExercise()]);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  
+  // States
+  const [customerWeight, setCustomerWeight] = useState(70); // Default 70kg for calorie calc
+  const [mode, setMode] = useState('select'); // select, strength, cardio
+  const [workoutType, setWorkoutType] = useState('Strength');
+  
+  // Stopwatch States
+  const [time, setTime] = useState(0); // in seconds
+  const [isRunning, setIsRunning] = useState(false);
+  const [laps, setLaps] = useState([]);
+  
+  // Cardio States
+  const [distance, setDistance] = useState(0); // in km
+  const [positions, setPositions] = useState([]);
+  const watchIdRef = useRef(null);
+
+  // Saving logs
   const [logs, setLogs] = useState([]);
-  const [loadingLogs, setLoadingLogs] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  function createEmptyExercise() {
-    return { id: Date.now() + Math.random(), category: '', name: '', time: '', reps: '', sets: '', calories: '' };
-  }
-
-  // Fetch existing workout logs
+  // Fetch weight & past logs
   useEffect(() => {
-    const fetchLogs = async () => {
+    const initData = async () => {
       const targetId = customerId || user?.id;
       if (!targetId) return;
-      const { data } = await supabase
-        .from('workout_logs')
-        .select('*')
-        .eq('user_id', targetId)
-        .order('created_at', { ascending: false })
-        .limit(10);
-      setLogs(data || []);
-      setLoadingLogs(false);
+
+      // Get Weight
+      const { data: custData } = await supabase.from('customers').select('weight').eq('id', targetId).maybeSingle();
+      if (custData?.weight) setCustomerWeight(custData.weight);
+
+      // Get Logs
+      const { data: logData } = await supabase.from('workout_logs').select('*').eq('user_id', targetId).order('created_at', { ascending: false }).limit(5);
+      if (logData) setLogs(logData);
     };
-    fetchLogs();
-  }, [user, customerId, saved]);
+    initData();
+  }, [user, customerId]);
 
-  const addExercise = () => setExercises(prev => [...prev, createEmptyExercise()]);
-  const removeExercise = (id) => setExercises(prev => prev.filter(e => e.id !== id));
-  const updateExercise = (id, field, value) => setExercises(prev => prev.map(e => e.id === id ? { ...e, [field]: value } : e));
+  // Stopwatch Timer
+  useEffect(() => {
+    let interval;
+    if (isRunning) {
+      interval = setInterval(() => setTime(t => t + 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning]);
 
-  const totalCalories = exercises.reduce((sum, ex) => {
-    const cal = parseInt(ex.calories) || (ex.category ? Math.round((CALORIE_PER_MIN[ex.category] || 5) * (parseInt(ex.time) || 0)) : 0);
-    return sum + cal;
-  }, 0);
+  // GPS Tracker
+  useEffect(() => {
+    if (mode === 'cardio' && isRunning) {
+      if ('geolocation' in navigator) {
+        watchIdRef.current = navigator.geolocation.watchPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setPositions(prev => {
+              const newPos = { lat: latitude, lon: longitude, time: Date.now() };
+              if (prev.length > 0) {
+                const lastPos = prev[prev.length - 1];
+                const dist = calculateDistance(lastPos.lat, lastPos.lon, newPos.lat, newPos.lon);
+                setDistance(d => d + dist);
+              }
+              return [...prev, newPos];
+            });
+          },
+          (err) => console.error(err),
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+        );
+      }
+    } else {
+      if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+    return () => { if (watchIdRef.current) navigator.geolocation.clearWatch(watchIdRef.current); };
+  }, [mode, isRunning]);
 
-  const totalTime = exercises.reduce((sum, ex) => sum + (parseInt(ex.time) || 0), 0);
-  const totalSets = exercises.reduce((sum, ex) => sum + (parseInt(ex.sets) || 0), 0);
+  // Calorie Calculation
+  // Calories = MET * weight(kg) * (time(min)/60)
+  const caloriesBurned = Math.round(
+    (MET_VALUES[workoutType] || 5) * customerWeight * (time / 3600)
+  );
+
+  const handleStart = (type, workoutMode) => {
+    setWorkoutType(type);
+    setMode(workoutMode);
+    setTime(0);
+    setLaps([]);
+    setDistance(0);
+    setPositions([]);
+    setIsRunning(true);
+  };
+
+  const handleLap = () => {
+    if (!isRunning) return;
+    setLaps(prev => [...prev, {
+      lapTime: time - (prev.length > 0 ? prev[prev.length - 1].totalTime : 0),
+      totalTime: time
+    }]);
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+  };
 
   const handleSave = async () => {
-    if (exercises.every(e => !e.name)) return;
     setSaving(true);
     const targetId = customerId || user.id;
-    
+
     const logEntry = {
       user_id: targetId,
       logged_by: user.id,
-      exercises: exercises.filter(e => e.name).map(e => ({
-        category: e.category,
-        name: e.name,
-        time: parseInt(e.time) || 0,
-        reps: parseInt(e.reps) || 0,
-        sets: parseInt(e.sets) || 0,
-        calories: parseInt(e.calories) || Math.round((CALORIE_PER_MIN[e.category] || 5) * (parseInt(e.time) || 0)),
-      })),
-      total_calories: totalCalories,
-      total_time: totalTime,
-      total_sets: totalSets,
+      total_time: Math.floor(time / 60),
+      total_calories: caloriesBurned,
+      exercises: mode === 'strength' 
+        ? laps.map((lap, i) => ({ name: `Set ${i+1}`, time: lap.lapTime, sets: 1 }))
+        : [{ name: workoutType, distance: distance.toFixed(2), time: time }],
+      total_sets: laps.length
     };
 
     await supabase.from('workout_logs').insert([logEntry]);
+    
+    // Refresh logs
+    const { data } = await supabase.from('workout_logs').select('*').eq('user_id', targetId).order('created_at', { ascending: false }).limit(5);
+    setLogs(data || []);
+    
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-    setExercises([createEmptyExercise()]);
+    setMode('select'); // Go back to start
+  };
+
+  const formatTime = (totalSeconds) => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-display text-3xl font-black text-fitti-text tracking-tight flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-fitti-green/10 flex items-center justify-center animate-pulse-soft">
-              <Dumbbell className="h-5 w-5 text-fitti-green" />
-            </div>
-            {isTrainerView ? `Log for ${customerName}` : 'Workout Tracker'}
-          </h2>
-          <p className="font-body text-sm text-fitti-text-muted mt-1">
-            Track exercises, time, reps, and calories burned
-          </p>
-        </div>
+      <div>
+        <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter flex items-center gap-3">
+           <Activity className="h-8 w-8 text-fitti-green" />
+           Live Workout Session
+        </h2>
+        <p className="font-accent text-lg italic text-fitti-text-muted mt-1">Track your performance in real-time</p>
       </div>
 
-      {/* Live Stats Bar */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Total Time', value: `${totalTime}m`, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Total Sets', value: totalSets, icon: Target, color: 'text-fitti-green', bg: 'bg-fitti-green/10' },
-          { label: 'Est. Calories', value: `${totalCalories}`, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-50' },
-        ].map((stat, i) => (
-          <div key={i} className={`${stat.bg} rounded-2xl p-5 border border-white/60 transition-all duration-500 hover:scale-[1.02]`}>
-            <div className="flex items-center gap-2 mb-2">
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              <span className="label-spaced !text-[9px] !mb-0">{stat.label}</span>
-            </div>
-            <p className={`font-mono text-2xl font-bold ${stat.color} tabular-nums`}>{stat.value}</p>
+      {mode === 'select' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Strength Training */}
+          <div className="card-glass p-8 text-center hover:border-fitti-green/50 cursor-pointer transition-all duration-300 hover:-translate-y-1" onClick={() => handleStart('Strength', 'strength')}>
+            <Dumbbell className="h-16 w-16 text-fitti-text mx-auto mb-6 opacity-80" />
+            <h3 className="font-display text-2xl font-black text-fitti-text mb-2">Strength / Weights</h3>
+            <p className="font-body text-sm font-bold text-fitti-text-muted mb-8">Use stopwatch to track your sets and rest periods accurately.</p>
+            <button className="btn-gradient w-full py-4">Start Lifting</button>
           </div>
-        ))}
-      </div>
 
-      {/* Exercise List */}
-      <div className="space-y-3">
-        {exercises.map((ex, i) => (
-          <ExerciseRow
-            key={ex.id}
-            exercise={ex}
-            index={i}
-            onUpdate={(field, value) => updateExercise(ex.id, field, value)}
-            onRemove={() => removeExercise(ex.id)}
-          />
-        ))}
-      </div>
+          {/* Cardio / Strava-like */}
+          <div className="card-glass p-8 text-center hover:border-fitti-orange/50 cursor-pointer transition-all duration-300 hover:-translate-y-1">
+            <MapPin className="h-16 w-16 text-fitti-orange mx-auto mb-6 opacity-80" />
+            <h3 className="font-display text-2xl font-black text-fitti-text mb-2">GPS Cardio</h3>
+            <p className="font-body text-sm font-bold text-fitti-text-muted mb-6">Track distance, pace, and route via GPS.</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => handleStart('Walking', 'cardio')} className="bg-fitti-bg hover:bg-fitti-orange hover:text-white transition-all py-3 rounded-xl font-bold text-sm">Walk</button>
+              <button onClick={() => handleStart('Jogging', 'cardio')} className="bg-fitti-bg hover:bg-fitti-orange hover:text-white transition-all py-3 rounded-xl font-bold text-sm">Jog</button>
+              <button onClick={() => handleStart('Running', 'cardio')} className="bg-fitti-bg hover:bg-fitti-orange hover:text-white transition-all py-3 rounded-xl font-bold text-sm">Run</button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Actions */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={addExercise}
-          className="group flex items-center gap-2 px-5 py-3 border-2 border-dashed border-fitti-border hover:border-fitti-green/40 rounded-2xl font-display text-sm font-bold text-fitti-text-muted hover:text-fitti-green transition-all duration-300 hover:-translate-y-0.5"
-        >
-          <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300" />
-          Add Exercise
-        </button>
-        
-        <div className="flex-1" />
+      {mode !== 'select' && (
+        <div className="card-glass p-10 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-fitti-bg">
+            <div className={`h-full bg-fitti-green transition-all ${isRunning ? 'w-full duration-[60000ms]' : 'w-0'}`} />
+          </div>
 
-        <button
-          onClick={handleSave}
-          disabled={saving || exercises.every(e => !e.name)}
-          className="group btn-gradient flex items-center gap-3 px-8 py-3.5 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {saved ? (
-            <>
-              <Check className="h-5 w-5 animate-bounce-in" />
-              <span className="font-display font-bold">Saved!</span>
-            </>
-          ) : saving ? (
-            <>
-              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span className="font-display font-bold">Saving...</span>
-            </>
-          ) : (
-            <>
-              <Save className="h-5 w-5 group-hover:scale-110 transition-transform" />
-              <span className="font-display font-bold">Save Workout</span>
-            </>
+          <div className="text-center mb-10">
+            <p className="font-mono text-sm font-bold text-fitti-green uppercase tracking-[0.2em] mb-2">{workoutType} Session</p>
+            <h1 className="font-mono text-7xl font-black text-fitti-text tracking-tighter tabular-nums">
+              {formatTime(time)}
+            </h1>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div className="bg-fitti-bg p-5 rounded-2xl text-center">
+              <Flame className="h-5 w-5 text-fitti-orange mx-auto mb-2" />
+              <p className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">Kcal Burned</p>
+              <p className="font-display text-2xl font-bold">{caloriesBurned}</p>
+            </div>
+            {mode === 'cardio' ? (
+              <>
+                <div className="bg-fitti-bg p-5 rounded-2xl text-center">
+                  <MapPin className="h-5 w-5 text-blue-500 mx-auto mb-2" />
+                  <p className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">Distance</p>
+                  <p className="font-display text-2xl font-bold">{distance.toFixed(2)} <span className="text-sm">km</span></p>
+                </div>
+                <div className="bg-fitti-bg p-5 rounded-2xl text-center">
+                  <Activity className="h-5 w-5 text-purple-500 mx-auto mb-2" />
+                  <p className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">Avg Pace</p>
+                  <p className="font-display text-2xl font-bold">
+                    {distance > 0 ? (time / 60 / distance).toFixed(1) : '0'} <span className="text-sm">m/km</span>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-fitti-bg p-5 rounded-2xl text-center">
+                  <Target className="h-5 w-5 text-fitti-green mx-auto mb-2" />
+                  <p className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">Total Sets</p>
+                  <p className="font-display text-2xl font-bold">{laps.length}</p>
+                </div>
+              </>
+            )}
+            <div className="bg-fitti-bg p-5 rounded-2xl text-center flex items-center justify-center">
+              <p className="font-mono text-xs font-bold text-fitti-text-muted">Weight: {customerWeight}kg</p>
+            </div>
+          </div>
+
+          <div className="flex justify-center gap-4">
+            {isRunning ? (
+              <>
+                <button onClick={handleStop} className="h-20 w-20 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-all shadow-lg hover:scale-105">
+                  <StopCircle className="h-8 w-8" />
+                </button>
+                {mode === 'strength' && (
+                  <button onClick={handleLap} className="h-20 w-20 rounded-full bg-fitti-bg text-fitti-text flex items-center justify-center hover:bg-fitti-border/50 transition-all shadow-sm hover:scale-105">
+                    <Flag className="h-6 w-6" />
+                    <span className="sr-only">Lap</span>
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <button onClick={() => setIsRunning(true)} className="h-20 w-20 rounded-full bg-fitti-green text-white flex items-center justify-center hover:bg-fitti-green-dark transition-all shadow-xl shadow-fitti-green/20 hover:scale-105">
+                  <PlayCircle className="h-8 w-8 ml-1" />
+                </button>
+                {time > 0 && (
+                  <button onClick={handleSave} disabled={saving} className="h-20 px-8 rounded-full bg-black text-white font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center gap-2">
+                    {saving ? 'Saving...' : 'Finish & Save'}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Laps List */}
+          {laps.length > 0 && (
+            <div className="mt-10 border-t border-fitti-border/50 pt-8">
+              <h4 className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em] mb-4">Set History</h4>
+              <div className="space-y-2">
+                {[...laps].reverse().map((lap, i) => (
+                  <div key={i} className="flex justify-between items-center p-3 bg-fitti-bg/30 rounded-xl">
+                    <span className="font-bold text-sm">Set {laps.length - i}</span>
+                    <div className="font-mono text-sm">
+                      <span className="text-fitti-text-muted mr-4">+{formatTime(lap.lapTime)}</span>
+                      <span>{formatTime(lap.totalTime)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-        </button>
-      </div>
+        </div>
+      )}
 
-      {/* Previous Workout Logs */}
-      {logs.length > 0 && (
-        <div className="mt-12">
+      {/* Previous Logs */}
+      {logs.length > 0 && mode === 'select' && (
+        <div className="pt-8">
           <h3 className="font-display text-xl font-bold text-fitti-text mb-5 flex items-center gap-2">
             <Trophy className="h-5 w-5 text-fitti-green" />
             <span>Recent Sessions</span>
           </h3>
-          <div className="space-y-4 stagger-children">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
             {logs.map(log => (
-              <div key={log.id} className="card-glass p-6 hover:shadow-lg hover:shadow-fitti-green/5 transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-fitti-green/10 flex items-center justify-center">
-                      <Dumbbell className="h-4 w-4 text-fitti-green" />
-                    </div>
-                    <span className="font-body text-sm font-bold text-fitti-text">
-                      {new Date(log.created_at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 font-mono text-xs text-fitti-text-muted">
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{log.total_time || 0}m</span>
-                    <span className="flex items-center gap-1"><Target className="h-3 w-3" />{log.total_sets || 0} sets</span>
-                    <span className="flex items-center gap-1 text-fitti-green font-bold"><Flame className="h-3 w-3" />{log.total_calories || 0} kcal</span>
-                  </div>
+              <div key={log.id} className="card-glass p-5 hover:border-fitti-green/30 transition-all duration-300">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-[10px] font-bold text-fitti-green uppercase tracking-widest">
+                    {log.exercises?.[0]?.name || 'Workout'}
+                  </span>
+                  <span className="font-body text-xs font-bold text-fitti-text-muted">
+                    {new Date(log.created_at).toLocaleDateString()}
+                  </span>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {(log.exercises || []).map((ex, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-fitti-bg/50 rounded-full text-[11px] font-body font-medium text-fitti-text border border-fitti-border/30">
-                      <span className="font-bold">{ex.name}</span>
-                      {ex.sets > 0 && ex.reps > 0 && <span className="text-fitti-text-muted">• {ex.sets}×{ex.reps}</span>}
-                    </span>
-                  ))}
+                <div className="flex items-center gap-4 font-mono text-xs text-fitti-text">
+                  <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-fitti-text-muted" />{log.total_time || 0}m</span>
+                  {log.total_sets > 0 && <span className="flex items-center gap-1"><Target className="h-3 w-3 text-fitti-text-muted" />{log.total_sets} sets</span>}
+                  {log.exercises?.[0]?.distance && <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-blue-500" />{log.exercises[0].distance} km</span>}
+                  <span className="flex items-center gap-1 text-fitti-orange font-bold"><Flame className="h-3 w-3" />{log.total_calories || 0} kcal</span>
                 </div>
               </div>
             ))}

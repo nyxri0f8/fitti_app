@@ -54,13 +54,23 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
 
   const handleGenerateLink = async () => {
     setGeneratingMeet(true);
-    // Mocking the Edge Function call for now
-    setTimeout(() => {
-      const mockMeetLink = `https://meet.google.com/xyz-abcd-efg`;
-      onSendMessage(`🗓️ I've generated a Google Meet link for our session.\n\nJoin here: ${mockMeetLink}`);
+    try {
+      const { data, error } = await supabase.functions.invoke('schedule-meet', {
+        body: { guestId: activeContact.id }
+      });
+      if (error) throw error;
+      
+      const meetLink = data.meetLink || data.mockLink;
+      if (!meetLink) throw new Error('No Meet link returned');
+      
+      onSendMessage(`🗓️ I've generated a Google Meet link for our session.\n\nJoin here: ${meetLink}`);
+    } catch (err) {
+      console.error(err);
+      onSendMessage(`❌ Failed to generate Meet link: ${err.message}`);
+    } finally {
       setGeneratingMeet(false);
       setShowMeetModal(false);
-    }, 2000);
+    }
   };
 
   const hasGoogleLinked = user?.identities?.some(id => id.provider === 'google');

@@ -7,12 +7,18 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // You would need to add googleapis to import map or use esm.sh
 // import { google } from "https://esm.sh/googleapis@118.0.0";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:3000', 'https://fitti.org.in'];
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const isAllowed = ALLOWED_ORIGINS.includes(origin);
+  
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': isAllowed ? origin : 'https://fitti.org.in',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  }
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -37,31 +43,57 @@ serve(async (req) => {
     // 3. Fetch Google OAuth tokens from identities table for both users
     // This requires service role key
     const { data: hostIdentities } = await supabaseClient.from('identities').select('*').eq('id', user.id).eq('provider', 'google').single()
-    const { data: guestIdentities } = await supabaseClient.from('identities').select('*').eq('id', guestId).eq('provider', 'google').single()
 
     if (!hostIdentities?.identity_data?.provider_token) {
       throw new Error('Host has not linked Google Account or missing token')
     }
     
-    // NOTE: In a real implementation:
-    // 1. Initialize Google Auth client with the provider_token (and provider_refresh_token if needed).
-    // 2. Use calendar.freebusy.query to find an overlapping 30 min slot in the next 7 days.
-    // 3. Use calendar.events.insert with conferenceDataVersion=1 to generate a Google Meet link.
-    // 4. Return the Meet link.
+    // Create Calendar Event with Google Meet link
+    const event = {
+      summary: 'Fitti Coaching Session',
+      description: 'Scheduled via Fitti App.',
+      start: {
+        dateTime: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      },
+      end: {
+        dateTime: new Date(Date.now() + 35 * 60 * 1000).toISOString(),
+      },
+      conferenceData: {
+        createRequest: {
+          requestId: crypto.randomUUID(),
+          conferenceSolutionKey: {
+            type: 'hangoutsMeet'
+          }
+        }
+      }
+    };
 
-    /*
-    const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
-    oauth2Client.setCredentials({ access_token: hostIdentities.identity_data.provider_token });
-    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    // ... Find time logic ...
-    // ... Insert event logic ...
-    */
+    const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${hostIdentities.identity_data.provider_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(event)
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error('Google API Error:', data);
+      throw new Error(`Google API Error: ${data.error?.message || 'Unknown error'}`);
+    }
+
+    const meetLink = data.hangoutLink;
+
+    if (!meetLink) {
+      throw new Error('Failed to generate Meet link from Google Calendar API');
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'This is a template. Real implementation requires Google API Client logic.',
-        mockLink: 'https://meet.google.com/xyz-abcd-efg'
+        message: 'Google Meet scheduled successfully',
+        meetLink: meetLink
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

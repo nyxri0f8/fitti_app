@@ -19,6 +19,15 @@
   --fitti-orange: #76B900;
 }
 
+html.dark {
+  --fitti-green-light: #161a12;
+  --fitti-bg: #111111;
+  --fitti-bg-alt: #1a1a1a;
+  --fitti-text: #f5f5f5;
+  --fitti-text-muted: #8899a6;
+  --fitti-border: #2a2a2a;
+}
+
 @layer base {
   * {
     @apply border-fitti-border;
@@ -229,15 +238,15 @@
 }
 
 .card-glass {
-  @apply bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2rem];
+  @apply bg-fitti-bg/70 backdrop-blur-xl border border-fitti-border/50 rounded-[2rem];
   box-shadow: 
     0 4px 6px -1px rgba(0, 0, 0, 0.02),
     0 20px 25px -5px rgba(118, 185, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    inset 0 1px 0 rgba(118, 185, 0, 0.1);
 }
 
 .glass-panel {
-  @apply bg-white/70 backdrop-blur-md border border-white/40;
+  @apply bg-fitti-bg/70 backdrop-blur-md border border-fitti-border/40;
 }
 
 /* Shimmer loading */
@@ -254,7 +263,7 @@
 }
 
 .sidebar-glass {
-  @apply bg-white/80 backdrop-blur-lg border-r border-fitti-border/50;
+  @apply bg-fitti-bg/80 backdrop-blur-lg border-r border-fitti-border/50;
 }
 
 /* Stat number styling */

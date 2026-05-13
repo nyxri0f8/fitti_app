@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Security Meta Tags -->
+    <!-- Prevents Clickjacking by disallowing the site to be embedded in an iframe -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <!-- Content Security Policy: Mitigates XSS attacks -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com https://*.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.googleapis.com" />
+    <!-- Referrer Policy: Protects sensitive info in URLs from being leaked -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
     <title>fitti-app</title>
   </head>
   <body>
