@@ -13,10 +13,7 @@ export default function Navbar({ title }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-fitti-bg/50 rounded-full border border-fitti-border/30">
-          <div className="h-2 w-2 rounded-full bg-fitti-green animate-pulse-soft" />
-          <span className="font-mono text-[10px] text-fitti-text-muted font-bold tracking-widest uppercase">Online</span>
-        </div>
+
         <NotificationBell />
       </div>
     </header>
