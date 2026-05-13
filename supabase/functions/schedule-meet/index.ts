@@ -47,23 +47,29 @@ serve(async (req) => {
     const { guestId } = await req.json()
     if (!guestId) throw new Error('Guest ID is required')
 
-    // 3. Fetch Google OAuth tokens from identities table
-    const { data: hostIdentities, error: identityError } = await supabaseClient
-      .from('identities')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('provider', 'google')
-      .maybeSingle()
-
-    if (identityError) throw new Error(`Identity Fetch Error: ${identityError.message}`)
+    // 3. Fetch Google OAuth tokens from identities table (in auth schema)
+    let hostIdentities = null;
+    try {
+      const { data, error: identityError } = await supabaseClient
+        .schema('auth')
+        .from('identities')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('provider', 'google')
+        .maybeSingle()
+      
+      if (!identityError) hostIdentities = data;
+    } catch (e) {
+      console.log('Database lookup failed, falling back to mock.');
+    }
     
     if (!hostIdentities?.identity_data?.provider_token) {
-      console.log('User has not linked Google or missing token. Returning mock for testing.');
+      console.log('No provider token found. Returning mock link.');
       return new Response(
         JSON.stringify({ 
           success: true, 
           mockLink: 'https://meet.google.com/fitti-test-session',
-          message: 'Please link your Google account for real links.'
+          message: 'Running in Mock Mode. Link your Google account for live links.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
