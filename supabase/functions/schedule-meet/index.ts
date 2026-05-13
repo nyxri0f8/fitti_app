@@ -58,18 +58,25 @@ serve(async (req) => {
         .eq('provider', 'google')
         .maybeSingle()
       
-      if (!identityError) hostIdentities = data;
+      if (identityError) console.error('Identity Error:', identityError);
+      if (data) {
+        console.log('Found Identity. Keys in data:', Object.keys(data.identity_data || {}));
+        hostIdentities = data;
+      }
     } catch (e) {
-      console.log('Database lookup failed, falling back to mock.');
+      console.error('Database lookup exception:', e);
     }
     
-    if (!hostIdentities?.identity_data?.provider_token) {
-      console.log('No provider token found. Returning mock link.');
+    // Check for token in different possible fields
+    const token = hostIdentities?.identity_data?.provider_token || hostIdentities?.identity_data?.access_token;
+    
+    if (!token) {
+      console.log('NO TOKEN FOUND in identity_data. Returning mock.');
       return new Response(
         JSON.stringify({ 
           success: true, 
           mockLink: 'https://meet.google.com/fitti-test-session',
-          message: 'Running in Mock Mode. Link your Google account for live links.'
+          message: 'Real token missing. Re-link Google and GRANT CALENDAR PERMISSION.'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -98,7 +105,7 @@ serve(async (req) => {
     const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${hostIdentities.identity_data.provider_token}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(event)
