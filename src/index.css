@@ -1,19 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --fitti-green: #0d5c3f;
-  --fitti-green-dark: #0a4a33;
-  --fitti-green-light: #e6f0ed;
-  --fitti-bg: #f8faf9;
-  --fitti-bg-alt: #f1f5f3;
-  --fitti-text: #0a2a1e;
-  --fitti-text-muted: #6b7280;
-  --fitti-border: #e2e8f0;
-  --fitti-orange: #f97316;
+  --fitti-green: #76B900;
+  --fitti-green-dark: #528100;
+  --fitti-green-light: #F4FBEB;
+  --fitti-bg: #ffffff;
+  --fitti-bg-alt: #F4FBEB;
+  --fitti-text: #111111;
+  --fitti-text-muted: #6b7b68;
+  --fitti-border: #e2ead8;
+  --fitti-orange: #76B900;
 }
 
 @layer base {
@@ -21,22 +24,35 @@
     @apply border-fitti-border;
   }
   body {
-    @apply bg-fitti-bg text-fitti-text font-sans antialiased;
+    @apply bg-fitti-bg text-fitti-text antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
-    /* Graph Paper Background */
     background-image: 
-      linear-gradient(rgba(13, 92, 63, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(13, 92, 63, 0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
+      linear-gradient(rgba(118, 185, 0, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(118, 185, 0, 0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
     background-attachment: fixed;
   }
 }
 
-/* ── Custom Typography ────────────────────────────────── */
+/* ── Font Families ────────────────────────────────────── */
 .font-display {
   font-family: 'Outfit', sans-serif;
 }
 
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-accent {
+  font-family: 'Playfair Display', serif;
+}
+
+/* ── Logo & Branding ─────────────────────────────────── */
 .logo-fitti {
   font-family: 'Outfit', sans-serif;
   font-weight: 900;
@@ -57,18 +73,24 @@
 }
 
 .motto-fitti {
+  font-family: 'Inter', sans-serif;
   @apply text-fitti-text-muted font-medium tracking-tight;
   font-size: 1.1rem;
 }
 
-/* ── Refined Animations ───────────────────────────────── */
+/* ── Animations ───────────────────────────────────────── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(24px); }
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.92); }
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -95,6 +117,49 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes countPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(118, 185, 0, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(118, 185, 0, 0.4), 0 0 40px rgba(118, 185, 0, 0.1); }
+}
+
+@keyframes borderPulse {
+  0%, 100% { border-color: rgba(118, 185, 0, 0.2); }
+  50% { border-color: rgba(118, 185, 0, 0.6); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .animate-fade-in-right {
   animation: fadeInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -107,42 +172,117 @@
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; 
 }
 
+.animate-fade-in-down {
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .animate-scale-in { 
   animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; 
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spinSlow 8s linear infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: countPulse 2s ease-in-out infinite;
 }
 
 .stagger-children > * { 
   @apply opacity-0;
   animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; 
 }
-.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
-.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
-.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
-.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
-.stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
 
-/* ── Interactive Elements ────────────────────────────── */
+/* ── Interactive Cards ───────────────────────────────── */
 .card-hover {
   @apply transition-all duration-500 ease-out;
 }
 
 .card-hover:hover {
-  transform: translateY(-6px);
-  @apply shadow-xl shadow-fitti-green/5 border-fitti-green/30;
+  transform: translateY(-6px) scale(1.005);
+  @apply shadow-2xl shadow-fitti-green/10 border-fitti-green/30;
+}
+
+.card-glass {
+  @apply bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2rem];
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 20px 25px -5px rgba(118, 185, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .glass-panel {
   @apply bg-white/70 backdrop-blur-md border border-white/40;
 }
 
-/* ── Custom Utilities ─────────────────────────────────── */
+/* Shimmer loading */
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
 /* ── Custom Utilities ─────────────────────────────────── */
 .label-spaced {
+  font-family: 'Inter', sans-serif;
   @apply text-fitti-text-muted text-[10px] font-bold tracking-[0.2em] uppercase;
 }
 
 .sidebar-glass {
   @apply bg-white/80 backdrop-blur-lg border-r border-fitti-border/50;
+}
+
+/* Stat number styling */
+.stat-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Section heading accent */
+.section-heading {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* ── Gradient Button ──────────────────────────────────── */
+.btn-gradient {
+  @apply relative overflow-hidden font-bold text-white rounded-2xl transition-all duration-300;
+  background: linear-gradient(135deg, #76B900, #528100, #76B900);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(118, 185, 0, 0.3);
+}
+.btn-gradient:active {
+  transform: translateY(0);
 }
 
 /* Grain Texture */
@@ -154,7 +294,7 @@
   height: 100%;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.03;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
@@ -173,10 +313,17 @@
   @apply bg-fitti-green/40;
 }
 
+/* ── Inputs enhanced ─────────────────────────────────── */
+input, select, textarea {
+  @apply transition-all duration-300;
+}
+input:focus, select:focus, textarea:focus {
+  transform: translateY(-1px);
+}
+
 /* ── Mobile Layout Adjustments ─────────────────────────── */
 @media (max-width: 768px) {
   .dashboard-grid {
     @apply grid-cols-1;
   }
 }
-

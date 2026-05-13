@@ -1,8 +1,8 @@
 const STATUS_COLORS = {
-  pending: 'bg-gray-100 text-gray-500 border-gray-200',
-  preparing: 'bg-orange-50 text-orange-600 border-orange-100',
-  packed: 'bg-blue-50 text-blue-600 border-blue-100',
-  out_for_delivery: 'bg-emerald-50 text-emerald-600 border-emerald-100 animate-pulse',
+  pending: 'bg-fitti-bg-alt text-fitti-text-muted border-fitti-border',
+  preparing: 'bg-orange-50 text-fitti-green border-orange-100',
+  packed: 'bg-blue-50 text-fitti-green border-blue-100',
+  out_for_delivery: 'bg-fitti-bg-alt text-fitti-green border-emerald-100 animate-pulse',
   delivered: 'bg-fitti-green text-white border-fitti-green shadow-lg shadow-fitti-green/20',
 };
 

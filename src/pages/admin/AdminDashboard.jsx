@@ -33,9 +33,9 @@ function OverviewTab() {
   }, []);
 
   const cards = [
-    { title: 'Clients', count: stats.customers, icon: <Users className="text-fitti-green h-6 w-6" />, color: 'bg-emerald-50' },
+    { title: 'Clients', count: stats.customers, icon: <Users className="text-fitti-green h-6 w-6" />, color: 'bg-fitti-bg-alt' },
     { title: 'Cooks', count: stats.cooks, icon: <ChefHat className="text-fitti-orange h-6 w-6" />, color: 'bg-orange-50' },
-    { title: 'Trainers', count: stats.trainers, icon: <Dumbbell className="text-blue-500 h-6 w-6" />, color: 'bg-blue-50' },
+    { title: 'Trainers', count: stats.trainers, icon: <Dumbbell className="text-fitti-green h-6 w-6" />, color: 'bg-blue-50' },
     { title: 'Doctors', count: stats.doctors, icon: <Stethoscope className="text-purple-500 h-6 w-6" />, color: 'bg-purple-50' },
   ];
 
@@ -182,7 +182,7 @@ function UsersTab() {
                 </div>
                 <div className="bg-fitti-bg-alt/50 rounded-2xl p-4 transition-colors group-hover:bg-fitti-green/5">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <Heart className="h-3 w-3 text-red-400" />
+                    <Heart className="h-3 w-3 text-fitti-green" />
                     <span className="label-spaced !text-[9px]">Weight</span>
                   </div>
                   <p className="font-bold text-fitti-text text-sm">{c.weight ? `${c.weight}kg` : '—'}</p>
@@ -200,7 +200,7 @@ function UsersTab() {
                 </div>
                 <div className="flex items-center justify-between p-3 bg-fitti-bg/30 rounded-xl border border-fitti-border/30">
                   <span className="label-spaced !text-[8px]">Trainer</span>
-                  <span className="text-[11px] font-bold text-blue-600 truncate ml-4">{getStaffName(c.assigned_trainer, staff.trainers)}</span>
+                  <span className="text-[11px] font-bold text-fitti-green truncate ml-4">{getStaffName(c.assigned_trainer, staff.trainers)}</span>
                 </div>
               </div>
 
@@ -222,7 +222,7 @@ function UsersTab() {
               <h3 className="text-2xl font-display font-black text-fitti-text tracking-tight uppercase">Staff Assignments</h3>
               <p className="text-sm font-bold text-fitti-text-muted mt-1">Configure access for {selectedCustomer.full_name}</p>
             </div>
-            <button onClick={() => setSelectedCustomer(null)} className="p-3 hover:bg-red-50 hover:text-red-600 rounded-2xl transition-all group">
+            <button onClick={() => setSelectedCustomer(null)} className="p-3 hover:bg-fitti-bg-alt hover:text-black rounded-2xl transition-all group">
               <X className="h-6 w-6 text-fitti-text-muted group-hover:rotate-90 transition-transform duration-300" />
             </button>
           </div>
@@ -230,9 +230,9 @@ function UsersTab() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
               {[
-                { label: 'Primary Cook', icon: <ChefHat className="h-4 w-4 text-fitti-orange" />, key: 'cook', list: staff.cooks, color: 'border-orange-100 focus:border-fitti-orange ring-orange-500/20' },
+                { label: 'Primary Cook', icon: <ChefHat className="h-4 w-4 text-fitti-orange" />, key: 'cook', list: staff.cooks, color: 'border-orange-100 focus:border-fitti-orange ring-fitti-green/20' },
                 { label: 'Medical Doctor', icon: <Stethoscope className="h-4 w-4 text-purple-500" />, key: 'doctor', list: staff.doctors, color: 'border-purple-100 focus:border-purple-500 ring-purple-500/20' },
-                { label: 'Fitness Trainer', icon: <Dumbbell className="h-4 w-4 text-blue-500" />, key: 'trainer', list: staff.trainers, color: 'border-blue-100 focus:border-blue-500 ring-blue-500/20' }
+                { label: 'Fitness Trainer', icon: <Dumbbell className="h-4 w-4 text-fitti-green" />, key: 'trainer', list: staff.trainers, color: 'border-blue-100 focus:border-fitti-green ring-fitti-green/20' }
               ].map(field => (
                 <div key={field.key} className="animate-fade-in-up">
                   <div className="flex items-center gap-2 mb-3">

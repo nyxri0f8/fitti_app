@@ -110,7 +110,7 @@ export default function Onboarding() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
         <div className="bg-white py-8 px-4 border border-fitti-border shadow-sm rounded-2xl sm:px-10">
           <form className="space-y-6" onSubmit={handleOnboard}>
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+            {error && <div className="text-black text-sm">{error}</div>}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

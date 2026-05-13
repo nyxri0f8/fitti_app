@@ -15,6 +15,7 @@ export default function useWebRTC(roomCode, isHost, guestId) {
   const sessionIdRef = useRef(null);
   const channelRef = useRef(null);
   const isInitializingRef = useRef(false);
+  const candidateQueue = useRef([]);
 
   const cleanup = useCallback(() => {
     localStreamRef.current?.getTracks().forEach(track => track.stop());
@@ -97,7 +98,7 @@ export default function useWebRTC(roomCode, isHost, guestId) {
         if (!pcRef.current) return;
 
         try {
-          if (signal.signal_type === 'ready' && isHost) {
+          if (signal.signal_type === 'ice_candidate' && signal.payload?.ready && isHost) {
             console.log('📡 Guest is ready! Sending offer...');
             const offer = await pcRef.current.createOffer();
             await pcRef.current.setLocalDescription(offer);
@@ -111,6 +112,12 @@ export default function useWebRTC(roomCode, isHost, guestId) {
           } else if (signal.signal_type === 'offer' && !isHost) {
             console.log('📡 Offer received! Sending answer...');
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(signal.payload));
+            
+            while (candidateQueue.current.length > 0) {
+              const cand = candidateQueue.current.shift();
+              await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+            }
+
             const answer = await pcRef.current.createAnswer();
             await pcRef.current.setLocalDescription(answer);
 
@@ -124,9 +131,18 @@ export default function useWebRTC(roomCode, isHost, guestId) {
           } else if (signal.signal_type === 'answer' && isHost) {
             console.log('📡 Answer received!');
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(signal.payload));
-          } else if (signal.signal_type === 'ice_candidate') {
+            
+            while (candidateQueue.current.length > 0) {
+              const cand = candidateQueue.current.shift();
+              await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+            }
+          } else if (signal.signal_type === 'ice_candidate' && !signal.payload?.ready) {
             console.log('📡 ICE Candidate received!');
-            await pcRef.current.addIceCandidate(new RTCIceCandidate(signal.payload));
+            if (pcRef.current?.remoteDescription) {
+              await pcRef.current.addIceCandidate(new RTCIceCandidate(signal.payload));
+            } else {
+              candidateQueue.current.push(signal.payload);
+            }
           }
         } catch (sigErr) {
           console.error('Signal handling error:', sigErr);
@@ -158,8 +174,8 @@ export default function useWebRTC(roomCode, isHost, guestId) {
               session_id: session.id,
               from_user: user.id,
               to_user: session.host_id,
-              signal_type: 'ready',
-              payload: {}
+              signal_type: 'ice_candidate',
+              payload: { ready: true }
             }]);
           }
         }

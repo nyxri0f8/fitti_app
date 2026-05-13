@@ -134,9 +134,9 @@ export default function Sidebar() {
 
           <button
             onClick={handleLogout}
-            className="group w-full flex items-center px-5 py-4 text-sm font-bold text-fitti-text-muted hover:bg-red-50 hover:text-red-600 rounded-2xl transition-all duration-300"
+            className="group w-full flex items-center px-5 py-4 text-sm font-bold text-fitti-text-muted hover:bg-fitti-bg-alt hover:text-black rounded-2xl transition-all duration-300"
           >
-            <LogOut className="mr-4 h-5 w-5 text-red-400 group-hover:text-red-600 transition-transform group-hover:-translate-x-1" />
+            <LogOut className="mr-4 h-5 w-5 text-fitti-green group-hover:text-black transition-transform group-hover:-translate-x-1" />
             Logout
           </button>
         </div>

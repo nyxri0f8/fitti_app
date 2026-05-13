@@ -108,7 +108,7 @@ export default function CallOverlay() {
               <h4 className="font-bold text-fitti-text text-lg">{incomingCall.hostName}</h4>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={handleDecline} className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-colors">
+              <button onClick={handleDecline} className="p-3 bg-fitti-bg-alt text-black rounded-2xl hover:bg-fitti-bg-alt transition-colors">
                 <PhoneOff className="h-6 w-6" />
               </button>
               <button onClick={handleAccept} className="p-4 bg-fitti-green text-white rounded-2xl hover:bg-fitti-green-dark shadow-lg shadow-fitti-green/20 transition-all">

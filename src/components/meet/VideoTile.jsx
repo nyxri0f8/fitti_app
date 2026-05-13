@@ -11,7 +11,7 @@ export default function VideoTile({ stream, isLocal, name }) {
 
   if (!stream) {
     return (
-      <div className={`bg-gray-900 rounded-3xl flex items-center justify-center ${isLocal ? 'w-48 h-32 absolute bottom-24 right-8 border-2 border-fitti-green shadow-xl z-10' : 'w-full h-full'}`}>
+      <div className={`bg-black rounded-3xl flex items-center justify-center ${isLocal ? 'w-48 h-32 absolute bottom-24 right-8 border-2 border-fitti-green shadow-xl z-10' : 'w-full h-full'}`}>
         <p className="text-white text-sm">Waiting for video...</p>
       </div>
     );

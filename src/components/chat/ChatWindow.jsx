@@ -51,7 +51,7 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onS
           <div>
             <h2 className="font-black text-fitti-text tracking-tight">{activeContact.name}</h2>
             <div className="flex items-center gap-1.5">
-              <span className={`h-1.5 w-1.5 rounded-full ${activeContact.online ? 'bg-fitti-green' : 'bg-gray-300'}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${activeContact.online ? 'bg-fitti-green' : 'bg-fitti-border'}`} />
               <p className="text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">
                 {activeContact.online ? 'Secure Connection' : 'Offline'}
               </p>

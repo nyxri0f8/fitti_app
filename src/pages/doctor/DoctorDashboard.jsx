@@ -70,7 +70,7 @@ function PatientsTab({ onOpenRecord }) {
   return (
     <div className="p-8 animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-display font-bold text-fitti-text flex items-center gap-2"><Heart className="h-6 w-6 text-red-400"/>My Patients</h2>
+        <h2 className="text-2xl font-display font-bold text-fitti-text flex items-center gap-2"><Heart className="h-6 w-6 text-fitti-green"/>My Patients</h2>
         <span className="text-sm text-fitti-text-muted">{patients.length} assigned</span>
       </div>
       {loading ? <div className="space-y-4">{[1,2].map(i=><div key={i} className="h-28 bg-white rounded-2xl shimmer"/>)}</div>
@@ -139,8 +139,8 @@ function RecordsTab() {
             </div>
             <p className="text-sm text-fitti-text-dark mb-3">{r.health_summary}</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-              {r.conditions && <div className="bg-red-50 rounded-lg p-2"><p className="text-red-400 font-medium">Conditions</p><p className="text-red-600 font-semibold">{r.conditions}</p></div>}
-              {r.medications && <div className="bg-blue-50 rounded-lg p-2"><p className="text-blue-400 font-medium">Medications</p><p className="text-blue-600 font-semibold">{r.medications}</p></div>}
+              {r.conditions && <div className="bg-fitti-bg-alt rounded-lg p-2"><p className="text-fitti-green font-medium">Conditions</p><p className="text-black font-semibold">{r.conditions}</p></div>}
+              {r.medications && <div className="bg-blue-50 rounded-lg p-2"><p className="text-fitti-green font-medium">Medications</p><p className="text-fitti-green font-semibold">{r.medications}</p></div>}
               {r.workout_restrictions && <div className="bg-amber-50 rounded-lg p-2"><p className="text-amber-400 font-medium">Workout Limits</p><p className="text-amber-600 font-semibold">{r.workout_restrictions}</p></div>}
               {r.dietary_restrictions && <div className="bg-green-50 rounded-lg p-2"><p className="text-green-400 font-medium">Diet Limits</p><p className="text-green-600 font-semibold">{r.dietary_restrictions}</p></div>}
             </div>

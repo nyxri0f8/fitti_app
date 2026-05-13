@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Users, Dumbbell, TrendingUp, Target, Flame, Plus, X, Save } from 'lucide-react';
+import { Users, Dumbbell, TrendingUp, Target, Flame, Plus, X, Save, Activity, Clock, Zap } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import Sidebar from '../../components/shared/Sidebar';
@@ -8,6 +8,7 @@ import Navbar from '../../components/shared/Navbar';
 import FloatingBackground from '../../components/shared/FloatingBackground';
 import MessagingView from '../../components/chat/MessagingView';
 import Modal from '../../components/shared/Modal';
+import WorkoutTracker from '../../components/workout/WorkoutTracker';
 import { nanoid } from 'nanoid';
 
 function CreateWorkoutModal({ customer, trainerId, onClose, onSaved }) {
@@ -28,36 +29,39 @@ function CreateWorkoutModal({ customer, trainerId, onClose, onSaved }) {
   return (
     <Modal onClose={onClose}>
       <div className="flex items-center justify-between mb-6">
-        <div><h3 className="text-xl font-display font-bold text-fitti-text">Create Workout Plan</h3><p className="text-sm text-fitti-text-muted">For {customer.name}</p></div>
-        <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full"><X className="h-5 w-5 text-fitti-text-muted"/></button>
+        <div>
+          <h3 className="font-display text-xl font-bold text-fitti-text">Create Workout Plan</h3>
+          <p className="font-body text-sm text-fitti-text-muted">For {customer.name}</p>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
       </div>
       <div className="mb-4">
         <label className="label-spaced block mb-2">Intensity</label>
-        <select value={plan.intensity} onChange={e=>setPlan(p=>({...p,intensity:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-xl px-4 py-3 focus:border-fitti-green focus:outline-none">
+        <select value={plan.intensity} onChange={e=>setPlan(p=>({...p,intensity:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:outline-none transition-colors">
           <option value="light">Light</option><option value="moderate">Moderate</option><option value="intense">Intense</option><option value="extreme">Extreme</option>
         </select>
       </div>
       {plan.days.map((day,di) => (
-        <div key={di} className="bg-fitti-bg rounded-xl p-4 mb-3">
+        <div key={di} className="bg-fitti-bg/50 rounded-xl p-4 mb-3 border border-fitti-border/30">
           <div className="flex items-center justify-between mb-3">
-            <select value={day.day} onChange={e=>setPlan(p=>({...p,days:p.days.map((d,i)=>i===di?{...d,day:e.target.value}:d)}))} className="bg-white border border-fitti-border rounded-lg px-3 py-1.5 text-sm font-bold">
+            <select value={day.day} onChange={e=>setPlan(p=>({...p,days:p.days.map((d,i)=>i===di?{...d,day:e.target.value}:d)}))} className="bg-white border border-fitti-border rounded-lg px-3 py-1.5 text-sm font-display font-bold focus:border-fitti-green focus:outline-none">
               {dayNames.map(d=><option key={d} value={d}>{d}</option>)}
             </select>
-            <button onClick={()=>addExercise(di)} className="text-xs text-fitti-green font-semibold flex items-center gap-1"><Plus className="h-3 w-3"/>Exercise</button>
+            <button onClick={()=>addExercise(di)} className="font-mono text-xs text-fitti-green font-semibold flex items-center gap-1 hover:text-fitti-green-dark transition-colors"><Plus className="h-3 w-3"/>Exercise</button>
           </div>
           {day.exercises.map((ex,ei) => (
             <div key={ei} className="grid grid-cols-4 gap-2 mb-2">
-              <input placeholder="Exercise" value={ex.name} onChange={e=>updateEx(di,ei,'name',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs focus:border-fitti-green focus:outline-none"/>
-              <input placeholder="Sets" type="number" value={ex.sets} onChange={e=>updateEx(di,ei,'sets',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs focus:border-fitti-green focus:outline-none"/>
-              <input placeholder="Reps" type="number" value={ex.reps} onChange={e=>updateEx(di,ei,'reps',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs focus:border-fitti-green focus:outline-none"/>
-              <input placeholder="Rest(s)" value={ex.rest} onChange={e=>updateEx(di,ei,'rest',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs focus:border-fitti-green focus:outline-none"/>
+              <input placeholder="Exercise" value={ex.name} onChange={e=>updateEx(di,ei,'name',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-body focus:border-fitti-green focus:outline-none transition-colors"/>
+              <input placeholder="Sets" type="number" value={ex.sets} onChange={e=>updateEx(di,ei,'sets',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none transition-colors"/>
+              <input placeholder="Reps" type="number" value={ex.reps} onChange={e=>updateEx(di,ei,'reps',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none transition-colors"/>
+              <input placeholder="Rest(s)" value={ex.rest} onChange={e=>updateEx(di,ei,'rest',e.target.value)} className="bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none transition-colors"/>
             </div>
           ))}
         </div>
       ))}
-      <button onClick={addDay} className="mb-4 text-sm text-fitti-green font-semibold flex items-center gap-1"><Plus className="h-4 w-4"/>Add Day</button>
-      <button onClick={handleSave} disabled={saving} className="w-full flex items-center justify-center gap-2 py-3 bg-fitti-green text-white font-bold rounded-xl hover:bg-fitti-green-dark transition-colors disabled:opacity-50">
-        <Save className="h-4 w-4"/>{saving ? 'Saving...' : 'Save Workout Plan'}
+      <button onClick={addDay} className="mb-4 font-mono text-sm text-fitti-green font-semibold flex items-center gap-1 hover:text-fitti-green-dark transition-colors"><Plus className="h-4 w-4"/>Add Day</button>
+      <button onClick={handleSave} disabled={saving} className="w-full btn-gradient flex items-center justify-center gap-2 py-3.5 disabled:opacity-50">
+        <Save className="h-4 w-4"/><span className="font-display font-bold">{saving ? 'Saving...' : 'Save Workout Plan'}</span>
       </button>
     </Modal>
   );
@@ -76,28 +80,46 @@ function LogProgressModal({ customer, trainerId, onClose, onSaved }) {
   return (
     <Modal onClose={onClose}>
       <div className="flex items-center justify-between mb-6">
-        <div><h3 className="text-xl font-display font-bold text-fitti-text">Log Progress</h3><p className="text-sm text-fitti-text-muted">For {customer.name}</p></div>
-        <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full"><X className="h-5 w-5 text-fitti-text-muted"/></button>
+        <div>
+          <h3 className="font-display text-xl font-bold text-fitti-text">Log Progress</h3>
+          <p className="font-body text-sm text-fitti-text-muted">For {customer.name}</p>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
       </div>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div><label className="label-spaced block mb-1">Weight (kg)</label><input type="number" step="0.1" value={log.weight} onChange={e=>setLog(p=>({...p,weight:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-xl px-4 py-3 focus:border-fitti-green focus:outline-none"/></div>
-          <div><label className="label-spaced block mb-1">Performance</label><select value={log.workout_performance} onChange={e=>setLog(p=>({...p,workout_performance:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-xl px-4 py-3 focus:border-fitti-green focus:outline-none"><option value="excellent">Excellent</option><option value="good">Good</option><option value="average">Average</option><option value="poor">Poor</option></select></div>
+          <div><label className="label-spaced block mb-1">Weight (kg)</label><input type="number" step="0.1" value={log.weight} onChange={e=>setLog(p=>({...p,weight:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
+          <div><label className="label-spaced block mb-1">Performance</label><select value={log.workout_performance} onChange={e=>setLog(p=>({...p,workout_performance:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:outline-none transition-colors"><option value="excellent">Excellent</option><option value="good">Good</option><option value="average">Average</option><option value="poor">Poor</option></select></div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div><label className="label-spaced block mb-1">Energy (1-10)</label><input type="number" min="1" max="10" value={log.energy_level} onChange={e=>setLog(p=>({...p,energy_level:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-xl px-4 py-3 focus:border-fitti-green focus:outline-none"/></div>
-          <div><label className="label-spaced block mb-1">Diet Adherence (1-10)</label><input type="number" min="1" max="10" value={log.diet_adherence} onChange={e=>setLog(p=>({...p,diet_adherence:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-xl px-4 py-3 focus:border-fitti-green focus:outline-none"/></div>
+          <div><label className="label-spaced block mb-1">Energy (1-10)</label><input type="number" min="1" max="10" value={log.energy_level} onChange={e=>setLog(p=>({...p,energy_level:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
+          <div><label className="label-spaced block mb-1">Diet Adherence (1-10)</label><input type="number" min="1" max="10" value={log.diet_adherence} onChange={e=>setLog(p=>({...p,diet_adherence:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
         </div>
-        <div><label className="label-spaced block mb-1">Notes</label><textarea value={log.notes} onChange={e=>setLog(p=>({...p,notes:e.target.value}))} rows="3" className="w-full bg-white border border-fitti-border rounded-xl px-4 py-3 focus:border-fitti-green focus:outline-none resize-none"/></div>
+        <div><label className="label-spaced block mb-1">Notes</label><textarea value={log.notes} onChange={e=>setLog(p=>({...p,notes:e.target.value}))} rows="3" className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:outline-none resize-none transition-colors"/></div>
       </div>
-      <button onClick={handleSave} disabled={saving} className="mt-6 w-full flex items-center justify-center gap-2 py-3 bg-fitti-green text-white font-bold rounded-xl hover:bg-fitti-green-dark transition-colors disabled:opacity-50">
-        <Save className="h-4 w-4"/>{saving ? 'Saving...' : 'Save Progress Log'}
+      <button onClick={handleSave} disabled={saving} className="mt-6 w-full btn-gradient flex items-center justify-center gap-2 py-3.5 disabled:opacity-50">
+        <Save className="h-4 w-4"/><span className="font-display font-bold">{saving ? 'Saving...' : 'Save Progress Log'}</span>
       </button>
     </Modal>
   );
 }
 
-function ClientsTab({ onOpenWorkout, onOpenProgress }) {
+function LogWorkoutModal({ customer, trainerId, onClose, onSaved }) {
+  return (
+    <Modal onClose={onClose}>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="font-display text-xl font-bold text-fitti-text">Log Workout Session</h3>
+          <p className="font-body text-sm text-fitti-text-muted">Tracking for {customer.name}</p>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
+      </div>
+      <WorkoutTracker customerId={customer.id} isTrainerView={true} customerName={customer.name} />
+    </Modal>
+  );
+}
+
+function ClientsTab({ onOpenWorkout, onOpenProgress, onOpenLogWorkout }) {
   const user = useAuthStore(state => state.user);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -111,32 +133,61 @@ function ClientsTab({ onOpenWorkout, onOpenProgress }) {
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-display font-bold text-fitti-text flex items-center gap-2"><Flame className="h-6 w-6 text-fitti-orange"/>My Clients</h2>
-        <span className="text-sm text-fitti-text-muted">{clients.length} assigned</span>
+    <div className="p-8 animate-fade-in-up max-w-6xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="font-display text-3xl font-black text-fitti-text flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-fitti-green/10 flex items-center justify-center">
+              <Flame className="h-5 w-5 text-fitti-green" />
+            </div>
+            My Clients
+          </h2>
+          <p className="font-accent text-lg italic text-fitti-text-muted mt-1">Guide their transformation</p>
+        </div>
+        <span className="font-mono text-sm text-fitti-text-muted bg-fitti-bg px-4 py-2 rounded-full">{clients.length} assigned</span>
       </div>
       {loading ? <div className="space-y-4">{[1,2].map(i=><div key={i} className="h-28 bg-white rounded-2xl shimmer"/>)}</div>
       : clients.length===0 ? (
-        <div className="bg-white border border-fitti-border rounded-2xl p-12 text-center animate-scale-in">
-          <Users className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/><p className="text-fitti-text-muted font-medium">No clients assigned yet.</p>
+        <div className="card-glass p-12 text-center animate-scale-in">
+          <Users className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/><p className="font-body text-fitti-text-muted font-medium">No clients assigned yet.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
           {clients.map(c => (
-            <div key={c.id} className="bg-white border border-fitti-border rounded-2xl p-6 shadow-sm card-hover">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg flex-shrink-0">{c.name.charAt(0)}</div>
-                <div className="ml-3"><h3 className="font-bold text-fitti-text">{c.name}</h3><p className="text-xs text-fitti-text-muted">{c.email}</p></div>
+            <div key={c.id} className="card-glass p-6 card-hover group">
+              <div className="flex items-center mb-5">
+                <div className="h-14 w-14 rounded-2xl bg-fitti-green/10 flex items-center justify-center text-fitti-green font-display font-black text-lg flex-shrink-0 group-hover:bg-fitti-green group-hover:text-white transition-all duration-300">
+                  {c.name.charAt(0)}
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-display font-bold text-fitti-text text-lg">{c.name}</h3>
+                  <p className="font-mono text-xs text-fitti-text-muted">{c.email}</p>
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-3 text-sm mb-4">
-                <div className="bg-fitti-bg rounded-xl p-3 text-center"><p className="text-fitti-text-muted text-xs mb-1">Weight</p><p className="font-bold text-fitti-text">{c.weight?`${c.weight}kg`:'—'}</p></div>
-                <div className="bg-fitti-bg rounded-xl p-3 text-center"><p className="text-fitti-text-muted text-xs mb-1">Height</p><p className="font-bold text-fitti-text">{c.height?`${c.height}cm`:'—'}</p></div>
-                <div className="bg-fitti-bg rounded-xl p-3 text-center"><p className="text-fitti-text-muted text-xs mb-1">Goal</p><p className="font-bold text-fitti-orange capitalize text-xs">{c.goal?.replace(/_/g,' ')||'—'}</p></div>
+              <div className="grid grid-cols-3 gap-3 text-sm mb-5">
+                <div className="bg-fitti-bg/50 rounded-xl p-3 text-center border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
+                  <p className="label-spaced !text-[9px] !mb-1">Weight</p>
+                  <p className="stat-number text-sm text-fitti-text">{c.weight?`${c.weight}kg`:'—'}</p>
+                </div>
+                <div className="bg-fitti-bg/50 rounded-xl p-3 text-center border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
+                  <p className="label-spaced !text-[9px] !mb-1">Height</p>
+                  <p className="stat-number text-sm text-fitti-text">{c.height?`${c.height}cm`:'—'}</p>
+                </div>
+                <div className="bg-fitti-bg/50 rounded-xl p-3 text-center border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
+                  <p className="label-spaced !text-[9px] !mb-1">Goal</p>
+                  <p className="font-body text-xs font-bold text-fitti-green capitalize">{c.goal?.replace(/_/g,' ')||'—'}</p>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={()=>onOpenWorkout(c)} className="flex items-center justify-center gap-2 py-2.5 bg-fitti-bg border border-fitti-border rounded-xl text-xs font-semibold text-fitti-green hover:bg-fitti-bg-alt transition-colors"><Dumbbell className="h-4 w-4"/>Workout Plan</button>
-                <button onClick={()=>onOpenProgress(c)} className="flex items-center justify-center gap-2 py-2.5 bg-fitti-green text-white rounded-xl text-xs font-semibold hover:bg-fitti-green-dark transition-colors"><TrendingUp className="h-4 w-4"/>Log Progress</button>
+              <div className="grid grid-cols-3 gap-3">
+                <button onClick={()=>onOpenWorkout(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-fitti-bg/50 border border-fitti-border/50 rounded-xl text-xs font-display font-bold text-fitti-text-muted hover:border-fitti-green/40 hover:text-fitti-green transition-all duration-300">
+                  <Dumbbell className="h-4 w-4 group-hover/btn:scale-110 transition-transform"/>Plan
+                </button>
+                <button onClick={()=>onOpenLogWorkout(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-fitti-green/10 border border-fitti-green/20 rounded-xl text-xs font-display font-bold text-fitti-green hover:bg-fitti-green/20 transition-all duration-300">
+                  <Activity className="h-4 w-4 group-hover/btn:scale-110 transition-transform"/>Track
+                </button>
+                <button onClick={()=>onOpenProgress(c)} className="group/btn btn-gradient flex items-center justify-center gap-2 py-2.5 text-xs">
+                  <TrendingUp className="h-4 w-4 group-hover/btn:scale-110 transition-transform"/><span className="font-display font-bold">Progress</span>
+                </button>
               </div>
             </div>
           ))}
@@ -163,29 +214,42 @@ function WorkoutsTab() {
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up">
-      <h2 className="text-2xl font-display font-bold text-fitti-text mb-6 flex items-center gap-2"><Dumbbell className="h-6 w-6 text-fitti-green"/>Workout Plans</h2>
-      {plans.length===0 ? <div className="bg-white border border-fitti-border rounded-2xl p-12 text-center"><Dumbbell className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/><p className="text-fitti-text-muted">No plans yet. Go to My Clients to create one.</p></div>
-      : <div className="space-y-4 stagger-children">{plans.map(p => {
-        const days = Array.isArray(p.weekly_structure) ? p.weekly_structure : [];
-        return (
-          <div key={p.id} className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-fitti-text">{p.customer_name}</h3>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium capitalize text-fitti-text-muted">{p.intensity}</span>
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${p.active?'bg-emerald-50 text-emerald-600':'bg-gray-100 text-gray-500'}`}>{p.active?'Active':'Inactive'}</span>
+    <div className="p-8 animate-fade-in-up max-w-6xl mx-auto">
+      <h2 className="font-display text-3xl font-black text-fitti-text mb-2 flex items-center gap-3">
+        <div className="h-10 w-10 rounded-2xl bg-fitti-green/10 flex items-center justify-center">
+          <Dumbbell className="h-5 w-5 text-fitti-green" />
+        </div>
+        Workout Plans
+      </h2>
+      <p className="font-accent text-lg italic text-fitti-text-muted mb-8">Structured programs for your clients</p>
+      
+      {plans.length===0 ? (
+        <div className="card-glass p-12 text-center">
+          <Dumbbell className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/>
+          <p className="font-body text-fitti-text-muted">No plans yet. Go to My Clients to create one.</p>
+        </div>
+      ) : (
+        <div className="space-y-4 stagger-children">{plans.map(p => {
+          const days = Array.isArray(p.weekly_structure) ? p.weekly_structure : [];
+          return (
+            <div key={p.id} className="card-glass p-6 card-hover">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-bold text-fitti-text text-lg">{p.customer_name}</h3>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-medium capitalize text-fitti-text-muted">{p.intensity}</span>
+                  <span className={`font-mono text-xs font-bold px-3 py-1 rounded-full ${p.active?'bg-fitti-green/10 text-fitti-green':'bg-fitti-bg text-fitti-text-muted'}`}>{p.active?'Active':'Inactive'}</span>
+                </div>
               </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">{days.map((d,i) => (
+                <div key={i} className="bg-fitti-bg/50 rounded-xl p-3 text-xs border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
+                  <p className="font-display font-bold text-fitti-text mb-1">{d.day}</p>
+                  {(d.exercises||[]).map((e,j)=><p key={j} className="font-body text-fitti-text-muted">{e.name||'—'} <span className="font-mono">{e.sets}×{e.reps}</span></p>)}
+                </div>
+              ))}</div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">{days.map((d,i) => (
-              <div key={i} className="bg-fitti-bg rounded-lg p-2 text-xs">
-                <p className="font-bold text-fitti-text mb-1">{d.day}</p>
-                {(d.exercises||[]).map((e,j)=><p key={j} className="text-fitti-text-muted">{e.name||'—'} {e.sets}x{e.reps}</p>)}
-              </div>
-            ))}</div>
-          </div>
-        );
-      })}</div>}
+          );
+        })}</div>
+      )}
     </div>
   );
 }
@@ -207,24 +271,37 @@ function ProgressTab() {
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up">
-      <h2 className="text-2xl font-display font-bold text-fitti-text mb-6 flex items-center gap-2"><TrendingUp className="h-6 w-6 text-blue-500"/>Progress Tracking</h2>
-      {logs.length===0 ? <div className="bg-white border border-fitti-border rounded-2xl p-12 text-center"><Target className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/><p className="text-fitti-text-muted">No logs yet. Go to My Clients to log progress.</p></div>
-      : <div className="space-y-4 stagger-children">{logs.map(l => (
-        <div key={l.id} className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-fitti-text">{l.customer_name}</h3>
-            <span className="text-xs text-fitti-text-muted">{new Date(l.logged_at).toLocaleDateString()}</span>
-          </div>
-          <div className="grid grid-cols-4 gap-2 text-xs text-center">
-            <div className="bg-fitti-bg rounded-lg p-2"><p className="text-fitti-text-muted">Weight</p><p className="font-bold">{l.weight||'—'} kg</p></div>
-            <div className="bg-fitti-bg rounded-lg p-2"><p className="text-fitti-text-muted">Energy</p><p className="font-bold">{l.energy_level||'—'}/10</p></div>
-            <div className="bg-fitti-bg rounded-lg p-2"><p className="text-fitti-text-muted">Diet</p><p className="font-bold">{l.diet_adherence||'—'}/10</p></div>
-            <div className="bg-fitti-bg rounded-lg p-2"><p className="text-fitti-text-muted">Perf</p><p className="font-bold text-fitti-green capitalize">{l.workout_performance||'—'}</p></div>
-          </div>
-          {l.notes && <p className="text-sm text-fitti-text-muted mt-3 bg-fitti-bg rounded-lg p-3">{l.notes}</p>}
+    <div className="p-8 animate-fade-in-up max-w-6xl mx-auto">
+      <h2 className="font-display text-3xl font-black text-fitti-text mb-2 flex items-center gap-3">
+        <div className="h-10 w-10 rounded-2xl bg-fitti-green/10 flex items-center justify-center">
+          <TrendingUp className="h-5 w-5 text-fitti-green" />
         </div>
-      ))}</div>}
+        Progress Tracking
+      </h2>
+      <p className="font-accent text-lg italic text-fitti-text-muted mb-8">Monitor client evolution</p>
+      
+      {logs.length===0 ? (
+        <div className="card-glass p-12 text-center">
+          <Target className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/>
+          <p className="font-body text-fitti-text-muted">No logs yet. Go to My Clients to log progress.</p>
+        </div>
+      ) : (
+        <div className="space-y-4 stagger-children">{logs.map(l => (
+          <div key={l.id} className="card-glass p-6 card-hover">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-display font-bold text-fitti-text">{l.customer_name}</h3>
+              <span className="font-mono text-xs text-fitti-text-muted">{new Date(l.logged_at).toLocaleDateString()}</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2 text-xs text-center">
+              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Weight</p><p className="stat-number text-sm">{l.weight||'—'} kg</p></div>
+              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Energy</p><p className="stat-number text-sm">{l.energy_level||'—'}/10</p></div>
+              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Diet</p><p className="stat-number text-sm">{l.diet_adherence||'—'}/10</p></div>
+              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Perf</p><p className="stat-number text-sm text-fitti-green capitalize">{l.workout_performance||'—'}</p></div>
+            </div>
+            {l.notes && <p className="font-body text-sm text-fitti-text-muted mt-3 bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30">{l.notes}</p>}
+          </div>
+        ))}</div>
+      )}
     </div>
   );
 }
@@ -232,6 +309,7 @@ function ProgressTab() {
 export default function TrainerDashboard() {
   const [showWorkout, setShowWorkout] = useState(null);
   const [showProgress, setShowProgress] = useState(null);
+  const [showLogWorkout, setShowLogWorkout] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const user = useAuthStore(state => state.user);
   const setActiveCall = useAuthStore(state => state.setActiveCall);
@@ -250,16 +328,17 @@ export default function TrainerDashboard() {
         <Navbar title="" />
         <main className="flex-1 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenProgress={setShowProgress} />}/>
+            <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenProgress={setShowProgress} onOpenLogWorkout={setShowLogWorkout} />}/>
             <Route path="/workouts" element={<WorkoutsTab key={refreshKey} />}/>
             <Route path="/progress" element={<ProgressTab key={refreshKey} />}/>
             <Route path="/messages" element={<MessagingView onStartVideoCall={startVideoCall}/>}/>
-            <Route path="/sessions" element={<div className="p-8 animate-fade-in-up"><h2 className="text-2xl font-bold text-fitti-text mb-4">Video Sessions</h2><div className="bg-white border border-fitti-border rounded-2xl p-12 text-center"><p className="text-fitti-text-muted">Use Messages tab to start a call.</p></div></div>}/>
+            <Route path="/sessions" element={<div className="p-8 animate-fade-in-up max-w-6xl mx-auto"><h2 className="font-display text-2xl font-bold text-fitti-text mb-4">Video Sessions</h2><div className="card-glass p-12 text-center"><p className="font-body text-fitti-text-muted">Use Messages tab to start a call.</p></div></div>}/>
           </Routes>
         </main>
       </div>
       {showWorkout && <CreateWorkoutModal customer={showWorkout} trainerId={user.id} onClose={()=>setShowWorkout(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
       {showProgress && <LogProgressModal customer={showProgress} trainerId={user.id} onClose={()=>setShowProgress(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
+      {showLogWorkout && <LogWorkoutModal customer={showLogWorkout} trainerId={user.id} onClose={()=>setShowLogWorkout(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
     </div>
   );
 }

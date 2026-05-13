@@ -19,14 +19,14 @@ export default function CallControls({ onToggleMute, onToggleVideo, onEndCall })
     <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-black/60 backdrop-blur-lg px-8 py-4 rounded-full z-20">
       <button 
         onClick={handleMute}
-        className={`p-4 rounded-full transition-colors ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+        className={`p-4 rounded-full transition-colors ${isMuted ? 'bg-black hover:bg-black text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
       >
         {isMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
       </button>
 
       <button 
         onClick={handleVideo}
-        className={`p-4 rounded-full transition-colors ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+        className={`p-4 rounded-full transition-colors ${isVideoOff ? 'bg-black hover:bg-black text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}
       >
         {isVideoOff ? <VideoOff className="h-6 w-6" /> : <Video className="h-6 w-6" />}
       </button>
@@ -37,7 +37,7 @@ export default function CallControls({ onToggleMute, onToggleVideo, onEndCall })
 
       <button 
         onClick={onEndCall}
-        className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors"
+        className="p-4 rounded-full bg-black hover:bg-black text-white transition-colors"
       >
         <Phone className="h-6 w-6 transform rotate-[135deg]" />
       </button>

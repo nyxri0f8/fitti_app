@@ -172,7 +172,7 @@ function CreateMealModal({ customer, onClose, onSaved, cookId }) {
             </div>
             <div className="bg-white rounded-lg p-3">
               <p className="text-xs text-fitti-text-muted">Protein</p>
-              <p className="text-xl font-display font-bold text-blue-500">{Math.round(totalProtein)}g</p>
+              <p className="text-xl font-display font-bold text-fitti-green">{Math.round(totalProtein)}g</p>
             </div>
             <div className="bg-white rounded-lg p-3">
               <p className="text-xs text-fitti-text-muted">Carbs</p>
@@ -180,7 +180,7 @@ function CreateMealModal({ customer, onClose, onSaved, cookId }) {
             </div>
             <div className="bg-white rounded-lg p-3">
               <p className="text-xs text-fitti-text-muted">Fat</p>
-              <p className="text-xl font-display font-bold text-red-400">{Math.round(totalFat)}g</p>
+              <p className="text-xl font-display font-bold text-fitti-green">{Math.round(totalFat)}g</p>
             </div>
           </div>
         </div>
@@ -258,14 +258,14 @@ function OrdersTab() {
         </div>
         <div className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-blue-50 rounded-xl"><Package className="h-6 w-6 text-blue-500" /></div>
+            <div className="p-3 bg-blue-50 rounded-xl"><Package className="h-6 w-6 text-fitti-green" /></div>
             <span className="label-spaced">Preparing</span>
           </div>
           <p className="text-3xl font-display font-black text-fitti-text">{preparingCount}</p>
         </div>
         <div className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-emerald-50 rounded-xl"><CheckCircle className="h-6 w-6 text-emerald-500" /></div>
+            <div className="p-3 bg-fitti-bg-alt rounded-xl"><CheckCircle className="h-6 w-6 text-fitti-bg-alt0" /></div>
             <span className="label-spaced">Total Orders</span>
           </div>
           <p className="text-3xl font-display font-black text-fitti-text">{orders.length}</p>
