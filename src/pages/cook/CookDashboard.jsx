@@ -199,10 +199,14 @@ function OrdersTab() {
   const user = useAuthStore(state => state.user);
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [dailySchedule, setDailySchedule] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showMealModal, setShowMealModal] = useState(null); // customer object or null
+  const [showMealModal, setShowMealModal] = useState(null);
 
   const fetchData = async () => {
+    setLoading(true);
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    
     // Get customers assigned to this cook
     const { data: custData } = await supabase.from('customers').select('id, profiles!customers_id_fkey(full_name, email)').eq('assigned_cook', user.id);
     const custs = (custData || []).map(c => ({ id: c.id, name: c.profiles?.full_name || 'Unknown', email: c.profiles?.email }));
@@ -210,145 +214,198 @@ function OrdersTab() {
 
     const customerIds = custs.map(c => c.id);
     if (customerIds.length > 0) {
-      const { data: orderData } = await supabase.from('orders').select('*').in('customer_id', customerIds).order('created_at', { ascending: false });
+      // Fetch Active Orders
+      const { data: orderData } = await supabase.from('orders').select('*').in('customer_id', customerIds).neq('status', 'delivered').order('created_at', { ascending: false });
       const enriched = (orderData || []).map(o => {
         const cust = custs.find(c => c.id === o.customer_id);
         return { ...o, customer_name: cust?.name || 'Unknown' };
       });
       setOrders(enriched);
+
+      // Fetch Today's Schedule from Diet Plans
+      const { data: dietData } = await supabase.from('diet_plans').select('*').in('customer_id', customerIds).eq('active', true);
+      const schedule = [];
+      dietData?.forEach(plan => {
+        const cust = custs.find(c => c.id === plan.customer_id);
+        const dayMeals = plan.meal_structure?.[today] || [];
+        dayMeals.forEach(m => {
+          schedule.push({
+            ...m,
+            customer_id: plan.customer_id,
+            customer_name: cust?.name,
+            plan_id: plan.id
+          });
+        });
+      });
+      setDailySchedule(schedule);
     }
     setLoading(false);
   };
 
   useEffect(() => { if (user) fetchData(); }, [user]);
 
+  const startCooking = async (meal) => {
+    // Check if an order for this meal already exists today
+    const { data: existing } = await supabase.from('orders')
+      .select('id')
+      .eq('customer_id', meal.customer_id)
+      .eq('meal_plan', meal.name)
+      .gte('created_at', new Date().toISOString().split('T')[0]);
+
+    if (existing?.length > 0) {
+      alert("This meal is already being prepared or has been delivered.");
+      return;
+    }
+
+    const { error } = await supabase.from('orders').insert([{
+      customer_id: meal.customer_id,
+      meal_plan: meal.name,
+      calories: Math.round((meal.protein*4)+(meal.carbs*4)+(meal.fat*9)),
+      status: 'preparing',
+      updated_by: user.id,
+      cook_notes: JSON.stringify([{ name: meal.name, time: meal.time, protein: meal.protein, carbs: meal.carbs, fat: meal.fat }])
+    }]);
+
+    if (!error) {
+      createNotification(meal.customer_id, 'Cooking Started', `Chef is now preparing your ${meal.name}!`, 'order_status');
+      fetchData();
+    }
+  };
+
   const updateOrderStatus = async (orderId, status) => {
     const order = orders.find(o => o.id === orderId);
     await supabase.from('orders').update({ status, updated_by: user.id, updated_at: new Date() }).eq('id', orderId);
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
     
-    // Send notification to customer
     if (order) {
-      createNotification(
-        order.customer_id,
-        'Order Update',
-        `Your meal order status is now: ${status.replace(/_/g, ' ')}`,
-        'order_status'
-      );
+      createNotification(order.customer_id, 'Order Update', `Your ${order.meal_plan} is now ${status.replace(/_/g, ' ')}`, 'order_status');
     }
-  };
-
-  const parseMeals = (cookNotes) => {
-    try { return JSON.parse(cookNotes); } catch { return null; }
+    if (status === 'delivered') fetchData();
   };
 
   const pendingCount = orders.filter(o => o.status === 'pending').length;
   const preparingCount = orders.filter(o => o.status === 'preparing').length;
 
   return (
-    <div className="p-8 animate-fade-in-up">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 stagger-children">
-        <div className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-amber-50 rounded-xl"><Clock className="h-6 w-6 text-amber-500" /></div>
-            <span className="label-spaced">Pending</span>
-          </div>
-          <p className="text-3xl font-display font-black text-fitti-text">{pendingCount}</p>
+    <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-10">
+        <div>
+          <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter">Kitchen Command</h2>
+          <p className="font-accent text-lg italic text-fitti-text-muted">High-performance fueling station</p>
         </div>
-        <div className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-blue-50 rounded-xl"><Package className="h-6 w-6 text-fitti-green" /></div>
-            <span className="label-spaced">Preparing</span>
-          </div>
-          <p className="text-3xl font-display font-black text-fitti-text">{preparingCount}</p>
-        </div>
-        <div className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-fitti-bg-alt rounded-xl"><CheckCircle className="h-6 w-6 text-fitti-bg-alt0" /></div>
-            <span className="label-spaced">Total Orders</span>
-          </div>
-          <p className="text-3xl font-display font-black text-fitti-text">{orders.length}</p>
+        <div className="flex gap-4">
+           <div className="bg-white px-6 py-3 rounded-2xl border border-fitti-border shadow-sm">
+             <p className="label-spaced !text-[9px] !mb-1">Active Batches</p>
+             <p className="font-display font-black text-2xl text-fitti-green">{preparingCount + pendingCount}</p>
+           </div>
         </div>
       </div>
 
-      {/* Create Meal Button */}
-      {customers.length > 0 && (
-        <div className="mb-6">
-          <h3 className="label-spaced mb-3">Create New Meal Plan</h3>
-          <div className="flex flex-wrap gap-3">
-            {customers.map(c => (
-              <button key={c.id} onClick={() => setShowMealModal(c)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-fitti-border rounded-xl text-sm font-semibold text-fitti-green hover:bg-fitti-bg-alt transition-colors card-hover">
-                <Plus className="h-4 w-4" /> {c.name}
-              </button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Left: Daily Schedule / Prep List */}
+        <div className="lg:col-span-1">
+          <h3 className="label-spaced mb-6 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-fitti-orange" /> Today's Prep Schedule
+          </h3>
+          <div className="space-y-4">
+            {dailySchedule.length === 0 ? (
+              <div className="card-glass p-8 text-center border-dashed border-2">
+                <p className="font-body text-sm text-fitti-text-muted">No scheduled meals for today.</p>
+              </div>
+            ) : dailySchedule.map((meal, i) => (
+              <div key={i} className="card-glass p-5 card-hover group">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <p className="font-mono text-[9px] font-bold text-fitti-orange uppercase tracking-widest">{meal.time}</p>
+                    <h4 className="font-display font-bold text-fitti-text">{meal.name}</h4>
+                    <p className="font-body text-xs text-fitti-text-muted">{meal.customer_name}</p>
+                  </div>
+                  <button 
+                    onClick={() => startCooking(meal)}
+                    className="p-3 bg-fitti-green/10 text-fitti-green rounded-xl hover:bg-fitti-green hover:text-white transition-all group-hover:scale-110 shadow-sm"
+                  >
+                    <Flame className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="flex gap-3 mt-4 border-t border-fitti-border/30 pt-3">
+                  <div className="text-[9px] font-mono font-bold text-fitti-text-muted uppercase">P:{meal.protein}g</div>
+                  <div className="text-[9px] font-mono font-bold text-fitti-text-muted uppercase">C:{meal.carbs}g</div>
+                  <div className="text-[9px] font-mono font-bold text-fitti-text-muted uppercase">F:{meal.fat}g</div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Order Cards */}
-      {loading ? (
-        <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-32 bg-white rounded-2xl shimmer" />)}</div>
-      ) : orders.length === 0 ? (
-        <div className="bg-white border border-fitti-border rounded-2xl p-12 text-center animate-scale-in">
-          <Utensils className="h-12 w-12 text-fitti-text-muted mx-auto mb-4" />
-          <p className="text-fitti-text-muted font-medium">No orders yet.</p>
-          <p className="text-fitti-text-muted text-sm mt-1">Create a meal plan for your assigned clients above.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
-          {orders.map(o => {
-            const meals = parseMeals(o.cook_notes);
-            return (
-              <div key={o.id} className="bg-white border border-fitti-border rounded-2xl shadow-sm p-6 card-hover">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-fitti-text text-lg">{o.customer_name}</h3>
-                    <span className="text-xs font-semibold text-fitti-text-muted uppercase tracking-widest">
-                      {o.meal_plan || 'Standard'} &middot; {o.calories || '—'} kcal
-                    </span>
-                  </div>
-                  <StatusBadge status={o.status} />
-                </div>
-
-                {/* Meal Breakdown */}
-                {meals && Array.isArray(meals) && (
-                  <div className="space-y-2 mb-4">
-                    {meals.map((m, i) => (
-                      <div key={i} className="flex items-center justify-between bg-fitti-bg rounded-lg px-3 py-2 text-xs">
-                        <div className="flex items-center gap-2">
-                          <Flame className="h-3 w-3 text-fitti-orange" />
-                          <span className="font-semibold text-fitti-text">{m.name || `Meal ${i+1}`}</span>
-                          <span className="text-fitti-text-muted">{m.time}</span>
-                        </div>
-                        <span className="text-fitti-text-muted">
-                          P:{m.protein || 0} C:{m.carbs || 0} F:{m.fat || 0}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Status Update */}
-                <div className="relative">
-                  <select value={o.status} onChange={e => updateOrderStatus(o.id, e.target.value)}
-                    className="w-full appearance-none bg-fitti-bg border border-fitti-border rounded-xl px-4 py-2.5 text-sm font-medium focus:border-fitti-green focus:outline-none pr-10">
-                    <option value="pending">Pending</option>
-                    <option value="preparing">Preparing</option>
-                    <option value="packed">Packed</option>
-                    <option value="out_for_delivery">Out for Delivery</option>
-                    <option value="delivered">Delivered</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fitti-text-muted pointer-events-none" />
-                </div>
+        {/* Right: Kanban Board (Active Orders) */}
+        <div className="lg:col-span-2">
+          <h3 className="label-spaced mb-6 flex items-center gap-2">
+            <Utensils className="h-4 w-4 text-fitti-green" /> Kitchen Display System
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Preparing Column */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <span className="font-mono text-[10px] font-black text-blue-500 uppercase tracking-widest">In Preparation</span>
+                <span className="h-5 w-5 rounded-full bg-blue-50 text-[10px] font-black text-blue-500 flex items-center justify-center border border-blue-100">{preparingCount}</span>
               </div>
-            );
-          })}
-        </div>
-      )}
+              {orders.filter(o => o.status === 'preparing').map(o => (
+                <div key={o.id} className="bg-white border-l-4 border-blue-500 rounded-2xl p-6 shadow-xl shadow-blue-500/5 card-hover">
+                   <div className="flex justify-between items-start mb-4">
+                     <div>
+                       <h4 className="font-display font-black text-fitti-text text-lg">{o.customer_name}</h4>
+                       <p className="font-body text-xs font-bold text-blue-500 uppercase tracking-tight">{o.meal_plan}</p>
+                     </div>
+                     <Package className="h-5 w-5 text-fitti-border" />
+                   </div>
+                   <div className="flex items-center gap-3 mb-6">
+                     <span className="font-mono text-[10px] font-bold bg-fitti-bg px-3 py-1 rounded-full">{o.calories} kcal</span>
+                     <span className="font-mono text-[10px] font-bold bg-fitti-bg px-3 py-1 rounded-full text-fitti-text-muted">Est. 15m</span>
+                   </div>
+                   <button 
+                     onClick={() => updateOrderStatus(o.id, 'packed')}
+                     className="w-full py-3 bg-fitti-text text-white font-display font-bold text-xs rounded-xl hover:bg-black transition-all flex items-center justify-center gap-2"
+                   >
+                     <CheckCircle className="h-4 w-4" /> Ready to Ship
+                   </button>
+                </div>
+              ))}
+            </div>
 
-      {/* Meal Modal */}
+            {/* Logistics Column (Packed / Out for Delivery) */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <span className="font-mono text-[10px] font-black text-fitti-green uppercase tracking-widest">Logistics Hub</span>
+                <span className="h-5 w-5 rounded-full bg-fitti-green/10 text-[10px] font-black text-fitti-green flex items-center justify-center border border-fitti-green/20">
+                  {orders.filter(o => ['packed', 'out_for_delivery'].includes(o.status)).length}
+                </span>
+              </div>
+              {orders.filter(o => ['packed', 'out_for_delivery'].includes(o.status)).map(o => (
+                <div key={o.id} className="bg-white border-l-4 border-fitti-green rounded-2xl p-6 shadow-xl shadow-fitti-green/5 card-hover">
+                   <div className="flex justify-between items-start mb-4">
+                     <div>
+                       <h4 className="font-display font-black text-fitti-text text-lg">{o.customer_name}</h4>
+                       <p className="font-body text-xs font-bold text-fitti-green uppercase tracking-tight">{o.status.replace(/_/g, ' ')}</p>
+                     </div>
+                     <StatusBadge status={o.status} />
+                   </div>
+                   <select 
+                     value={o.status} 
+                     onChange={(e) => updateOrderStatus(o.id, e.target.value)}
+                     className="w-full bg-fitti-bg border-none rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-fitti-green/20 appearance-none cursor-pointer"
+                   >
+                     <option value="packed">Packed</option>
+                     <option value="out_for_delivery">Out for Delivery</option>
+                     <option value="delivered">Delivered</option>
+                   </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {showMealModal && (
         <CreateMealModal
           customer={showMealModal}

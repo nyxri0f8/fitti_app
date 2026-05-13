@@ -67,17 +67,41 @@ function CreateWorkoutModal({ customer, trainerId, onClose, onSaved }) {
 }
 
 function CreateDietModal({ customer, trainerId, onClose, onSaved }) {
+  const [activeDay, setActiveDay] = useState('Monday');
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  
   const [plan, setPlan] = useState({
     daily_calories: 2000,
     protein_grams: 150,
     carb_grams: 200,
     fat_grams: 65,
-    meal_structure: [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }]
+    weekly_structure: {
+      'Monday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
+      'Tuesday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
+      'Wednesday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
+      'Thursday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
+      'Friday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
+      'Saturday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
+      'Sunday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }]
+    }
   });
   const [saving, setSaving] = useState(false);
 
-  const addMeal = () => setPlan(p => ({...p, meal_structure: [...p.meal_structure, { name: '', time: '', protein: 0, carbs: 0, fat: 0 }]}));
-  const updateMeal = (mi, f, v) => setPlan(p => ({...p, meal_structure: p.meal_structure.map((m,i) => i===mi ? {...m,[f]:v} : m)}));
+  const addMeal = () => setPlan(p => ({
+    ...p, 
+    weekly_structure: {
+      ...p.weekly_structure,
+      [activeDay]: [...(p.weekly_structure[activeDay] || []), { name: '', time: '', protein: 0, carbs: 0, fat: 0 }]
+    }
+  }));
+
+  const updateMeal = (mi, f, v) => setPlan(p => ({
+    ...p, 
+    weekly_structure: {
+      ...p.weekly_structure,
+      [activeDay]: p.weekly_structure[activeDay].map((m, i) => i === mi ? { ...m, [f]: v } : m)
+    }
+  }));
 
   const handleSave = async () => {
     setSaving(true);
@@ -88,10 +112,16 @@ function CreateDietModal({ customer, trainerId, onClose, onSaved }) {
       protein_grams: parseInt(plan.protein_grams),
       carb_grams: parseInt(plan.carb_grams),
       fat_grams: parseInt(plan.fat_grams),
-      meal_structure: plan.meal_structure.map(m => ({ ...m, protein: parseInt(m.protein)||0, carbs: parseInt(m.carbs)||0, fat: parseInt(m.fat)||0 })),
+      meal_structure: plan.weekly_structure,
       active: true 
     }]);
-    await supabase.from('activity_feed').insert([{ actor_id: trainerId, actor_role:'trainer', customer_id: customer.id, event_type:'diet_plan_created', event_data: { calories: plan.daily_calories } }]);
+    await supabase.from('activity_feed').insert([{ 
+      actor_id: trainerId, 
+      actor_role: 'trainer', 
+      customer_id: customer.id, 
+      event_type: 'diet_plan_created', 
+      event_data: { calories: plan.daily_calories, type: 'weekly' } 
+    }]);
     setSaving(false); onSaved(); onClose();
   };
 
@@ -99,38 +129,59 @@ function CreateDietModal({ customer, trainerId, onClose, onSaved }) {
     <Modal onClose={onClose}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-display text-xl font-bold text-fitti-text">Create Diet Plan</h3>
-          <p className="font-body text-sm text-fitti-text-muted">For {customer.name}</p>
+          <h3 className="font-display text-xl font-bold text-fitti-text uppercase tracking-tight">Weekly Diet Planner</h3>
+          <p className="font-body text-sm text-fitti-text-muted">Personalized fuel for {customer.name}</p>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
       </div>
+
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
+        {dayNames.map(day => (
+          <button 
+            key={day}
+            onClick={() => setActiveDay(day)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeDay === day ? 'bg-fitti-green text-white shadow-lg shadow-fitti-green/20' : 'bg-fitti-bg text-fitti-text-muted hover:bg-white'}`}
+          >
+            {day}
+          </button>
+        ))}
+      </div>
       
-      <div className="grid grid-cols-4 gap-4 mb-4">
-        <div><label className="label-spaced block mb-1">Cals</label><input type="number" value={plan.daily_calories} onChange={e=>setPlan(p=>({...p,daily_calories:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-        <div><label className="label-spaced block mb-1">Pro (g)</label><input type="number" value={plan.protein_grams} onChange={e=>setPlan(p=>({...p,protein_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-        <div><label className="label-spaced block mb-1">Carb (g)</label><input type="number" value={plan.carb_grams} onChange={e=>setPlan(p=>({...p,carb_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-        <div><label className="label-spaced block mb-1">Fat (g)</label><input type="number" value={plan.fat_grams} onChange={e=>setPlan(p=>({...p,fat_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+      <div className="grid grid-cols-4 gap-4 mb-6 bg-fitti-bg/50 p-4 rounded-2xl border border-fitti-border/30">
+        <div><label className="label-spaced block mb-1 !text-[9px]">Target Cals</label><input type="number" value={plan.daily_calories} onChange={e=>setPlan(p=>({...p,daily_calories:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+        <div><label className="label-spaced block mb-1 !text-[9px]">Pro (g)</label><input type="number" value={plan.protein_grams} onChange={e=>setPlan(p=>({...p,protein_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+        <div><label className="label-spaced block mb-1 !text-[9px]">Carb (g)</label><input type="number" value={plan.carb_grams} onChange={e=>setPlan(p=>({...p,carb_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+        <div><label className="label-spaced block mb-1 !text-[9px]">Fat (g)</label><input type="number" value={plan.fat_grams} onChange={e=>setPlan(p=>({...p,fat_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
       </div>
 
-      <div className="max-h-60 overflow-y-auto custom-scrollbar pr-2 mb-4">
-        {plan.meal_structure.map((meal, mi) => (
-          <div key={mi} className="bg-fitti-bg/50 rounded-xl p-3 mb-2 border border-fitti-border/30">
-             <div className="flex gap-2 mb-2">
-               <input placeholder="Meal Name (e.g. Breakfast)" value={meal.name} onChange={e=>updateMeal(mi,'name',e.target.value)} className="flex-1 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-body focus:border-fitti-green focus:outline-none"/>
-               <input placeholder="Time (e.g. 08:00 AM)" value={meal.time} onChange={e=>updateMeal(mi,'time',e.target.value)} className="w-24 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-body focus:border-fitti-green focus:outline-none"/>
+      <div className="max-h-64 overflow-y-auto custom-scrollbar pr-2 mb-6">
+        <h4 className="label-spaced mb-3 text-fitti-green">{activeDay} Schedule</h4>
+        {(plan.weekly_structure[activeDay] || []).map((meal, mi) => (
+          <div key={mi} className="bg-white rounded-xl p-4 mb-3 border border-fitti-border/50 shadow-sm relative group">
+             <div className="flex gap-3 mb-3">
+               <div className="flex-1">
+                 <label className="text-[9px] font-bold text-fitti-text-muted uppercase tracking-widest block mb-1">Meal Description</label>
+                 <input placeholder="e.g. Grilled Chicken Breast with Quinoa" value={meal.name} onChange={e=>updateMeal(mi,'name',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-body focus:border-fitti-green focus:outline-none"/>
+               </div>
+               <div className="w-28">
+                 <label className="text-[9px] font-bold text-fitti-text-muted uppercase tracking-widest block mb-1">Time</label>
+                 <input placeholder="08:00 AM" value={meal.time} onChange={e=>updateMeal(mi,'time',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-body focus:border-fitti-green focus:outline-none"/>
+               </div>
              </div>
-             <div className="flex gap-2">
-               <input placeholder="Pro(g)" type="number" value={meal.protein} onChange={e=>updateMeal(mi,'protein',e.target.value)} className="w-1/3 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none"/>
-               <input placeholder="Carb(g)" type="number" value={meal.carbs} onChange={e=>updateMeal(mi,'carbs',e.target.value)} className="w-1/3 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none"/>
-               <input placeholder="Fat(g)" type="number" value={meal.fat} onChange={e=>updateMeal(mi,'fat',e.target.value)} className="w-1/3 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none"/>
+             <div className="grid grid-cols-3 gap-3">
+               <div><input placeholder="Pro(g)" type="number" value={meal.protein} onChange={e=>updateMeal(mi,'protein',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+               <div><input placeholder="Carb(g)" type="number" value={meal.carbs} onChange={e=>updateMeal(mi,'carbs',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+               <div><input placeholder="Fat(g)" type="number" value={meal.fat} onChange={e=>updateMeal(mi,'fat',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
              </div>
           </div>
         ))}
-        <button onClick={addMeal} className="font-mono text-xs text-fitti-green font-semibold flex items-center gap-1 hover:text-fitti-green-dark transition-colors"><Plus className="h-3 w-3"/>Add Meal</button>
+        <button onClick={addMeal} className="w-full border-2 border-dashed border-fitti-border rounded-xl py-4 font-mono text-[10px] text-fitti-text-muted font-bold uppercase hover:border-fitti-green/50 hover:text-fitti-green transition-all flex items-center justify-center gap-2">
+          <Plus className="h-4 w-4"/> Add {activeDay} Meal
+        </button>
       </div>
 
-      <button onClick={handleSave} disabled={saving} className="w-full btn-gradient flex items-center justify-center gap-2 py-3.5 disabled:opacity-50">
-        <Save className="h-4 w-4"/><span className="font-display font-bold">{saving ? 'Saving...' : 'Save Diet Plan'}</span>
+      <button onClick={handleSave} disabled={saving} className="w-full btn-gradient flex items-center justify-center gap-3 py-4 disabled:opacity-50 shadow-xl shadow-fitti-green/20">
+        <Save className="h-5 w-5"/><span className="font-display font-bold uppercase tracking-widest">{saving ? 'Transmitting Data...' : 'Deploy Weekly Plan'}</span>
       </button>
     </Modal>
   );

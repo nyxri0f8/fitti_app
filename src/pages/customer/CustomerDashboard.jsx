@@ -122,87 +122,178 @@ function HomeTab() {
 /* ── Meals Tab ─────────────────────────────────────────── */
 function MealsTab() {
   const user = useAuthStore(state => state.user);
-  const [meals, setMeals] = useState([]);
+  const [dietPlan, setDietPlan] = useState(null);
+  const [latestOrder, setLatestOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('live'); // 'live' or 'weekly'
 
   useEffect(() => {
-    const fetchMeals = async () => {
-      const { data } = await supabase
-        .from('diet_plans')
-        .select('*')
-        .eq('customer_id', user.id)
-        .eq('active', true)
-        .order('created_at', { ascending: false });
+    const fetchData = async () => {
+      // Fetch Diet Plan
+      const { data: plans } = await supabase.from('diet_plans').select('*').eq('customer_id', user.id).eq('active', true).order('created_at', { ascending: false }).limit(1);
+      if (plans?.[0]) setDietPlan(plans[0]);
+
+      // Fetch Latest Order (Live Status)
+      const { data: orders } = await supabase.from('orders').select('*').eq('customer_id', user.id).order('created_at', { ascending: false }).limit(1);
+      if (orders?.[0]) setLatestOrder(orders[0]);
       
-      if (data && data.length > 0) {
-        const plan = data[0];
-        const mealList = (plan.meal_structure || []).map(m => ({
-          ...m,
-          id: plan.id + m.name,
-          meal_name: m.name,
-          meal_time: m.time,
-          calories: (m.protein * 4) + (m.carbs * 4) + (m.fat * 9),
-          macros: `P:${m.protein}g C:${m.carbs}g F:${m.fat}g`,
-          created_at: plan.created_at
-        }));
-        setMeals(mealList);
-      } else {
-        setMeals([]);
-      }
       setLoading(false);
     };
-    if (user) fetchMeals();
+    if (user) fetchData();
   }, [user]);
+
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const dayMeals = dietPlan?.meal_structure?.[today] || [];
 
   return (
     <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
         <div>
-          <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter">Nutrition Vault</h2>
-          <p className="font-accent text-lg italic text-fitti-text-muted mt-1">Fuel your evolution</p>
+          <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter uppercase">Nutrition Vault</h2>
+          <p className="font-accent text-lg italic text-fitti-text-muted mt-1">Biological fuel management system</p>
         </div>
-        <ChefHat className="h-10 w-10 text-fitti-orange opacity-20" />
+        <div className="flex bg-fitti-bg p-1 rounded-2xl border border-fitti-border/50">
+          <button 
+            onClick={() => setActiveTab('live')}
+            className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'live' ? 'bg-white text-fitti-green shadow-sm' : 'text-fitti-text-muted hover:text-fitti-text'}`}
+          >
+            Live Evolution
+          </button>
+          <button 
+            onClick={() => setActiveTab('weekly')}
+            className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'weekly' ? 'bg-white text-fitti-green shadow-sm' : 'text-fitti-text-muted hover:text-fitti-text'}`}
+          >
+            Weekly Protocol
+          </button>
+        </div>
       </div>
       
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1,2,3].map(i => <div key={i} className="h-64 bg-white/50 rounded-[2rem] shimmer" />)}
-        </div>
-      ) : meals.length === 0 ? (
-        <div className="card-glass p-20 text-center">
-          <ChefHat className="h-20 w-20 text-fitti-border mx-auto mb-6" />
-          <p className="font-body text-fitti-text-muted font-bold text-xl">No active nutrition plans detected.</p>
+        <div className="h-96 bg-white/50 rounded-[2.5rem] shimmer" />
+      ) : activeTab === 'live' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Live Order Tracking */}
+          <div className="lg:col-span-2 card-glass p-10 relative overflow-hidden group">
+            <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
+              <ChefHat className="h-64 w-64" />
+            </div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-8">
+                 <span className="label-spaced flex items-center gap-2">
+                   <Activity className="h-4 w-4 text-fitti-green animate-pulse" /> Active Transmission
+                 </span>
+                 {latestOrder && <StatusBadge status={latestOrder.status} />}
+              </div>
+
+              {latestOrder && ['preparing', 'packed', 'out_for_delivery'].includes(latestOrder.status) ? (
+                <div className="space-y-10">
+                   <div>
+                     <h3 className="font-display text-5xl font-black text-fitti-text mb-4 tracking-tight">
+                       Chef is <span className="text-fitti-green">{latestOrder.status === 'preparing' ? 'Preparing' : 'Deploying'}</span>
+                     </h3>
+                     <p className="font-body text-xl text-fitti-text-muted font-bold capitalize">{latestOrder.meal_plan}</p>
+                   </div>
+
+                   <div className="relative h-4 bg-fitti-bg rounded-full overflow-hidden shadow-inner">
+                      <div 
+                        className="absolute h-full bg-gradient-to-r from-fitti-green/50 to-fitti-green shadow-[0_0_20px_rgba(118,185,0,0.4)] transition-all duration-1000 ease-out"
+                        style={{ width: { preparing: '30%', packed: '60%', out_for_delivery: '90%' }[latestOrder.status] }}
+                      />
+                   </div>
+
+                   <div className="grid grid-cols-3 gap-6">
+                      <div className="bg-fitti-bg/50 p-6 rounded-2xl border border-fitti-border/30">
+                        <p className="label-spaced !text-[9px] !mb-1">Calories</p>
+                        <p className="font-display font-black text-2xl text-fitti-text">{latestOrder.calories}</p>
+                      </div>
+                      <div className="bg-fitti-bg/50 p-6 rounded-2xl border border-fitti-border/30 text-center">
+                        <p className="label-spaced !text-[9px] !mb-1">Time Initiated</p>
+                        <p className="font-mono font-bold text-fitti-text-muted">{new Date(latestOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                      <div className="bg-fitti-bg/50 p-6 rounded-2xl border border-fitti-border/30 text-right">
+                        <p className="label-spaced !text-[9px] !mb-1">Est. Completion</p>
+                        <p className="font-mono font-bold text-fitti-green">15-20m</p>
+                      </div>
+                   </div>
+                </div>
+              ) : (
+                <div className="py-20 text-center">
+                   <div className="h-24 w-24 bg-fitti-bg rounded-3xl flex items-center justify-center mx-auto mb-6 border border-dashed border-fitti-border">
+                     <Utensils className="h-10 w-10 text-fitti-border" />
+                   </div>
+                   <h3 className="font-display text-2xl font-black text-fitti-text mb-2">Kitchen Standby</h3>
+                   <p className="font-body text-fitti-text-muted font-bold max-w-sm mx-auto">No meals are currently in the high-performance preparation phase.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Today's Schedule Sidebar */}
+          <div className="card-glass p-8">
+            <h3 className="label-spaced mb-8 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-fitti-orange" /> Today's Protocol
+            </h3>
+            <div className="space-y-4">
+              {dayMeals.length === 0 ? (
+                <p className="text-sm font-bold text-fitti-text-muted italic">Rest Day / Custom Plan</p>
+              ) : dayMeals.map((m, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 bg-fitti-bg/50 rounded-2xl border border-fitti-border/20">
+                   <div className="h-12 w-12 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                      <Clock className="h-5 w-5 text-fitti-orange" />
+                   </div>
+                   <div>
+                      <p className="font-display font-bold text-fitti-text text-sm">{m.name}</p>
+                      <p className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">{m.time}</p>
+                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
-          {meals.map(meal => (
-            <div key={meal.id} className="card-glass p-8 card-hover overflow-hidden relative group">
-              <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:opacity-[0.08] group-hover:rotate-12 transition-all duration-500">
-                <ChefHat className="h-40 w-40" />
-              </div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <span className="font-mono text-[10px] font-bold text-fitti-orange uppercase tracking-[0.2em] bg-fitti-orange/10 px-4 py-2 rounded-full">Evolution Meal</span>
-                  <p className="font-mono text-xs font-bold text-fitti-text-muted">{new Date(meal.created_at).toLocaleDateString()}</p>
-                </div>
-                <h3 className="font-display text-2xl font-black text-fitti-text mb-4 leading-tight">{meal.meal_name}</h3>
-                <div className="flex items-center gap-2 mb-8">
-                  <Clock className="h-3 w-3 text-fitti-text-muted" />
-                  <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">{meal.meal_time}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-fitti-bg p-4 rounded-2xl">
-                    <p className="font-mono text-[9px] font-bold text-fitti-text-muted uppercase tracking-widest mb-1">Calories</p>
-                    <p className="stat-number text-lg text-fitti-text">{Math.round(meal.calories)} kcal</p>
-                  </div>
-                  <div className="bg-fitti-bg p-4 rounded-2xl">
-                    <p className="font-mono text-[9px] font-bold text-fitti-text-muted uppercase tracking-widest mb-1">Macros</p>
-                    <p className="font-mono text-[10px] font-bold text-fitti-text leading-relaxed">{meal.macros || 'Optimized'}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="space-y-12">
+           {/* Weekly Schedule Grid */}
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 stagger-children">
+             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => {
+               const meals = dietPlan?.meal_structure?.[day] || [];
+               const isToday = day === today;
+               return (
+                 <div key={day} className={`card-glass p-6 transition-all duration-500 ${isToday ? 'ring-2 ring-fitti-green scale-105 shadow-2xl z-10' : 'opacity-80 hover:opacity-100'}`}>
+                   <h3 className={`font-display font-black text-sm mb-4 uppercase tracking-tighter ${isToday ? 'text-fitti-green' : 'text-fitti-text-muted'}`}>{day}</h3>
+                   <div className="space-y-3">
+                     {meals.map((m, i) => (
+                       <div key={i} className="bg-white/50 p-3 rounded-xl border border-fitti-border/30 group hover:border-fitti-green/30 transition-colors">
+                         <p className="font-bold text-[10px] text-fitti-text leading-tight mb-1">{m.name}</p>
+                         <p className="font-mono text-[8px] text-fitti-text-muted">{m.time}</p>
+                       </div>
+                     ))}
+                     {meals.length === 0 && <p className="text-[10px] font-bold text-fitti-text-muted italic py-4">Custom</p>}
+                   </div>
+                 </div>
+               );
+             })}
+           </div>
+
+           {/* Nutrient Summary */}
+           <div className="card-glass p-10 bg-fitti-text relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-10 opacity-10">
+               <Zap className="h-32 w-32 text-white fill-white" />
+             </div>
+             <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+               {[
+                 { label: 'Daily Target', value: `${dietPlan?.daily_calories} kcal`, color: 'text-fitti-green' },
+                 { label: 'Protein Focus', value: `${dietPlan?.protein_grams}g`, color: 'text-white' },
+                 { label: 'Carb Reserve', value: `${dietPlan?.carb_grams}g`, color: 'text-white' },
+                 { label: 'Fat Allocation', value: `${dietPlan?.fat_grams}g`, color: 'text-white' }
+               ].map((stat, i) => (
+                 <div key={i}>
+                   <p className="font-mono text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">{stat.label}</p>
+                   <p className={`font-display text-3xl font-black ${stat.color}`}>{stat.value}</p>
+                 </div>
+               ))}
+             </div>
+           </div>
         </div>
       )}
     </div>

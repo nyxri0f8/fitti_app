@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,18 +9,15 @@ export default {
     extend: {
       colors: {
         fitti: {
-          bg: '#FFFFFF',
-          'bg-alt': '#F4FBEB',
-          green: '#76B900',
-          'green-dark': '#528100',
-          'green-light': '#F4FBEB',
-          orange: '#76B900',
-          'orange-light': '#D1E5B2',
-          white: '#FFFFFF',
-          border: '#e2ead8',
-          text: '#111111',
-          'text-muted': '#6b7b68',
-          'text-dark': '#111111',
+          bg: 'rgb(var(--fitti-bg) / <alpha-value>)',
+          'bg-alt': 'rgb(var(--fitti-bg-alt) / <alpha-value>)',
+          green: 'rgb(var(--fitti-green) / <alpha-value>)',
+          'green-dark': 'rgb(var(--fitti-green-dark) / <alpha-value>)',
+          'green-light': 'rgb(var(--fitti-green-light) / <alpha-value>)',
+          orange: 'rgb(var(--fitti-orange) / <alpha-value>)',
+          border: 'rgb(var(--fitti-border) / <alpha-value>)',
+          text: 'rgb(var(--fitti-text) / <alpha-value>)',
+          'text-muted': 'rgb(var(--fitti-text-muted) / <alpha-value>)',
         }
       },
       fontFamily: {
