@@ -14,7 +14,6 @@ const ROLES_NAV = {
     { label: 'Orders', to: '/admin/orders', icon: Package },
     { label: 'Activity Feed', to: '/admin/activity', icon: Activity },
     { label: 'Messages', to: '/admin/messages', icon: MessageSquare },
-    { label: 'Sessions', to: '/admin/sessions', icon: Video },
   ],
   customer: [
     { label: 'Home', to: '/customer', icon: Home, end: true },
@@ -34,14 +33,12 @@ const ROLES_NAV = {
     { label: 'My Patients', to: '/doctor', icon: Users, end: true },
     { label: 'Medical Records', to: '/doctor/records', icon: ClipboardList },
     { label: 'Messages', to: '/doctor/messages', icon: MessageSquare },
-    { label: 'Video Sessions', to: '/doctor/sessions', icon: Video },
   ],
   trainer: [
     { label: 'My Clients', to: '/trainer', icon: Users, end: true },
     { label: 'Workout Plans', to: '/trainer/workouts', icon: CalendarDays },
     { label: 'Progress Tracking', to: '/trainer/progress', icon: LineChart },
     { label: 'Messages', to: '/trainer/messages', icon: MessageSquare },
-    { label: 'Video Sessions', to: '/trainer/sessions', icon: Video },
   ]
 };
 

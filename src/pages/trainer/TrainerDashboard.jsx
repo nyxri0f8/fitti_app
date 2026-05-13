@@ -399,7 +399,6 @@ export default function TrainerDashboard() {
             <Route path="/workouts" element={<WorkoutsTab key={refreshKey} />}/>
             <Route path="/progress" element={<ProgressTab key={refreshKey} />}/>
             <Route path="/messages" element={<MessagingView/>}/>
-            <Route path="/sessions" element={<div className="p-8 animate-fade-in-up max-w-6xl mx-auto"><h2 className="font-display text-2xl font-bold text-fitti-text mb-4">Video Sessions</h2><div className="card-glass p-12 text-center"><p className="font-body text-fitti-text-muted">Use Messages tab to start a call.</p></div></div>}/>
           </Routes>
         </main>
       </div>

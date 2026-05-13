@@ -171,7 +171,6 @@ export default function DoctorDashboard() {
             <Route path="/" element={<PatientsTab onOpenRecord={setShowRecord} />}/>
             <Route path="/records" element={<RecordsTab key={refreshKey} />}/>
             <Route path="/messages" element={<MessagingView/>}/>
-            <Route path="/sessions" element={<div className="p-8 animate-fade-in-up"><h2 className="text-2xl font-bold text-fitti-text mb-4">Video Sessions</h2><div className="bg-white border border-fitti-border rounded-2xl p-12 text-center"><p className="text-fitti-text-muted">Use Messages tab to start a call.</p></div></div>}/>
           </Routes>
         </main>
       </div>
