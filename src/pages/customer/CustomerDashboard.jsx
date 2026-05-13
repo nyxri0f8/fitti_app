@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Zap, Package, TrendingUp, Scale, Target, Calendar, ChefHat, Dumbbell, Stethoscope, Heart, Activity, ArrowRight, ShieldCheck, Clock } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import Sidebar from '../../components/shared/Sidebar';
@@ -289,6 +290,156 @@ function HealthTab() {
   );
 }
 
+/* ── Progress Tab ─────────────────────────────────────── */
+function ProgressTab() {
+  const user = useAuthStore(state => state.user);
+  const [workoutData, setWorkoutData] = useState([]);
+  const [progressData, setProgressData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      // Fetch workout logs
+      const { data: workouts } = await supabase
+        .from('workout_logs')
+        .select('created_at, total_calories')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      // Aggregate workouts by date
+      const wMap = {};
+      (workouts || []).forEach(w => {
+        const date = new Date(w.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        wMap[date] = (wMap[date] || 0) + (w.total_calories || 0);
+      });
+      const formattedWorkouts = Object.keys(wMap).map(date => ({ date, calories: wMap[date] }));
+
+      // Fetch progress logs (trainer/doctor)
+      const { data: progress } = await supabase
+        .from('progress_logs')
+        .select('logged_at, weight, energy_level, diet_adherence, notes')
+        .eq('customer_id', user.id)
+        .order('logged_at', { ascending: true });
+        
+      const formattedProgress = (progress || []).map(p => ({
+        date: new Date(p.logged_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        weight: p.weight,
+        energy: p.energy_level,
+        diet: p.diet_adherence,
+        notes: p.notes
+      }));
+
+      setWorkoutData(formattedWorkouts);
+      setProgressData(formattedProgress);
+      setLoading(false);
+    };
+    fetchProgress();
+  }, [user]);
+
+  return (
+    <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-10">
+        <div>
+          <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter">Evolution Metrics</h2>
+          <p className="font-accent text-lg italic text-fitti-text-muted mt-1">Visualize your progress trajectory</p>
+        </div>
+        <TrendingUp className="h-10 w-10 text-fitti-green opacity-20" />
+      </div>
+
+      {loading ? (
+        <div className="h-96 bg-white/50 rounded-[2rem] shimmer" />
+      ) : (
+        <div className="space-y-8 stagger-children">
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Calories Chart */}
+            <div className="card-glass p-8">
+              <h3 className="label-spaced flex items-center gap-2 mb-6">
+                <Zap className="h-4 w-4 text-fitti-orange" /> Caloric Burn (Kcal)
+              </h3>
+              {workoutData.length > 0 ? (
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={workoutData}>
+                      <defs>
+                        <linearGradient id="colorCalories" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#76B900" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#76B900" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6b7b68' }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6b7b68' }} dx={-10} />
+                      <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} />
+                      <Area type="monotone" dataKey="calories" stroke="#76B900" strokeWidth={3} fillOpacity={1} fill="url(#colorCalories)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                 <div className="h-64 flex items-center justify-center text-fitti-text-muted font-bold text-sm">No workout data recorded yet.</div>
+              )}
+            </div>
+
+            {/* Weight Trend Chart */}
+            <div className="card-glass p-8">
+              <h3 className="label-spaced flex items-center gap-2 mb-6">
+                <Scale className="h-4 w-4 text-fitti-green" /> Weight Trajectory (Kg)
+              </h3>
+              {progressData.length > 0 ? (
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={progressData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6b7b68' }} dy={10} />
+                      <YAxis domain={['auto', 'auto']} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6b7b68' }} dx={-10} />
+                      <Tooltip contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} />
+                      <Line type="monotone" dataKey="weight" stroke="#111111" strokeWidth={3} dot={{ stroke: '#111111', strokeWidth: 2, fill: '#fff', r: 4 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-fitti-text-muted font-bold text-sm">No weight records found.</div>
+              )}
+            </div>
+
+          </div>
+
+          {/* Detailed Progress Logs Table/Cards */}
+          {progressData.length > 0 && (
+            <div className="card-glass p-8">
+              <h3 className="label-spaced flex items-center gap-2 mb-6">
+                <Activity className="h-4 w-4 text-fitti-green" /> Professional Assessments
+              </h3>
+              <div className="space-y-4">
+                {[...progressData].reverse().map((log, i) => (
+                  <div key={i} className="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-white/50 rounded-2xl border border-fitti-border/50 hover:border-fitti-green/30 transition-all">
+                    <div className="mb-4 md:mb-0">
+                      <span className="font-mono text-xs font-bold text-fitti-text-muted block mb-1">{log.date}</span>
+                      <p className="font-accent text-sm text-fitti-text font-bold italic">{log.notes || 'No specific notes recorded.'}</p>
+                    </div>
+                    <div className="flex gap-4">
+                       <div className="text-center bg-fitti-bg p-3 rounded-xl min-w-[80px]">
+                         <p className="text-[9px] font-mono text-fitti-text-muted font-bold uppercase mb-1">Energy</p>
+                         <p className="font-bold text-fitti-text">{log.energy || '-'}/10</p>
+                       </div>
+                       <div className="text-center bg-fitti-bg p-3 rounded-xl min-w-[80px]">
+                         <p className="text-[9px] font-mono text-fitti-text-muted font-bold uppercase mb-1">Diet</p>
+                         <p className="font-bold text-fitti-text">{log.diet || '-'}/10</p>
+                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Main Dashboard ───────────────────────────────────── */
 export default function CustomerDashboard() {
   const user = useAuthStore(state => state.user);
@@ -312,7 +463,7 @@ export default function CustomerDashboard() {
             <Route path="/meals" element={<MealsTab />} />
             <Route path="/workout" element={<WorkoutTab />} />
             <Route path="/health" element={<HealthTab />} />
-            <Route path="/progress" element={<div className="p-8 text-center py-20"><TrendingUp className="h-16 w-16 text-fitti-border mx-auto mb-6" /><p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">Progress Analytics initializing...</p></div>} />
+            <Route path="/progress" element={<ProgressTab />} />
             <Route path="/messages" element={<MessagingView onStartVideoCall={startVideoCall} />} />
             <Route path="/sessions" element={<div className="p-8"><h2 className="font-display text-3xl font-black text-fitti-text tracking-tight uppercase mb-4">Secure Link</h2><div className="card-glass p-20 text-center"><p className="font-body text-fitti-text-muted font-bold">Use the Messages tab to establish a video node.</p></div></div>} />
           </Routes>
