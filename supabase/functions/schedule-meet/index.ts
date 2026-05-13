@@ -7,7 +7,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 // You would need to add googleapis to import map or use esm.sh
 // import { google } from "https://esm.sh/googleapis@118.0.0";
 
-const ALLOWED_ORIGINS = ['http://localhost:5173', 'http://localhost:3000', 'https://fitti.org.in'];
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173', 
+  'http://localhost:3000', 
+  'https://fitti.org.in',
+  'https://application-fitti.vercel.app'
+];
 
 serve(async (req) => {
   const origin = req.headers.get('origin');
