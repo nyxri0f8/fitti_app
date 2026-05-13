@@ -42,15 +42,30 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
     await supabase.auth.linkIdentity({
       provider: 'google',
       options: {
-        // Expanded scopes for full calendar access
         scopes: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent', // Forces the permission box to show up
+          prompt: 'consent',
         },
         redirectTo: window.location.href
       }
     });
+  };
+
+  const handleUnlinkGoogle = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const googleIdentity = user?.identities?.find(id => id.provider === 'google');
+      if (googleIdentity) {
+        const { error } = await supabase.auth.unlinkIdentity(googleIdentity);
+        if (error) throw error;
+        alert('Google Account Disconnected. You can now connect again.');
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error('Unlink Error:', err);
+      alert('Failed to disconnect: ' + err.message);
+    }
   };
 
   const handleGenerateLink = async () => {
@@ -265,6 +280,15 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
                     Find Time & Generate Link
                   </>
                 )}
+              </button>
+              
+              <div className="h-px bg-fitti-border/30 my-4" />
+              
+              <button 
+                onClick={handleUnlinkGoogle}
+                className="w-full py-3 text-xs font-black text-red-500 hover:bg-red-50 rounded-xl transition-all uppercase tracking-widest border border-red-100"
+              >
+                Disconnect Google Account
               </button>
             </div>
           )}
