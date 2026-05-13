@@ -76,36 +76,8 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-16">
         <div className="relative z-10 max-w-lg animate-fade-in-up">
           <div className="mb-12">
-            <h1 className="logo-fitti text-7xl mb-4">Fitti</h1>
-            <p className="font-accent text-2xl italic text-fitti-text/60 leading-relaxed">
-              Where discipline meets evolution.
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {[
-              { icon: Activity, text: 'Real-time health tracking & analytics' },
-              { icon: Dumbbell, text: 'Personalized workout protocols' },
-              { icon: Zap, text: 'AI-optimized meal plans' },
-            ].map((item, i) => (
-              <div 
-                key={i} 
-                className="flex items-center gap-4 group animate-fade-in-left"
-                style={{ animationDelay: `${0.3 + i * 0.15}s` }}
-              >
-                <div className="h-12 w-12 rounded-2xl bg-fitti-green/10 flex items-center justify-center group-hover:bg-fitti-green/20 group-hover:scale-110 transition-all duration-300">
-                  <item.icon className="h-5 w-5 text-fitti-green" />
-                </div>
-                <p className="font-body text-sm font-medium text-fitti-text/70">{item.text}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Decorative element */}
-          <div className="mt-16 flex items-center gap-3 opacity-40">
-            <div className="h-px flex-1 bg-fitti-green/30" />
-            <span className="font-mono text-[10px] text-fitti-green tracking-widest uppercase">Est. 2026</span>
-            <div className="h-px flex-1 bg-fitti-green/30" />
+            <h1 className="logo-fitti text-9xl mb-4">Fitti</h1>
+            <p className="motto-fitti ml-1">Evolve your fitness</p>
           </div>
         </div>
 
@@ -120,8 +92,8 @@ export default function Login() {
         <div className="w-full max-w-md mx-auto animate-fade-in-up">
           {/* Mobile logo */}
           <div className="lg:hidden mb-10 text-center">
-            <h1 className="logo-fitti text-5xl mb-2">Fitti</h1>
-            <p className="font-accent text-lg italic text-fitti-text/50">Where discipline meets evolution.</p>
+            <h1 className="logo-fitti text-7xl mb-2">Fitti</h1>
+            <p className="motto-fitti">Evolve your fitness</p>
           </div>
 
           <div className="mb-8">
@@ -191,39 +163,7 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Test Credentials */}
-            <div className="mt-8">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-fitti-border/60" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="px-3 bg-white/70 font-mono text-[9px] text-fitti-text-muted font-bold uppercase tracking-[0.25em]">
-                    Quick Access
-                  </span>
-                </div>
-              </div>
 
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                {testUsers.map((testUser, i) => (
-                  <button
-                    key={testUser.role}
-                    onClick={() => {
-                      setEmail(testUser.email);
-                      setPassword('Test@01');
-                    }}
-                    className="group flex items-center gap-3 py-3 px-4 border-2 border-fitti-border/50 rounded-xl bg-white/60 hover:border-fitti-green/40 hover:bg-fitti-green/5 transition-all duration-300 hover:-translate-y-0.5 animate-fade-in-up"
-                    style={{ animationDelay: `${0.5 + i * 0.08}s` }}
-                  >
-                    <testUser.icon className="h-4 w-4 text-fitti-green/60 group-hover:text-fitti-green group-hover:scale-110 transition-all" />
-                    <div className="text-left">
-                      <p className="font-display text-xs font-bold text-fitti-text">{testUser.role}</p>
-                      <p className="font-mono text-[8px] text-fitti-text-muted">{testUser.desc}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           <p className="mt-6 text-center font-mono text-[10px] text-fitti-text-muted/50 tracking-widest uppercase">
