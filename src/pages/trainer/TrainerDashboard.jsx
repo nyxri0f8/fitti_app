@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Users, Dumbbell, TrendingUp, Target, Flame, Plus, X, Save, Activity, Clock, Zap } from 'lucide-react';
+import { Users, Dumbbell, TrendingUp, Target, Flame, Plus, X, Save, Activity, Clock, Zap, ChefHat } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import Sidebar from '../../components/shared/Sidebar';
@@ -67,6 +67,76 @@ function CreateWorkoutModal({ customer, trainerId, onClose, onSaved }) {
   );
 }
 
+function CreateDietModal({ customer, trainerId, onClose, onSaved }) {
+  const [plan, setPlan] = useState({
+    daily_calories: 2000,
+    protein_grams: 150,
+    carb_grams: 200,
+    fat_grams: 65,
+    meal_structure: [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }]
+  });
+  const [saving, setSaving] = useState(false);
+
+  const addMeal = () => setPlan(p => ({...p, meal_structure: [...p.meal_structure, { name: '', time: '', protein: 0, carbs: 0, fat: 0 }]}));
+  const updateMeal = (mi, f, v) => setPlan(p => ({...p, meal_structure: p.meal_structure.map((m,i) => i===mi ? {...m,[f]:v} : m)}));
+
+  const handleSave = async () => {
+    setSaving(true);
+    await supabase.from('diet_plans').insert([{ 
+      customer_id: customer.id, 
+      created_by: trainerId, 
+      daily_calories: parseInt(plan.daily_calories),
+      protein_grams: parseInt(plan.protein_grams),
+      carb_grams: parseInt(plan.carb_grams),
+      fat_grams: parseInt(plan.fat_grams),
+      meal_structure: plan.meal_structure.map(m => ({ ...m, protein: parseInt(m.protein)||0, carbs: parseInt(m.carbs)||0, fat: parseInt(m.fat)||0 })),
+      active: true 
+    }]);
+    await supabase.from('activity_feed').insert([{ actor_id: trainerId, actor_role:'trainer', customer_id: customer.id, event_type:'diet_plan_created', event_data: { calories: plan.daily_calories } }]);
+    setSaving(false); onSaved(); onClose();
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="font-display text-xl font-bold text-fitti-text">Create Diet Plan</h3>
+          <p className="font-body text-sm text-fitti-text-muted">For {customer.name}</p>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
+      </div>
+      
+      <div className="grid grid-cols-4 gap-4 mb-4">
+        <div><label className="label-spaced block mb-1">Cals</label><input type="number" value={plan.daily_calories} onChange={e=>setPlan(p=>({...p,daily_calories:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+        <div><label className="label-spaced block mb-1">Pro (g)</label><input type="number" value={plan.protein_grams} onChange={e=>setPlan(p=>({...p,protein_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+        <div><label className="label-spaced block mb-1">Carb (g)</label><input type="number" value={plan.carb_grams} onChange={e=>setPlan(p=>({...p,carb_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+        <div><label className="label-spaced block mb-1">Fat (g)</label><input type="number" value={plan.fat_grams} onChange={e=>setPlan(p=>({...p,fat_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
+      </div>
+
+      <div className="max-h-60 overflow-y-auto custom-scrollbar pr-2 mb-4">
+        {plan.meal_structure.map((meal, mi) => (
+          <div key={mi} className="bg-fitti-bg/50 rounded-xl p-3 mb-2 border border-fitti-border/30">
+             <div className="flex gap-2 mb-2">
+               <input placeholder="Meal Name (e.g. Breakfast)" value={meal.name} onChange={e=>updateMeal(mi,'name',e.target.value)} className="flex-1 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-body focus:border-fitti-green focus:outline-none"/>
+               <input placeholder="Time (e.g. 08:00 AM)" value={meal.time} onChange={e=>updateMeal(mi,'time',e.target.value)} className="w-24 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-body focus:border-fitti-green focus:outline-none"/>
+             </div>
+             <div className="flex gap-2">
+               <input placeholder="Pro(g)" type="number" value={meal.protein} onChange={e=>updateMeal(mi,'protein',e.target.value)} className="w-1/3 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none"/>
+               <input placeholder="Carb(g)" type="number" value={meal.carbs} onChange={e=>updateMeal(mi,'carbs',e.target.value)} className="w-1/3 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none"/>
+               <input placeholder="Fat(g)" type="number" value={meal.fat} onChange={e=>updateMeal(mi,'fat',e.target.value)} className="w-1/3 bg-white border border-fitti-border rounded-lg px-2 py-1.5 text-xs font-mono focus:border-fitti-green focus:outline-none"/>
+             </div>
+          </div>
+        ))}
+        <button onClick={addMeal} className="font-mono text-xs text-fitti-green font-semibold flex items-center gap-1 hover:text-fitti-green-dark transition-colors"><Plus className="h-3 w-3"/>Add Meal</button>
+      </div>
+
+      <button onClick={handleSave} disabled={saving} className="w-full btn-gradient flex items-center justify-center gap-2 py-3.5 disabled:opacity-50">
+        <Save className="h-4 w-4"/><span className="font-display font-bold">{saving ? 'Saving...' : 'Save Diet Plan'}</span>
+      </button>
+    </Modal>
+  );
+}
+
 function LogProgressModal({ customer, trainerId, onClose, onSaved }) {
   const [log, setLog] = useState({ weight:'', energy_level:'', diet_adherence:'', workout_performance:'good', notes:'' });
   const [saving, setSaving] = useState(false);
@@ -119,7 +189,7 @@ function LogWorkoutModal({ customer, trainerId, onClose, onSaved }) {
   );
 }
 
-function ClientsTab({ onOpenWorkout, onOpenProgress, onOpenLogWorkout }) {
+function ClientsTab({ onOpenWorkout, onOpenDiet, onOpenProgress, onOpenLogWorkout }) {
   const user = useAuthStore(state => state.user);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -178,15 +248,18 @@ function ClientsTab({ onOpenWorkout, onOpenProgress, onOpenLogWorkout }) {
                   <p className="font-body text-xs font-bold text-fitti-green capitalize">{c.goal?.replace(/_/g,' ')||'—'}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 <button onClick={()=>onOpenWorkout(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-fitti-bg/50 border border-fitti-border/50 rounded-xl text-xs font-display font-bold text-fitti-text-muted hover:border-fitti-green/40 hover:text-fitti-green transition-all duration-300">
-                  <Dumbbell className="h-4 w-4 group-hover/btn:scale-110 transition-transform"/>Plan
+                  <Dumbbell className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/>Plan
+                </button>
+                <button onClick={()=>onOpenDiet(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-orange-50 border border-orange-100 rounded-xl text-xs font-display font-bold text-fitti-orange hover:bg-orange-100 transition-all duration-300">
+                  <ChefHat className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/>Diet
                 </button>
                 <button onClick={()=>onOpenLogWorkout(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-fitti-green/10 border border-fitti-green/20 rounded-xl text-xs font-display font-bold text-fitti-green hover:bg-fitti-green/20 transition-all duration-300">
-                  <Activity className="h-4 w-4 group-hover/btn:scale-110 transition-transform"/>Track
+                  <Activity className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/>Track
                 </button>
-                <button onClick={()=>onOpenProgress(c)} className="group/btn btn-gradient flex items-center justify-center gap-2 py-2.5 text-xs">
-                  <TrendingUp className="h-4 w-4 group-hover/btn:scale-110 transition-transform"/><span className="font-display font-bold">Progress</span>
+                <button onClick={()=>onOpenProgress(c)} className="group/btn btn-gradient flex items-center justify-center gap-1 py-2.5 text-[10px]">
+                  <TrendingUp className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/><span className="font-display font-bold">Prog.</span>
                 </button>
               </div>
             </div>
@@ -308,6 +381,7 @@ function ProgressTab() {
 
 export default function TrainerDashboard() {
   const [showWorkout, setShowWorkout] = useState(null);
+  const [showDiet, setShowDiet] = useState(null);
   const [showProgress, setShowProgress] = useState(null);
   const [showLogWorkout, setShowLogWorkout] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -328,7 +402,7 @@ export default function TrainerDashboard() {
         <Navbar title="" />
         <main className="flex-1 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenProgress={setShowProgress} onOpenLogWorkout={setShowLogWorkout} />}/>
+            <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenDiet={setShowDiet} onOpenProgress={setShowProgress} onOpenLogWorkout={setShowLogWorkout} />}/>
             <Route path="/workouts" element={<WorkoutsTab key={refreshKey} />}/>
             <Route path="/progress" element={<ProgressTab key={refreshKey} />}/>
             <Route path="/messages" element={<MessagingView onStartVideoCall={startVideoCall}/>}/>
@@ -337,6 +411,7 @@ export default function TrainerDashboard() {
         </main>
       </div>
       {showWorkout && <CreateWorkoutModal customer={showWorkout} trainerId={user.id} onClose={()=>setShowWorkout(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
+      {showDiet && <CreateDietModal customer={showDiet} trainerId={user.id} onClose={()=>setShowDiet(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
       {showProgress && <LogProgressModal customer={showProgress} trainerId={user.id} onClose={()=>setShowProgress(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
       {showLogWorkout && <LogWorkoutModal customer={showLogWorkout} trainerId={user.id} onClose={()=>setShowLogWorkout(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
     </div>
