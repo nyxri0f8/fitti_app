@@ -42,10 +42,11 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
     await supabase.auth.linkIdentity({
       provider: 'google',
       options: {
-        scopes: 'https://www.googleapis.com/auth/calendar.events',
+        // Expanded scopes for full calendar access
+        scopes: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent',
+          prompt: 'consent', // Forces the permission box to show up
         },
         redirectTo: window.location.href
       }
@@ -58,15 +59,26 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
       const { data, error } = await supabase.functions.invoke('schedule-meet', {
         body: { guestId: activeContact.id }
       });
-      if (error) throw error;
       
-      const meetLink = data.meetLink || data.mockLink;
-      if (!meetLink) throw new Error('No Meet link returned');
+      // Handle Supabase Function Errors
+      if (error) {
+        const errorMsg = await error.context?.json() || { error: error.message };
+        throw new Error(errorMsg.error || error.message);
+      }
       
-      onSendMessage(`🗓️ I've generated a Google Meet link for our session.\n\nJoin here: ${meetLink}`);
+      if (!data?.meetLink) {
+        throw new Error('Google did not return a meeting link. Check your permissions.');
+      }
+      
+      onSendMessage(`🗓️ I've generated a Google Meet link for our session.\n\nJoin here: ${data.meetLink}`);
     } catch (err) {
-      console.error(err);
-      onSendMessage(`❌ Failed to generate Meet link: ${err.message}`);
+      console.error('Meet Generation Error:', err);
+      // Check if it's a permission error
+      if (err.message.includes('TOKEN MISSING') || err.message.includes('Identity')) {
+        onSendMessage(`❌ Permissions Required: Click "Connect Google Account" above and make sure to CHECK THE BOX for "Google Calendar" access.`);
+      } else {
+        onSendMessage(`❌ Failed to generate Meet link: ${err.message}`);
+      }
     } finally {
       setGeneratingMeet(false);
       setShowMeetModal(false);

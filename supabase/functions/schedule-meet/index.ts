@@ -57,33 +57,22 @@ serve(async (req) => {
         .eq('user_id', user.id)
         .eq('provider', 'google')
       
-      if (identityError) console.error('Identity Error:', identityError);
+      if (identityError) throw new Error(`Database Error: ${identityError.message}`);
       
       if (identities && identities.length > 0) {
         for (const identity of identities) {
           const data = identity.identity_data || {};
-          // Check every possible field name for the token
+          // Try to find the token in any known field
           token = data.provider_token || data.access_token || data.token || identity.provider_token;
-          if (token) {
-            console.log('REAL TOKEN FOUND in identity index:', identities.indexOf(identity));
-            break;
-          }
+          if (token) break;
         }
       }
     } catch (e) {
-      console.error('Database lookup exception:', e);
+      throw new Error(`Identity Lookup Failed: ${e.message}`);
     }
     
     if (!token) {
-      console.log('STILL NO TOKEN FOUND. Returning mock.');
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          mockLink: 'https://meet.google.com/fitti-test-session',
-          message: 'Permission not found. Please RE-LINK and check the CALENDAR box.'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      throw new Error('REAL TOKEN MISSING: Please click "Connect Google Account" and check the "Calendar" checkbox.');
     }
     
     // Create Calendar Event with Google Meet link
