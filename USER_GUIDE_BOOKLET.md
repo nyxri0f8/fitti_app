@@ -1,131 +1,200 @@
-# FITTI: THE ULTIMATE OPERATING MANUAL
-> **Inch-by-Inch Functional Specification & User Guide**
-> Version 1.0 | Comprehensive Edition
+# FITTI: THE ULTIMATE EVOLUTION OPERATING MANUAL
+> **The Definitive 12-Page Functional Specification & Technical Deep-Dive**
+> Version 1.0.5 | Maximum Detail Edition
 
 ![Fitti Operating Manual](./fitti_booklet_cover_1778745059881.png)
 
 ---
 
-## TABLE OF CONTENTS
-1. [General Navigation & UI Philosophy](#1-general-navigation--ui-philosophy)
-2. [The Customer Experience (Athlete Persona)](#2-the-customer-experience)
-3. [The Cook Experience (Nutrition Persona)](#3-the-cook-experience)
-4. [The Trainer Experience (Performance Persona)](#4-the-trainer-experience)
-5. [The Doctor Experience (Vitality Persona)](#5-the-doctor-experience)
-6. [The Admin Experience (Mission Control)](#6-the-admin-experience)
-7. [System-Wide Features (Messages & Video)](#7-system-wide-features)
+## 1. PREFACE: THE EVOLUTION PROTOCOL
+Fitti is not just an application; it is a closed-loop biological management system. This manual provides an inch-by-inch breakdown of every logic gate, user interface element, and technical handshake within the Fitti ecosystem.
 
 ---
 
-## 1. GENERAL NAVIGATION & UI PHILOSOPHY
-
-### 1.1 THE LIQUID GLASS SYSTEM
-Every screen in Fitti follows the **Liquid Glass** aesthetic:
-- **Glassmorphic Cards**: Semi-transparent backgrounds with background blur (24px - 40px).
-- **Vibrant Accents**: High-contrast "Fitti Green" (#76B900) for primary actions.
-- **Puffy Components**: Rounded corners (2rem+) to imply a soft, premium feel.
-
-### 1.2 THE SIDEBAR COMMAND
-- **Location**: Fixed on the left (Desktop), Hidden behind Hamburger (Mobile).
-- **Function**: The primary routing engine. Links are dynamically filtered based on your user role.
-- **Identity Card**: Shows your name, role, and a pulsating online status.
-
----
-
-## 2. THE CUSTOMER EXPERIENCE
-
-### 2.1 HOME TAB (THE HUD)
-The "Heads-Up Display" for the user's evolution.
-- **Greeting Card**: Personalized greeting that changes based on the time of day.
-- **Logistics Protocol**: A real-time progress bar showing exactly where your next meal is in the cook's kitchen.
-- **Biometric Snapshot**: At-a-glance view of Weight, Goal, Height, and Dietary Preference.
-
-### 2.2 MEALS TAB (NUTRITION VAULT)
-- **Live Evolution Sub-tab**: Displays the status of the current meal being prepared by your Cook.
-- **Weekly Protocol Sub-tab**: A 7-day grid showing every assigned meal for the week.
-- **Nutrient Summary Bar**: A high-contrast black bar at the bottom showing daily targets for Calories, Protein, Carbs, and Fats.
-
-### 2.3 WORKOUT TAB (THE DIRECTIVE)
-- **Daily Directive**: A list of exercises assigned by your Trainer.
-- **Check-off Logic**: Clicking an exercise strikes it through and triggers a highlight effect.
-- **Mark Protocol Complete**: A major CTA button that appears only when all exercises are checked. Triggers **Confetti Chimes**.
-- **Workout Tracker**: A free-form tool to log custom exercises, sets, reps, and estimated caloric burn.
-
-### 2.4 HEALTH & PROGRESS TABS
-- **Biotic History**: View encrypted health summaries provided by your Doctor. Includes Physical and Dietary limits.
-- **Evolution Metrics**: Interactive charts (Recharts) visualizing Weight Trajectory and Caloric Burn over time.
-
----
-
-## 3. THE COOK EXPERIENCE
-
-### 3.1 KITCHEN DISPLAY SYSTEM (KDS)
-The high-throughput order management center.
-- **Pending Column**: All new meal requests appear here first.
-- **Action Buttons**:
-    - **START PREPARING**: Moves the order to the kitchen phase. Notifies the customer.
-    - **MARK AS PACKED**: Signals that the meal is ready for transit.
-    - **DEPLOY**: Final stage before delivery.
-- **Customer Awareness**: Hovering over an order reveals specific food preferences (e.g., "No Soy", "Vegan Only").
-
----
-
-## 4. THE TRAINER EXPERIENCE
-
-### 4.1 CLIENT ROSTER
-- **Active Streams**: A list of all customers assigned to the trainer.
-- **Deep Dive**: Clicking a client opens their "Performance Dossier."
-
-### 4.2 PERFORMANCE DOSSIER
-- **Assign Protocol**: A form to build custom workout plans (Exercises, Sets, Reps, Rest).
-- **Progress Audit**: Reviewing the client's caloric burn charts and performance notes to adjust the training intensity.
-
----
-
-## 5. THE DOCTOR EXPERIENCE
-
-### 5.1 VITALITY SUITE
-- **Medical Telemetry**: Reviewing client-provided biometrics.
-- **Clinical Directive**: A specialized form to write health summaries and set restrictions (e.g., "Max Heart Rate 140bpm due to BP").
-- **Encrypted Review**: Securely viewing past medical logs that are locked via E2EE.
-
----
-
-## 6. THE ADMIN EXPERIENCE
-
-### 6.1 MISSION CONTROL
-- **Global User List**: View all roles. Ability to activate/deactivate accounts.
-- **System Analytics**: Top-down view of total orders processed and system health events.
-
----
-
-## 7. SYSTEM-WIDE FEATURES
-
-### 7.1 SECURE CHANNELS (MESSAGING)
-- **E2E Encryption**: Every message is scrambled BEFORE it leaves your device.
-- **Mobile Responsive**: On phones, the chat takes up the full screen for a focused experience.
-- **Attachments**: Ability to upload "Artifacts" or "Meal Photos" for expert review.
-
-### 7.2 VIDEO CALLING (VIRTUAL CLINIC/GYM)
-- **Room Initiation**: Experts can start a video session with a single click.
-- **Real-time Signaling**: Uses WebRTC to connect cameras directly between users for zero-latency coaching.
-- **Incoming Call Overlay**: A global notification that appears regardless of which page the user is on.
-
----
+## 2. THE NAVIGATIONAL ARCHITECTURE
+### 2.1 GLOBAL STATE HIERARCHY
+The application state is managed via **Zustand**, providing a single source of truth for authentication, encryption keys, and real-time communication status.
 
 ```mermaid
 graph TD
-    A[User Action] --> B{Role Check}
-    B -- Customer --> C[Log Biometrics]
-    B -- Cook --> D[Prepare Meal]
-    B -- Trainer --> E[Design Workout]
-    B -- Doctor --> F[Medical Review]
-    C --> G[Database Sync]
-    D --> G
-    E --> G
-    F --> G
-    G --> H[Real-time Update to All Parties]
+    A[Zustand AuthStore] --> B[Session/User Data]
+    A --> C[Profile Metadata]
+    A --> D[NaCl Secret Key]
+    A --> E[Active Call State]
+    F[useChat Hook] --> G[Real-time Messages]
+    F --> H[Contact Roster]
+    I[Sidebar Component] --> J[Role-Based Routing]
 ```
 
-> **Manual End.**
-> *Fitti: Precision Performance. Absolute Privacy.*
+### 2.2 ROUTING LOGIC
+Fitti uses `react-router-dom` v6 with protected routes. Based on the `profile.role` attribute, users are directed to one of five distinct dashboard architectures:
+1. `/admin/*`
+2. `/customer/*`
+3. `/cook/*`
+4. `/doctor/*`
+5. `/trainer/*`
+
+---
+
+## 3. ONBOARDING & IDENTITY (THE GENESIS)
+### 3.1 THE REGISTRATION PIPELINE
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Supabase Auth
+    participant P as Profile Table
+    participant K as User_Pubkeys
+    participant M as Memory (Zustand)
+
+    U->>S: Submit Email/Password
+    S-->>U: Session Token
+    U->>U: Local Key Generation (TweetNaCl)
+    U->>P: Insert Role, Name, Phone
+    U->>K: Store Public Key (Base64)
+    U->>M: Store Secret Key (In-Memory Only)
+    Note over U,M: Secret key never touches the database.
+    P-->>U: Success -> Redirect to Role Dashboard
+```
+
+---
+
+## 4. THE CUSTOMER JOURNEY (ATHLETE)
+### 4.1 THE HOME HUD (COMMAND CENTER)
+- **Ambient Header**: Greets the user with "Good Morning/Afternoon/Evening" based on the system clock.
+- **Logistics Stream**: A dynamic progress tracker linked to the `orders` table. 
+- **Biometric Cards**: Each card (Weight, Height, etc.) features a hover-transform animation and glassmorphic depth.
+
+### 4.2 NUTRITION VAULT (MEALS)
+The nutrition vault is divided into two operational modes:
+
+#### 4.2.1 LIVE EVOLUTION MODE
+Provides real-time tracking of today's meal.
+- **Chef Status**: "Chef is Preparing" or "Chef is Deploying" based on the `orders.status` field.
+- **Nutrition Breakdown**: Large-scale typography for Protein, Carbs, and Fats.
+
+#### 4.2.2 WEEKLY PROTOCOL MODE
+A complete lookahead into the week's diet plan.
+- **7-Day Grid**: Each day is a card. Today's card is highlighted with a `fitti-green` ring.
+
+```mermaid
+graph LR
+    A[Diet Plan Created] --> B[Daily Calories Set]
+    B --> C[Meal Structure Generated]
+    C --> D[Customer Views Daily Menu]
+    D --> E[Order Triggered Automatically]
+```
+
+### 4.3 WORKOUT DIRECTIVE (PERFORMANCE)
+#### 4.3.1 THE ASSIGNED PLAN
+- **Exercise Cards**: Detailed with Sets, Reps, and Rest periods.
+- **Interactive Checkboxes**: Uses a `Set` to track completion locally before final submission.
+- **Achievement Trigger**: Triggers `canvas-confetti` when the last exercise is checked.
+
+#### 4.3.2 THE FREE TRACKER
+An open-ended tool for logging custom exercises.
+- **Calorie Estimation**: Built-in logic to estimate burn based on exercise type and duration.
+
+---
+
+## 5. THE COOK JOURNEY (NUTRITIONIST)
+### 5.1 KITCHEN DISPLAY SYSTEM (KDS)
+The KDS is a mission-critical Kanban board for meal production.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending: Customer assigned
+    Pending --> Preparing: Cook clicks 'Start'
+    Preparing --> Packed: Meal finalized
+    Packed --> OutForDelivery: Logistics initiated
+    OutForDelivery --> Delivered: Completed
+    Delivered --> [*]
+```
+
+### 5.2 DIETARY SENSITIVITY OVERVIEW
+- **One-Click Dossier**: Clicking a customer card in the KDS instantly reveals their `food_preference` (Veg, Non-Veg, Vegan) and any `cook_notes`.
+
+---
+
+## 6. THE TRAINER JOURNEY (COACHING)
+### 6.1 PERFORMANCE DOSSIER
+Trainers have deep-link access to client biometrics.
+- **Chart Analysis**: Trainers view 30-day trends of the client's weight and energy levels.
+- **Protocol Assignment**: A specialized interface to push new `workout_plans` directly to the client's device.
+
+---
+
+## 7. THE DOCTOR JOURNEY (CLINICAL)
+### 7.1 MEDICAL TELEMETRY
+Doctors review "Biotic History" logs.
+- **Health Summaries**: Doctors write summary notes that are then encrypted via E2EE for the patient.
+- **Physical Limitations**: A crucial data point that restricts the Trainer's workout assignments.
+
+---
+
+## 8. TECHNICAL ENGINE: E2E ENCRYPTION (E2EE)
+### 8.1 THE SALSA20 HANDSHAKE
+Fitti ensures total privacy through asymmetric encryption.
+
+```mermaid
+graph TD
+    A[Sender: Plaintext Message] --> B[Retrieve Recipient Public Key]
+    B --> C[Encrypt with Sender Private Key]
+    C --> D[Generated Ciphertext + Nonce]
+    D --> E[Store in Postgres 'messages' Table]
+    E --> F[Recipient: Retrieve Ciphertext + Nonce]
+    F --> G[Decrypt with Recipient Private Key + Sender Public Key]
+    G --> H[Plaintext Displayed]
+```
+
+---
+
+## 9. VIDEO & REAL-TIME SIGNALING
+### 9.1 WEBRTC SIGNALING FLOW
+Video calls use a custom signaling server built directly into Supabase.
+
+```mermaid
+sequenceDiagram
+    participant H as Host (Doctor/Trainer)
+    participant S as Supabase (Signaling)
+    participant G as Guest (Customer)
+
+    H->>S: Create Session & Send 'Offer'
+    S->>G: Notify Guest of Incoming Call
+    G->>H: Send 'Answer' via S
+    H->>G: Exchange ICE Candidates
+    Note over H,G: P2P Video Stream Established
+```
+
+---
+
+## 10. DATABASE ENTITY-RELATIONSHIP MAP
+```mermaid
+erDiagram
+    PROFILES ||--|| CUSTOMERS : "extends"
+    PROFILES ||--o{ ORDERS : "manages"
+    CUSTOMERS ||--o{ ORDERS : "places"
+    CUSTOMERS ||--o{ DIET_PLANS : "follows"
+    CUSTOMERS ||--o{ WORKOUT_PLANS : "executes"
+    CUSTOMERS ||--o{ MEDICAL_RECORDS : "owns"
+    CHAT_ROOMS ||--o{ MESSAGES : "contains"
+    PROFILES ||--o{ MESSAGES : "sends"
+    MEET_SESSIONS ||--o{ WEBRTC_SIGNALS : "signals"
+```
+
+---
+
+## 11. TROUBLESHOOTING & FAQS
+- **Encryption Errors**: Usually occur if a user logs in on a new device without their secret key being restored.
+- **Video Sync**: Ensure STUN/TURN servers (Google) are not blocked by the user's firewall.
+- **Real-time Lag**: Fitti uses a 500ms debounce on all database triggers to ensure stability.
+
+---
+
+## 12. GLOSSARY OF SYSTEM TERMS
+- **Dossier**: The comprehensive health/performance profile of a user.
+- **Protocol**: A set of assigned instructions (Diet or Workout).
+- **Ciphertext**: The unreadable, encrypted version of your messages.
+- **Evolution**: The holistic goal of every Fitti user.
+
+> **END OF MANUAL.**
+> *Precision. Performance. Privacy.*
