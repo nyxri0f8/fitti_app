@@ -2,6 +2,7 @@ import useChat from '../../hooks/useChat';
 import ContactsList from './ContactsList';
 import ChatWindow from './ChatWindow';
 
+// Build Diagnostic: v2.1.2 - Force refresh
 export default function MessagingView() {
   const {
     contacts,
@@ -11,6 +12,18 @@ export default function MessagingView() {
     sendMessage,
     loading
   } = useChat();
+
+  // Robust Mobile Visibility Logic
+  // If we have an active contact, we hide the list on mobile (hidden) but show it on desktop (md:flex)
+  const sidebarClasses = activeContact 
+    ? 'hidden md:flex md:w-96 md:flex-shrink-0' 
+    : 'flex w-full md:w-96 md:flex-shrink-0';
+
+  // If we have an active contact, we show the chat window on mobile (flex)
+  // If we don't, we hide it on mobile (hidden) but show the placeholder on desktop (md:flex)
+  const chatClasses = activeContact
+    ? 'flex flex-1'
+    : 'hidden md:flex flex-1';
 
   if (loading) {
     return (
@@ -38,20 +51,34 @@ export default function MessagingView() {
 
       {/* Main Layout Container */}
       <div className="flex-1 flex md:p-6 md:gap-6 relative z-10 h-full overflow-hidden">
-        <div className={`flex-1 md:flex-none md:w-96 h-full ${activeContact ? 'hidden md:flex' : 'flex'}`}>
+        {/* Contacts Sidebar */}
+        <div className={`h-full ${sidebarClasses}`}>
           <ContactsList 
             contacts={contacts} 
             activeContactId={activeContact?.id} 
             onSelectContact={setActiveContact} 
           />
         </div>
-        <div className={`flex-1 h-full ${!activeContact ? 'hidden md:flex' : 'flex'}`}>
-          <ChatWindow 
-            activeContact={activeContact} 
-            messages={messages} 
-            onSendMessage={sendMessage}
-            onBack={() => setActiveContact(null)}
-          />
+
+        {/* Main Chat Area */}
+        <div className={`h-full ${chatClasses}`}>
+          {activeContact ? (
+            <ChatWindow 
+              activeContact={activeContact} 
+              messages={messages} 
+              onSendMessage={sendMessage}
+              onBack={() => setActiveContact(null)}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="bg-white/40 backdrop-blur-md p-10 rounded-[3rem] border border-white/50 text-center max-w-sm">
+                <div className="logo-fitti text-4xl mb-4">Fitti</div>
+                <p className="text-fitti-text-muted font-bold text-sm leading-relaxed">
+                  SELECT A SECURE CHANNEL TO BEGIN ENCRYPTED COMMUNICATION.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
