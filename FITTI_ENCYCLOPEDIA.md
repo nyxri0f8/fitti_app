@@ -5,7 +5,7 @@
 ---
 
 ## FRONTISPIECE
-![Fitti Technical Schema](./fitti_tech_schema_graphic_1778745475940.png)
+![Fitti Technical Schema](./public/assets/images/fitti_tech_schema_graphic_1778745475940.png)
 
 ---
 
@@ -62,7 +62,7 @@ The Athlete's Home Tab is an ambient, data-rich interface showing:
 - **Biometric Cards**: Real-time stats that transform on hover.
 
 ### 2.2 NUTRITION VAULT (MEALS)
-![Meal Tracker](./fitti_meal_tracker_mockup_1778745454883.png)
+![Meal Tracker](./public/assets/images/fitti_meal_tracker_mockup_1778745454883.png)
 - **Live Evolution**: Real-time status of the current meal. Shows exactly what the Cook is doing.
 - **Weekly Protocol**: A 7-day forecast of nutrition.
 - **Micro-Nutrient Data**: Every meal displays its Protein, Carb, and Fat allocation in high-contrast monospaced font.
@@ -139,7 +139,7 @@ Fitti uses **Asymmetric Encryption**.
 - **Security**: The database only stores a random string (Ciphertext) and a one-time Nonce.
 
 ### 8.2 VIDEO COACHING
-![Video Call](./fitti_video_call_mockup_1778745434530.png)
+![Video Call](./public/assets/images/fitti_video_call_mockup_1778745434530.png)
 - **Signal Logic**: Offer -> Answer -> ICE Candidate exchange via `webrtc_signals` table.
 - **P2P Streaming**: Video data flows directly between users, never touching the server.
 
