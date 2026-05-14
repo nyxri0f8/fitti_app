@@ -102,8 +102,13 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
   const handleGenerateLink = async () => {
     setGeneratingMeet(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const { data, error } = await supabase.functions.invoke('schedule-meet', {
-        body: { guestId: activeContact.id }
+        body: { 
+          guestId: activeContact.id,
+          providerToken: session?.provider_token
+        }
       });
       
       if (error) {

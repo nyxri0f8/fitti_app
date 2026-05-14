@@ -44,28 +44,31 @@ serve(async (req) => {
     if (userError || !user) throw new Error('Unauthorized')
 
     // 2. Parse request
-    const { guestId } = await req.json()
+    const { guestId, providerToken } = await req.json()
     if (!guestId) throw new Error('Guest ID is required')
 
     // 3. Fetch user identities using the Admin API
-    let token = null;
-    try {
-      const { data: { user: adminUser }, error: adminError } = await supabaseClient
-        .auth.admin.getUserById(user.id);
-      
-      if (adminError) throw new Error(`Admin API Error: ${adminError.message}`);
-      
-      if (adminUser?.identities && adminUser.identities.length > 0) {
-        for (const identity of adminUser.identities) {
-          if (identity.provider === 'google') {
-            const data = identity.identity_data || {};
-            token = data.provider_token || data.access_token || data.token;
-            if (token) break;
+    let token = providerToken;
+    
+    if (!token) {
+      try {
+        const { data: { user: adminUser }, error: adminError } = await supabaseClient
+          .auth.admin.getUserById(user.id);
+        
+        if (adminError) throw new Error(`Admin API Error: ${adminError.message}`);
+        
+        if (adminUser?.identities && adminUser.identities.length > 0) {
+          for (const identity of adminUser.identities) {
+            if (identity.provider === 'google') {
+              const data = identity.identity_data || {};
+              token = data.provider_token || data.access_token || data.token;
+              if (token) break;
+            }
           }
         }
+      } catch (e) {
+        throw new Error(`Identity Lookup Failed: ${e.message}`);
       }
-    } catch (e) {
-      throw new Error(`Identity Lookup Failed: ${e.message}`);
     }
     
     if (!token) {
