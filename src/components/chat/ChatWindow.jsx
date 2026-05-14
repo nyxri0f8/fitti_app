@@ -51,9 +51,16 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
     
     // Auto-open modal if returning from a Google link attempt
     const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    const errorCode = urlParams.get('error_code');
-    const errorDescription = urlParams.get('error_description');
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const error = urlParams.get('error') || hashParams.get('error');
+    const errorCode = urlParams.get('error_code') || hashParams.get('error_code');
+    const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
+    
+    // Extract provider_token BEFORE wiping the URL
+    const pToken = hashParams.get('provider_token');
+    if (pToken) {
+      localStorage.setItem('fitti_google_provider_token', pToken);
+    }
     
     if (window.location.hash.includes('access_token') || error || errorCode) {
       setShowMeetModal(true);
@@ -91,6 +98,7 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
         setHasGoogleLinked(false);
         // Reset the session locally to clear cached identities
         await supabase.auth.getSession(); 
+        localStorage.removeItem('fitti_google_provider_token');
         alert('Google Account Disconnected. You can now connect again.');
       }
     } catch (err) {
@@ -103,11 +111,13 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
     setGeneratingMeet(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      const localToken = localStorage.getItem('fitti_google_provider_token');
+      const tokenToUse = session?.provider_token || localToken;
       
       const { data, error } = await supabase.functions.invoke('schedule-meet', {
         body: { 
           guestId: activeContact.id,
-          providerToken: session?.provider_token
+          providerToken: tokenToUse
         }
       });
       
