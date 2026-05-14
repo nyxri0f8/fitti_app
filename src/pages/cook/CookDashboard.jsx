@@ -56,7 +56,7 @@ function KitchenOnboardingModal({ user, onClose }) {
               type="text" 
               value={location} 
               onChange={e => setLocation(e.target.value)}
-              placeholder="e.g. Downtown Hub, NY"
+              placeholder="e.g. Chennai"
               className="w-full bg-fitti-bg border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:bg-white focus:outline-none transition-all"
             />
           </div>
@@ -355,8 +355,6 @@ function OrdersTab() {
 
   return (
     <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
-      {(!user?.user_metadata?.kitchen_name) && <KitchenOnboardingModal user={user} onClose={() => {}} />}
-      
       <div className="flex items-center justify-between mb-10">
         <div>
           <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter flex items-center gap-3">
@@ -588,9 +586,12 @@ function HistoryTab() {
 
 /* ── Main Cook Dashboard ──────────────────────────────── */
 export default function CookDashboard() {
+  const user = useAuthStore(state => state.user);
+
   return (
     <div className="flex h-screen bg-fitti-bg relative">
       <FloatingBackground role="cook" />
+      {(!user?.user_metadata?.kitchen_name) && <KitchenOnboardingModal user={user} onClose={() => {}} />}
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Navbar title="" />
