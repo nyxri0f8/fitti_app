@@ -37,17 +37,22 @@ export default function MessagingView() {
       <div className="absolute bottom-[-10%] left-[-5%] w-[30rem] h-[30rem] bg-fitti-green/5 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }} />
 
       {/* Main Layout Container */}
-      <div className="flex-1 flex p-6 gap-6 relative z-10 h-full overflow-hidden">
-        <ContactsList 
-          contacts={contacts} 
-          activeContactId={activeContact?.id} 
-          onSelectContact={setActiveContact} 
-        />
-        <ChatWindow 
-          activeContact={activeContact} 
-          messages={messages} 
-          onSendMessage={sendMessage}
-        />
+      <div className="flex-1 flex md:p-6 md:gap-6 relative z-10 h-full overflow-hidden">
+        <div className={`flex-1 md:flex-none md:w-96 h-full ${activeContact ? 'hidden md:flex' : 'flex'}`}>
+          <ContactsList 
+            contacts={contacts} 
+            activeContactId={activeContact?.id} 
+            onSelectContact={setActiveContact} 
+          />
+        </div>
+        <div className={`flex-1 h-full ${!activeContact ? 'hidden md:flex' : 'flex'}`}>
+          <ChatWindow 
+            activeContact={activeContact} 
+            messages={messages} 
+            onSendMessage={sendMessage}
+            onBack={() => setActiveContact(null)}
+          />
+        </div>
       </div>
     </div>
   );

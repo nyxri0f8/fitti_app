@@ -2,36 +2,36 @@ import { Search, Moon, Bell, Plus, ShieldCheck } from 'lucide-react';
 
 export default function ContactsList({ contacts, activeContactId, onSelectContact }) {
   return (
-    <div className="w-96 flex flex-col h-full overflow-hidden animate-fade-in-right">
+    <div className="w-full h-full flex flex-col overflow-hidden animate-fade-in-right">
       {/* Top Navigation Bar - Matching Screenshot */}
-      <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-[2.5rem] p-4 flex items-center justify-between mb-6 shadow-[0_8px_32px_rgba(118,185,0,0.08)]">
-        <h1 className="text-2xl font-black font-display text-fitti-text tracking-tighter uppercase ml-2">Direct</h1>
+      <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-2xl md:rounded-[2.5rem] p-3 md:p-4 flex items-center justify-between mb-4 md:mb-6 shadow-[0_8px_32px_rgba(118,185,0,0.08)] mx-2 md:mx-0">
+        <h1 className="text-xl md:text-2xl font-black font-display text-fitti-text tracking-tighter uppercase ml-2">Direct</h1>
         
-        <div className="flex items-center gap-2">
-          <div className="relative group">
+        <div className="flex items-center gap-1.5 md:gap-2">
+          <div className="relative group hidden sm:block">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-fitti-green">
               <Search className="h-4 w-4" />
             </div>
             <input
               type="text"
-              placeholder="Search messages..."
-              className="bg-fitti-bg/80 border border-fitti-border/50 rounded-full pl-9 pr-4 py-2 text-xs font-bold w-40 focus:w-48 transition-all focus:outline-none focus:border-fitti-green/50 placeholder:text-fitti-text-muted/40"
+              placeholder="Search..."
+              className="bg-fitti-bg/80 border border-fitti-border/50 rounded-full pl-9 pr-4 py-2 text-xs font-bold w-28 md:w-40 focus:w-48 transition-all focus:outline-none focus:border-fitti-green/50 placeholder:text-fitti-text-muted/40"
             />
           </div>
-          <button className="p-2.5 bg-fitti-bg/80 rounded-full border border-fitti-border/50 hover:bg-white transition-colors shadow-sm text-fitti-text-muted">
-            <Moon className="h-4 w-4" />
+          <button className="p-2 md:p-2.5 bg-fitti-bg/80 rounded-full border border-fitti-border/50 hover:bg-white transition-colors shadow-sm text-fitti-text-muted">
+            <Moon className="h-3.5 w-3.5 md:h-4 md:h-4" />
           </button>
-          <button className="p-2.5 bg-fitti-bg/80 rounded-full border border-fitti-border/50 hover:bg-white transition-colors shadow-sm text-fitti-text-muted">
-            <Bell className="h-4 w-4" />
+          <button className="p-2 md:p-2.5 bg-fitti-bg/80 rounded-full border border-fitti-border/50 hover:bg-white transition-colors shadow-sm text-fitti-text-muted">
+            <Bell className="h-3.5 w-3.5 md:h-4 md:h-4" />
           </button>
-          <div className="h-9 w-9 rounded-full bg-fitti-green/20 border-2 border-fitti-green overflow-hidden shadow-sm">
+          <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-fitti-green/20 border-2 border-fitti-green overflow-hidden shadow-sm flex-shrink-0">
             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Varun" alt="Profile" className="h-full w-full object-cover" />
           </div>
         </div>
       </div>
 
       {/* Contacts List Container */}
-      <div className="flex-1 bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/30 p-6 flex flex-col shadow-[0_8px_40px_rgba(0,0,0,0.02)] overflow-hidden">
+      <div className="flex-1 bg-white/40 backdrop-blur-md rounded-t-[2.5rem] md:rounded-[3rem] border-t md:border border-white/30 p-4 md:p-6 flex flex-col shadow-[0_8px_40px_rgba(0,0,0,0.02)] overflow-hidden">
         <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2">
           {contacts.map((contact) => (
             <div 

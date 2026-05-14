@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Phone, Lock, MoreVertical, User, Calendar, Video, X, CheckCheck, Mic } from 'lucide-react';
+import { Send, Paperclip, Phone, Lock, MoreVertical, User, Calendar, Video, X, CheckCheck, Mic, ArrowLeft, ChevronLeft } from 'lucide-react';
 import Modal from '../shared/Modal';
 import useAuthStore from '../../store/authStore';
 import { supabase } from '../../lib/supabase';
 import MessageBubble from './MessageBubble';
 
-export default function ChatWindow({ activeContact, messages, onSendMessage }) {
+export default function ChatWindow({ activeContact, messages, onSendMessage, onBack }) {
   const [inputText, setInputText] = useState('');
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showMeetModal, setShowMeetModal] = useState(false);
@@ -167,33 +167,43 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
   return (
     <div className="flex-1 flex flex-col h-full relative overflow-hidden animate-fade-in-left">
       {/* Centered Profile Header - Matching Screenshot */}
-      <div className="mx-auto w-full max-w-2xl px-6 pt-6 sticky top-0 z-20">
-        <div className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-[2rem] p-6 flex items-center justify-center relative shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-black font-display text-fitti-text tracking-tight">{activeContact.name}</h2>
-            <div className="bg-[#52C41A] rounded-full p-0.5 shadow-sm">
-              <CheckCheck className="h-3 w-3 text-white" strokeWidth={4} />
+      <div className="mx-auto w-full max-w-2xl px-4 md:px-6 pt-4 md:pt-6 sticky top-0 z-20">
+        <div className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-2xl md:rounded-[2rem] p-3 md:p-6 flex items-center justify-between md:justify-center relative shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+          {/* Back Button for Mobile */}
+          <button 
+            onClick={onBack}
+            className="md:hidden p-2 hover:bg-white/50 rounded-full transition-colors mr-2"
+          >
+            <ChevronLeft className="h-6 w-6 text-fitti-text" />
+          </button>
+
+          <div className="flex items-center gap-2 md:gap-3 flex-1 md:flex-none justify-center">
+            <h2 className="text-lg md:text-xl font-black font-display text-fitti-text tracking-tight truncate max-w-[150px] md:max-w-none">
+              {activeContact.name}
+            </h2>
+            <div className="bg-[#52C41A] rounded-full p-0.5 shadow-sm flex-shrink-0">
+              <CheckCheck className="h-2.5 w-2.5 md:h-3 md:w-3 text-white" strokeWidth={4} />
             </div>
           </div>
           
-          <button className="absolute right-6 p-2 text-fitti-text-muted hover:bg-white/50 rounded-full transition-colors">
+          <button className="p-2 text-fitti-text-muted hover:bg-white/50 rounded-full transition-colors md:absolute md:right-6">
             <MoreVertical className="h-5 w-5" />
           </button>
         </div>
       </div>
 
       {/* Encryption Banner - Matching Screenshot */}
-      <div className="flex justify-center mt-6">
-        <div className="bg-white/40 backdrop-blur-md border border-white/30 px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm">
-          <Lock className="h-3 w-3 text-fitti-text" />
-          <p className="text-[10px] font-black text-fitti-text-muted uppercase tracking-[0.15em]">
+      <div className="flex justify-center mt-4 md:mt-6 px-4">
+        <div className="bg-white/40 backdrop-blur-md border border-white/30 px-4 md:px-6 py-1.5 md:py-2 rounded-xl flex items-center gap-2 shadow-sm">
+          <Lock className="h-2.5 w-2.5 md:h-3 md:w-3 text-fitti-text" />
+          <p className="text-[9px] md:text-[10px] font-black text-fitti-text-muted uppercase tracking-[0.1em] md:tracking-[0.15em] text-center">
             End-to-End Encryption Enabled
           </p>
         </div>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-10 py-8 space-y-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 md:px-10 py-6 md:py-8 space-y-4 md:space-y-6 custom-scrollbar">
         <div className="max-w-4xl mx-auto stagger-children">
           {messages.map((msg, index) => (
             <MessageBubble key={msg.id || index} message={msg} isOwn={msg.isOwn} />
@@ -203,57 +213,57 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
       </div>
 
       {/* Input Area - Matching Screenshot */}
-      <div className="px-6 pb-6 pt-2">
-        <div className="max-w-3xl mx-auto bg-white/60 backdrop-blur-xl border border-white/50 rounded-[2.5rem] p-3 flex items-center gap-3 shadow-[0_8px_32px_rgba(0,0,0,0.06)] group-focus-within:shadow-[0_12px_40px_rgba(118,185,0,0.12)] transition-all">
+      <div className="px-4 md:px-6 pb-4 md:pb-6 pt-2">
+        <div className="max-w-3xl mx-auto bg-white/60 backdrop-blur-xl border border-white/50 rounded-2xl md:rounded-[2.5rem] p-2 md:p-3 flex items-center gap-2 md:gap-3 shadow-[0_8px_32px_rgba(0,0,0,0.06)] group-focus-within:shadow-[0_12px_40px_rgba(118,185,0,0.12)] transition-all">
           <div className="relative" ref={attachMenuRef}>
             <button 
               type="button" 
               onClick={() => setShowAttachMenu(!showAttachMenu)}
-              className="h-12 w-12 flex items-center justify-center text-fitti-text-muted hover:text-fitti-green hover:bg-white/50 rounded-full transition-all"
+              className="h-10 w-10 md:h-12 md:w-12 flex items-center justify-center text-fitti-text-muted hover:text-fitti-green hover:bg-white/50 rounded-full transition-all"
             >
-              <Paperclip className="h-5 w-5 rotate-45" />
+              <Paperclip className="h-4 w-4 md:h-5 md:w-5 rotate-45" />
             </button>
             
             {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-4 w-56 bg-white/95 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl p-2 animate-bounce-in z-50 overflow-hidden">
-                <div className="px-4 py-3 border-b border-fitti-border/30 mb-1">
-                  <p className="text-[10px] font-black text-fitti-text-muted uppercase tracking-widest">Secure Actions</p>
+              <div className="absolute bottom-full left-0 mb-4 w-52 md:w-56 bg-white/95 backdrop-blur-2xl border border-white/50 rounded-2xl md:rounded-[2rem] shadow-2xl p-2 animate-bounce-in z-50 overflow-hidden">
+                <div className="px-3 md:px-4 py-2 md:py-3 border-b border-fitti-border/30 mb-1">
+                  <p className="text-[9px] md:text-[10px] font-black text-fitti-text-muted uppercase tracking-widest">Secure Actions</p>
                 </div>
-                <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-bg rounded-2xl text-left transition-colors group">
-                  <div className="bg-fitti-bg p-2 rounded-lg group-hover:bg-white transition-colors">
-                    <Paperclip className="h-4 w-4 text-fitti-text-muted" />
+                <button className="w-full flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 hover:bg-fitti-bg rounded-xl md:rounded-2xl text-left transition-colors group">
+                  <div className="bg-fitti-bg p-1.5 md:p-2 rounded-lg group-hover:bg-white transition-colors">
+                    <Paperclip className="h-3.5 w-3.5 md:h-4 md:w-4 text-fitti-text-muted" />
                   </div>
-                  <span className="font-bold text-sm text-fitti-text">Upload Artifact</span>
+                  <span className="font-bold text-xs md:text-sm text-fitti-text">Upload Artifact</span>
                 </button>
-                <button onClick={handleScheduleMeet} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-green/5 rounded-2xl text-left transition-colors group">
-                  <div className="bg-fitti-bg p-2 rounded-lg group-hover:bg-white transition-colors">
-                    <Video className="h-4 w-4 text-fitti-green" />
+                <button onClick={handleScheduleMeet} className="w-full flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 hover:bg-fitti-green/5 rounded-xl md:rounded-2xl text-left transition-colors group">
+                  <div className="bg-fitti-bg p-1.5 md:p-2 rounded-lg group-hover:bg-white transition-colors">
+                    <Video className="h-3.5 w-3.5 md:h-4 md:w-4 text-fitti-green" />
                   </div>
-                  <span className="font-bold text-sm text-fitti-text group-hover:text-fitti-green transition-colors">Schedule Meet</span>
+                  <span className="font-bold text-xs md:text-sm text-fitti-text group-hover:text-fitti-green transition-colors">Schedule Meet</span>
                 </button>
               </div>
             )}
           </div>
 
-          <form onSubmit={handleSend} className="flex-1 flex items-center gap-3">
+          <form onSubmit={handleSend} className="flex-1 flex items-center gap-2 md:gap-3">
             <input
               type="text"
-              className="flex-1 bg-transparent border-none px-2 py-2 text-sm font-bold text-fitti-text focus:ring-0 placeholder:text-fitti-text-muted/40"
-              placeholder="Type a message..."
+              className="flex-1 bg-transparent border-none px-1 md:px-2 py-2 text-xs md:text-sm font-bold text-fitti-text focus:ring-0 placeholder:text-fitti-text-muted/40"
+              placeholder="Message..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
             />
             
-            <div className="flex items-center gap-1 pr-2">
-              <button type="button" className="p-3 text-fitti-text-muted hover:text-fitti-green transition-colors">
-                <Mic className="h-5 w-5" />
+            <div className="flex items-center gap-0.5 md:gap-1 pr-1 md:pr-2">
+              <button type="button" className="p-2 md:p-3 text-fitti-text-muted hover:text-fitti-green transition-colors">
+                <Mic className="h-4 w-4 md:h-5 md:w-5" />
               </button>
               <button 
                 type="submit" 
-                className="h-12 w-12 rounded-2xl bg-[#C7CED9] text-white flex items-center justify-center hover:bg-fitti-green transition-all shadow-md active:scale-90 disabled:opacity-50 disabled:scale-100"
+                className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-[#C7CED9] text-white flex items-center justify-center hover:bg-fitti-green transition-all shadow-md active:scale-90 disabled:opacity-50 disabled:scale-100 flex-shrink-0"
                 disabled={!inputText.trim()}
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </div>
           </form>
