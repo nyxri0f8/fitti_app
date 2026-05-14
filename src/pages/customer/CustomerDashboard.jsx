@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Zap, Package, TrendingUp, Scale, Target, Calendar, ChefHat, Dumbbell, Stethoscope, Heart, Activity, ArrowRight, ShieldCheck, Clock, Utensils } from 'lucide-react';
+import { Zap, Package, TrendingUp, Scale, Target, Calendar, ChefHat, Dumbbell, Stethoscope, Heart, Activity, ArrowRight, ShieldCheck, Clock, Utensils, Trophy } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
@@ -300,10 +300,120 @@ function MealsTab() {
   );
 }
 
-/* ── Workout Tab (with full tracker) ──────────────────── */
+/* ── Workout Tab (with Plan & Tracker) ──────────────────── */
+import confetti from 'canvas-confetti';
+import { CheckCircle2, Circle } from 'lucide-react';
+
 function WorkoutTab() {
+  const user = useAuthStore(state => state.user);
+  const [workoutPlan, setWorkoutPlan] = useState(null);
+  const [completedExercises, setCompletedExercises] = useState(new Set());
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const { data } = await supabase.from('workout_plans').select('*').eq('customer_id', user.id).eq('active', true).order('created_at', { ascending: false }).limit(1);
+      if (data?.[0]) setWorkoutPlan(data[0]);
+      setLoading(false);
+    };
+    if (user) fetchPlan();
+  }, [user]);
+
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const todaysPlan = workoutPlan?.weekly_structure?.find(d => d.day === today);
+
+  const toggleExercise = (index) => {
+    setCompletedExercises(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const handleCompleteWorkout = () => {
+    setIsCompleted(true);
+    // Play sound
+    const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3');
+    audio.play().catch(e => console.log('Audio play failed:', e));
+    
+    // Fire confetti pops and bangs
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+      if (timeLeft <= 0) return clearInterval(interval);
+      const particleCount = 50 * (timeLeft / duration);
+      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+    }, 250);
+  };
+
   return (
-    <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
+    <div className="p-8 animate-fade-in-up max-w-7xl mx-auto space-y-12">
+      {/* Assigned Workout Plan Section */}
+      <div className="card-glass p-10 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-10 opacity-[0.03]">
+          <Target className="h-48 w-48 text-fitti-text" />
+        </div>
+        <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter mb-2 relative z-10 uppercase">Today's Directive</h2>
+        <p className="font-accent text-lg italic text-fitti-text-muted mb-8 relative z-10">Assigned by your trainer</p>
+        
+        {loading ? (
+          <div className="h-48 bg-white/50 rounded-2xl shimmer" />
+        ) : !todaysPlan || !todaysPlan.exercises?.length ? (
+           <div className="p-8 text-center bg-fitti-bg/50 rounded-2xl border border-fitti-border/30">
+             <Dumbbell className="h-10 w-10 text-fitti-text-muted mx-auto mb-3" />
+             <p className="font-bold text-fitti-text-muted">No specific exercises assigned for {today}. Enjoy your rest or do a custom workout!</p>
+           </div>
+        ) : isCompleted ? (
+           <div className="p-12 text-center bg-fitti-green/10 rounded-2xl border border-fitti-green/20 animate-scale-in">
+             <Trophy className="h-20 w-20 text-fitti-green mx-auto mb-4" />
+             <h3 className="font-display text-4xl font-black text-fitti-green tracking-tight mb-2 uppercase">Workout Completed!</h3>
+             <p className="font-body text-fitti-text-muted font-bold">Outstanding work. The system has recorded your progress.</p>
+           </div>
+        ) : (
+          <div className="relative z-10 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {todaysPlan.exercises.map((ex, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => toggleExercise(i)}
+                  className={`flex items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer group ${completedExercises.has(i) ? 'bg-fitti-green/10 border-fitti-green/30' : 'bg-fitti-bg/50 border-fitti-border/50 hover:border-fitti-green/50'}`}
+                >
+                   <div className={`transition-colors ${completedExercises.has(i) ? 'text-fitti-green' : 'text-fitti-text-muted group-hover:text-fitti-green/50'}`}>
+                     {completedExercises.has(i) ? <CheckCircle2 className="h-6 w-6" /> : <Circle className="h-6 w-6" />}
+                   </div>
+                   <div className="flex-1">
+                     <p className={`font-display font-bold text-lg transition-all ${completedExercises.has(i) ? 'text-fitti-text line-through opacity-70' : 'text-fitti-text'}`}>{ex.name}</p>
+                     <p className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest mt-1">
+                       {ex.sets} Sets × {ex.reps} Reps <span className="text-fitti-green ml-2">Rest: {ex.rest}</span>
+                     </p>
+                   </div>
+                </div>
+              ))}
+            </div>
+            
+            {completedExercises.size === todaysPlan.exercises.length && (
+              <button 
+                onClick={handleCompleteWorkout}
+                className="w-full mt-6 py-5 bg-black text-white font-display font-black text-xl tracking-widest uppercase rounded-2xl hover:bg-gray-900 transition-all shadow-2xl shadow-black/20 animate-scale-in flex items-center justify-center gap-3"
+              >
+                <CheckCircle2 className="h-6 w-6 text-fitti-green" /> Mark Protocol Complete
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="w-full h-px bg-fitti-border/50 my-8" />
+
+      {/* Free Tracker Section */}
       <WorkoutTracker />
     </div>
   );
