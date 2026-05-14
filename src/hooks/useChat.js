@@ -153,7 +153,10 @@ export default function useChat() {
         .subscribe();
       
       subscriptionRef.current = channel;
-      setActiveContact(prev => ({ ...prev, roomId: room.id, pubkey: theirPubKey }));
+      setActiveContact(prev => {
+        if (prev?.roomId === room.id && prev?.pubkey === theirPubKey) return prev;
+        return { ...prev, roomId: room.id, pubkey: theirPubKey };
+      });
     };
 
     fetchRoomAndMessages();
