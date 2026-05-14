@@ -21,25 +21,30 @@ export default function Login() {
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Login error details:', {
+          message: authError.message,
+          status: authError.status,
+          name: authError.name
+        });
+        throw authError;
+      }
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authData.user.id)
-        .maybeSingle(); // Use maybeSingle to not throw error if 0 rows
+        .maybeSingle();
 
       setSession(authData.session);
 
       if (!profile) {
-        // No profile found, redirect to onboarding
         navigate('/onboarding');
       } else {
-        // Profile exists, redirect to dashboard
         setProfile(profile);
         navigate(`/${profile.role}`);
       }
@@ -50,12 +55,7 @@ export default function Login() {
     }
   };
 
-  const testUsers = [
-    { role: 'Admin', email: 'admin@fitti.org.in', icon: Shield, desc: 'Full system control' },
-    { role: 'Trainer', email: 'trainer@fitti.org.in', icon: Dumbbell, desc: 'Manage clients' },
-    { role: 'Doctor', email: 'doctor@fitti.org.in', icon: Heart, desc: 'Patient care' },
-    { role: 'Cook', email: 'cook@fitti.org.in', icon: Zap, desc: 'Meal prep' }
-  ];
+
 
   return (
     <div className="min-h-screen bg-white flex relative overflow-hidden">
@@ -163,7 +163,10 @@ export default function Login() {
               </button>
             </form>
 
-
+            <div className="mt-8 pt-6 border-t border-fitti-border/30 flex items-center justify-center gap-2">
+              <span className="font-body text-xs text-fitti-text-muted">New to the evolution?</span>
+              <Link to="/onboarding" className="font-display font-bold text-xs text-fitti-green hover:underline">Begin Onboarding</Link>
+            </div>
           </div>
 
           <p className="mt-6 text-center font-mono text-[10px] text-fitti-text-muted/50 tracking-widest uppercase">

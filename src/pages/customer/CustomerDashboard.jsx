@@ -560,7 +560,7 @@ function ProgressTab() {
               </h3>
               {workoutData.length > 0 ? (
                 <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <AreaChart data={workoutData}>
                       <defs>
                         <linearGradient id="colorCalories" x1="0" y1="0" x2="0" y2="1">
@@ -588,7 +588,7 @@ function ProgressTab() {
               </h3>
               {progressData.length > 0 ? (
                 <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <LineChart data={progressData}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
                       <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#6b7b68' }} dy={10} />

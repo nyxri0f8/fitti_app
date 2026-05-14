@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Phone, Lock, MoreVertical, User, Calendar, Video, X } from 'lucide-react';
+import { Send, Paperclip, Phone, Lock, MoreVertical, User, Calendar, Video, X, CheckCheck, Mic } from 'lucide-react';
 import Modal from '../shared/Modal';
 import useAuthStore from '../../store/authStore';
 import { supabase } from '../../lib/supabase';
@@ -164,107 +164,100 @@ export default function ChatWindow({ activeContact, messages, onSendMessage }) {
 
 
   return (
-    <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-fitti-bg">
-      {/* Header */}
-      <header className="h-20 px-8 bg-white/70 backdrop-blur-md border-b border-fitti-border/50 flex items-center justify-between sticky top-0 z-10 animate-fade-in-up">
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <div className="h-12 w-12 rounded-2xl bg-fitti-green shadow-lg shadow-fitti-green/20 flex items-center justify-center text-white">
-              <User className="h-6 w-6" />
-            </div>
-            {activeContact.online && (
-              <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-fitti-green border-4 border-white rounded-full animate-pulse" />
-            )}
-          </div>
-          <div>
-            <h2 className="font-black text-fitti-text tracking-tight">{activeContact.name}</h2>
-            <div className="flex items-center gap-1.5">
-              <span className={`h-1.5 w-1.5 rounded-full ${activeContact.online ? 'bg-fitti-green' : 'bg-fitti-border'}`} />
-              <p className="text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest">
-                {activeContact.online ? 'Secure Connection' : 'Offline'}
-              </p>
+  return (
+    <div className="flex-1 flex flex-col h-full relative overflow-hidden animate-fade-in-left">
+      {/* Centered Profile Header - Matching Screenshot */}
+      <div className="mx-auto w-full max-w-2xl px-6 pt-6 sticky top-0 z-20">
+        <div className="bg-white/60 backdrop-blur-xl border border-white/50 rounded-[2rem] p-6 flex items-center justify-center relative shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-black font-display text-fitti-text tracking-tight">{activeContact.name}</h2>
+            <div className="bg-[#52C41A] rounded-full p-0.5 shadow-sm">
+              <CheckCheck className="h-3 w-3 text-white" strokeWidth={4} />
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button className="p-3 text-fitti-text-muted hover:bg-fitti-bg rounded-2xl transition-all">
+          
+          <button className="absolute right-6 p-2 text-fitti-text-muted hover:bg-white/50 rounded-full transition-colors">
             <MoreVertical className="h-5 w-5" />
           </button>
         </div>
-      </header>
+      </div>
+
+      {/* Encryption Banner - Matching Screenshot */}
+      <div className="flex justify-center mt-6">
+        <div className="bg-white/40 backdrop-blur-md border border-white/30 px-6 py-2 rounded-xl flex items-center gap-2 shadow-sm">
+          <Lock className="h-3 w-3 text-fitti-text" />
+          <p className="text-[10px] font-black text-fitti-text-muted uppercase tracking-[0.15em]">
+            End-to-End Encryption Enabled
+          </p>
+        </div>
+      </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-8 relative space-y-6">
-        <div className="flex justify-center mb-8">
-          <div className="bg-white/50 backdrop-blur-sm border border-fitti-border/50 px-6 py-2 rounded-2xl">
-            <p className="text-[10px] font-black text-fitti-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-              <Lock className="h-3 w-3 text-fitti-green" /> End-to-End Encryption Enabled
-            </p>
-          </div>
-        </div>
-
-        <div className="stagger-children space-y-4">
+      <div className="flex-1 overflow-y-auto px-10 py-8 space-y-6 custom-scrollbar">
+        <div className="max-w-4xl mx-auto stagger-children">
           {messages.map((msg, index) => (
             <MessageBubble key={msg.id || index} message={msg} isOwn={msg.isOwn} />
           ))}
+          <div ref={messagesEndRef} />
         </div>
-        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-6 bg-white/70 backdrop-blur-md border-t border-fitti-border/50">
-        <form onSubmit={handleSend} className="max-w-4xl mx-auto flex items-center gap-4">
+      {/* Input Area - Matching Screenshot */}
+      <div className="px-6 pb-6 pt-2">
+        <div className="max-w-3xl mx-auto bg-white/60 backdrop-blur-xl border border-white/50 rounded-[2.5rem] p-3 flex items-center gap-3 shadow-[0_8px_32px_rgba(0,0,0,0.06)] group-focus-within:shadow-[0_12px_40px_rgba(118,185,0,0.12)] transition-all">
           <div className="relative" ref={attachMenuRef}>
             <button 
               type="button" 
               onClick={() => setShowAttachMenu(!showAttachMenu)}
-              className="p-4 text-fitti-text-muted hover:text-fitti-green hover:bg-fitti-green/5 rounded-2xl transition-all"
+              className="h-12 w-12 flex items-center justify-center text-fitti-text-muted hover:text-fitti-green hover:bg-white/50 rounded-full transition-all"
             >
-              <Paperclip className="h-6 w-6" />
+              <Paperclip className="h-5 w-5 rotate-45" />
             </button>
             
             {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-4 w-56 bg-white/90 backdrop-blur-xl border border-fitti-border/50 rounded-2xl shadow-xl p-2 animate-fade-in-up z-50">
-                <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-bg rounded-xl text-left transition-colors group">
+              <div className="absolute bottom-full left-0 mb-4 w-56 bg-white/95 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl p-2 animate-bounce-in z-50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-fitti-border/30 mb-1">
+                  <p className="text-[10px] font-black text-fitti-text-muted uppercase tracking-widest">Secure Actions</p>
+                </div>
+                <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-bg rounded-2xl text-left transition-colors group">
                   <div className="bg-fitti-bg p-2 rounded-lg group-hover:bg-white transition-colors">
                     <Paperclip className="h-4 w-4 text-fitti-text-muted" />
                   </div>
-                  <div>
-                    <span className="block font-bold text-sm text-fitti-text">Upload File</span>
-                    <span className="block text-[10px] text-fitti-text-muted uppercase tracking-wider">Images & Docs</span>
-                  </div>
+                  <span className="font-bold text-sm text-fitti-text">Upload Artifact</span>
                 </button>
-                <div className="h-px bg-fitti-border/30 my-1 mx-2" />
-                <button onClick={handleScheduleMeet} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-green/5 rounded-xl text-left transition-colors group">
+                <button onClick={handleScheduleMeet} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-fitti-green/5 rounded-2xl text-left transition-colors group">
                   <div className="bg-fitti-bg p-2 rounded-lg group-hover:bg-white transition-colors">
                     <Video className="h-4 w-4 text-fitti-green" />
                   </div>
-                  <div>
-                    <span className="block font-bold text-sm text-fitti-text group-hover:text-fitti-green transition-colors">Schedule GMeet</span>
-                    <span className="block text-[10px] text-fitti-text-muted uppercase tracking-wider">Auto-find free time</span>
-                  </div>
+                  <span className="font-bold text-sm text-fitti-text group-hover:text-fitti-green transition-colors">Schedule Meet</span>
                 </button>
               </div>
             )}
           </div>
-          <div className="flex-1 relative group">
+
+          <form onSubmit={handleSend} className="flex-1 flex items-center gap-3">
             <input
               type="text"
-              className="w-full bg-fitti-bg/50 border border-fitti-border rounded-[1.5rem] px-8 py-4 text-sm font-bold text-fitti-text focus:border-fitti-green focus:outline-none focus:ring-4 focus:ring-fitti-green/10 transition-all placeholder:text-fitti-text-muted/50"
-              placeholder="Securely transmit message..."
+              className="flex-1 bg-transparent border-none px-2 py-2 text-sm font-bold text-fitti-text focus:ring-0 placeholder:text-fitti-text-muted/40"
+              placeholder="Type a message..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
             />
-          </div>
-          <button 
-            type="submit" 
-            className="h-14 w-14 rounded-[1.5rem] bg-fitti-green text-white flex items-center justify-center hover:bg-fitti-green-dark transition-all shadow-lg shadow-fitti-green/20 active:scale-90 disabled:opacity-50 disabled:scale-100"
-            disabled={!inputText.trim()}
-          >
-            <Send className="h-6 w-6 ml-1" />
-          </button>
-        </form>
+            
+            <div className="flex items-center gap-1 pr-2">
+              <button type="button" className="p-3 text-fitti-text-muted hover:text-fitti-green transition-colors">
+                <Mic className="h-5 w-5" />
+              </button>
+              <button 
+                type="submit" 
+                className="h-12 w-12 rounded-2xl bg-[#C7CED9] text-white flex items-center justify-center hover:bg-fitti-green transition-all shadow-md active:scale-90 disabled:opacity-50 disabled:scale-100"
+                disabled={!inputText.trim()}
+              >
+                <Send className="h-5 w-5" />
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Google Meet Modal */}

@@ -1,68 +1,94 @@
-import { Search, ShieldCheck, User } from 'lucide-react';
-import { format } from 'date-fns';
+import { Search, Moon, Bell, Plus, ShieldCheck } from 'lucide-react';
 
 export default function ContactsList({ contacts, activeContactId, onSelectContact }) {
   return (
-    <div className="w-80 bg-white/50 backdrop-blur-md flex flex-col border-r border-fitti-border/50 h-full overflow-hidden">
-      <div className="p-6 border-b border-fitti-border/50 bg-white/30">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-display font-black text-fitti-text tracking-tighter uppercase">Direct</h2>
-          <ShieldCheck className="h-4 w-4 text-fitti-green" />
-        </div>
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-fitti-green">
-            <Search className="h-4 w-4 text-fitti-text-muted" />
+    <div className="w-96 flex flex-col h-full overflow-hidden animate-fade-in-right">
+      {/* Top Navigation Bar - Matching Screenshot */}
+      <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-[2.5rem] p-4 flex items-center justify-between mb-6 shadow-[0_8px_32px_rgba(118,185,0,0.08)]">
+        <h1 className="text-2xl font-black font-display text-fitti-text tracking-tighter uppercase ml-2">Direct</h1>
+        
+        <div className="flex items-center gap-2">
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-fitti-green">
+              <Search className="h-4 w-4" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search messages..."
+              className="bg-fitti-bg/80 border border-fitti-border/50 rounded-full pl-9 pr-4 py-2 text-xs font-bold w-40 focus:w-48 transition-all focus:outline-none focus:border-fitti-green/50 placeholder:text-fitti-text-muted/40"
+            />
           </div>
-          <input
-            type="text"
-            className="w-full bg-fitti-bg/50 border border-fitti-border rounded-2xl pl-12 pr-4 py-3 text-xs font-bold focus:border-fitti-green focus:outline-none focus:ring-4 focus:ring-fitti-green/10 transition-all placeholder:text-fitti-text-muted/50"
-            placeholder="FILTER CHANNELS..."
-          />
+          <button className="p-2.5 bg-fitti-bg/80 rounded-full border border-fitti-border/50 hover:bg-white transition-colors shadow-sm text-fitti-text-muted">
+            <Moon className="h-4 w-4" />
+          </button>
+          <button className="p-2.5 bg-fitti-bg/80 rounded-full border border-fitti-border/50 hover:bg-white transition-colors shadow-sm text-fitti-text-muted">
+            <Bell className="h-4 w-4" />
+          </button>
+          <div className="h-9 w-9 rounded-full bg-fitti-green/20 border-2 border-fitti-green overflow-hidden shadow-sm">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Varun" alt="Profile" className="h-full w-full object-cover" />
+          </div>
         </div>
       </div>
-      
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {contacts.map((contact) => (
-          <div 
-            key={contact.id}
-            onClick={() => onSelectContact(contact)}
-            className={`flex items-center px-6 py-5 cursor-pointer border-b border-fitti-border/30 transition-all duration-300 relative group ${activeContactId === contact.id ? 'bg-fitti-green/5' : 'hover:bg-fitti-bg'}`}
-          >
-            {activeContactId === contact.id && (
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-fitti-green rounded-r-full shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
-            )}
-            
-            <div className="relative flex-shrink-0">
-              <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-105 duration-300 ${activeContactId === contact.id ? 'bg-fitti-green shadow-fitti-green/20' : 'bg-fitti-text/80 shadow-fitti-text/10'}`}>
-                <User className="h-7 w-7" />
+
+      {/* Contacts List Container */}
+      <div className="flex-1 bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/30 p-6 flex flex-col shadow-[0_8px_40px_rgba(0,0,0,0.02)] overflow-hidden">
+        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2">
+          {contacts.map((contact) => (
+            <div 
+              key={contact.id}
+              onClick={() => onSelectContact(contact)}
+              className={`group relative p-6 rounded-[2rem] border transition-all duration-500 cursor-pointer overflow-hidden ${
+                activeContactId === contact.id 
+                  ? 'bg-white shadow-[0_20px_40px_rgba(118,185,0,0.1)] border-white' 
+                  : 'bg-white/30 border-transparent hover:bg-white/60 hover:border-white/50'
+              }`}
+            >
+              {/* Active Highlight Glow */}
+              {activeContactId === contact.id && (
+                <div className="absolute inset-0 bg-gradient-to-br from-fitti-green/5 to-transparent pointer-events-none" />
+              )}
+              
+              <div className="flex flex-col items-center text-center relative z-10">
+                <div className="relative mb-4">
+                  <div className={`h-24 w-24 rounded-full p-1 border-4 transition-all duration-500 ${
+                    activeContactId === contact.id ? 'border-fitti-green scale-110 shadow-lg shadow-fitti-green/20' : 'border-white/50'
+                  }`}>
+                    <div className="h-full w-full rounded-full bg-fitti-bg overflow-hidden border border-fitti-border/50 shadow-inner">
+                      <img 
+                        src={contact.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${contact.name}`} 
+                        alt={contact.name} 
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  <div className={`absolute bottom-1 right-1 h-5 w-5 rounded-full border-4 border-white shadow-sm transition-colors duration-500 ${
+                    contact.online ? 'bg-fitti-green' : 'bg-fitti-text-muted'
+                  }`} />
+                </div>
+                
+                <h3 className="font-display font-black text-lg text-fitti-text tracking-tight mb-1">{contact.name}</h3>
+                <p className="text-[11px] font-bold text-fitti-text-muted leading-tight line-clamp-2 px-2">
+                  {contact.lastMessageContent || "Start a conversation to see secure updates."}
+                </p>
               </div>
-              {contact.online && (
-                <span className="absolute -bottom-1 -right-1 block h-4 w-4 rounded-full bg-fitti-green border-4 border-white shadow-sm"></span>
+
+              {/* Unread Badge Overlay */}
+              {contact.unreadCount > 0 && (
+                <div className="absolute top-4 right-4 bg-fitti-green text-white text-[10px] font-black h-6 min-w-[1.5rem] px-1.5 flex items-center justify-center rounded-full shadow-lg shadow-fitti-green/30 animate-pulse">
+                  {contact.unreadCount}
+                </div>
               )}
             </div>
-            
-            <div className="ml-4 flex-1 overflow-hidden">
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className={`text-sm font-black tracking-tight truncate transition-colors ${activeContactId === contact.id ? 'text-fitti-green' : 'text-fitti-text'}`}>
-                  {contact.name}
-                </h3>
-                <span className="text-[9px] font-black text-fitti-text-muted uppercase tracking-widest opacity-60">
-                  {contact.lastMessageTime ? format(new Date(contact.lastMessageTime), 'HH:mm') : ''}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className={`text-[11px] font-bold truncate flex-1 pr-2 ${activeContactId === contact.id ? 'text-fitti-text' : 'text-fitti-text-muted'}`}>
-                  {contact.lastMessageContent || "INITIATE TRANSMISSION"}
-                </p>
-                {contact.unreadCount > 0 && (
-                  <span className="bg-fitti-green text-white text-[9px] font-black px-2.5 py-1 rounded-lg shadow-lg shadow-fitti-green/20 animate-pulse">
-                    {contact.unreadCount}
-                  </span>
-                )}
-              </div>
-            </div>
+          ))}
+        </div>
+
+        {/* New Message Button - Matching Screenshot */}
+        <button className="mt-6 py-4 px-6 bg-[#D8FF4D] hover:bg-[#C5EA00] text-fitti-text font-black font-display text-sm tracking-widest uppercase rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-[0_10px_25px_rgba(216,255,77,0.3)] group">
+          <div className="bg-fitti-text text-[#D8FF4D] p-1 rounded-md group-hover:scale-110 transition-transform">
+            <Plus className="h-3 w-3" strokeWidth={4} />
           </div>
-        ))}
+          New Message
+        </button>
       </div>
     </div>
   );
