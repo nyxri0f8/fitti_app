@@ -188,8 +188,26 @@ function CreateDietModal({ customer, trainerId, onClose, onSaved }) {
 }
 
 function LogProgressModal({ customer, trainerId, onClose, onSaved }) {
+  const [tab, setTab] = useState('stats'); // 'stats' or 'log'
   const [log, setLog] = useState({ weight:'', energy_level:'', diet_adherence:'', workout_performance:'good', notes:'' });
   const [saving, setSaving] = useState(false);
+  const [stats, setStats] = useState({ caloriesBurned: 0, caloriesConsumed: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      // Fetch recent workout logs for burned calories
+      const { data: workouts } = await supabase.from('workout_logs').select('total_calories').eq('user_id', customer.id).order('created_at', { ascending: false }).limit(10);
+      const burned = (workouts || []).reduce((acc, curr) => acc + (curr.total_calories || 0), 0);
+      
+      // Fetch recent orders for consumed calories
+      const { data: orders } = await supabase.from('orders').select('calories').eq('customer_id', customer.id).order('created_at', { ascending: false }).limit(10);
+      const consumed = (orders || []).reduce((acc, curr) => acc + (curr.calories || 0), 0);
+      
+      setStats({ caloriesBurned: burned, caloriesConsumed: consumed });
+    };
+    fetchStats();
+  }, [customer.id]);
+
   const handleSave = async () => {
     setSaving(true);
     await supabase.from('progress_logs').insert([{ customer_id: customer.id, trainer_id: trainerId, weight: parseFloat(log.weight)||null, energy_level: parseInt(log.energy_level)||null, diet_adherence: parseInt(log.diet_adherence)||null, workout_performance: log.workout_performance, notes: log.notes }]);
@@ -201,40 +219,100 @@ function LogProgressModal({ customer, trainerId, onClose, onSaved }) {
     <Modal onClose={onClose}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-display text-xl font-bold text-fitti-text">Log Progress</h3>
+          <h3 className="font-display text-xl font-bold text-fitti-text">Client Progress</h3>
           <p className="font-body text-sm text-fitti-text-muted">For {customer.name}</p>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
       </div>
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div><label className="label-spaced block mb-1">Weight (kg)</label><input type="number" step="0.1" value={log.weight} onChange={e=>setLog(p=>({...p,weight:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
-          <div><label className="label-spaced block mb-1">Performance</label><select value={log.workout_performance} onChange={e=>setLog(p=>({...p,workout_performance:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:outline-none transition-colors"><option value="excellent">Excellent</option><option value="good">Good</option><option value="average">Average</option><option value="poor">Poor</option></select></div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div><label className="label-spaced block mb-1">Energy (1-10)</label><input type="number" min="1" max="10" value={log.energy_level} onChange={e=>setLog(p=>({...p,energy_level:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
-          <div><label className="label-spaced block mb-1">Diet Adherence (1-10)</label><input type="number" min="1" max="10" value={log.diet_adherence} onChange={e=>setLog(p=>({...p,diet_adherence:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
-        </div>
-        <div><label className="label-spaced block mb-1">Notes</label><textarea value={log.notes} onChange={e=>setLog(p=>({...p,notes:e.target.value}))} rows="3" className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:outline-none resize-none transition-colors"/></div>
+
+      <div className="flex bg-fitti-bg p-1 rounded-xl mb-6">
+        <button onClick={() => setTab('stats')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tab === 'stats' ? 'bg-white shadow-sm text-fitti-green' : 'text-fitti-text-muted'}`}>Statistics</button>
+        <button onClick={() => setTab('log')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${tab === 'log' ? 'bg-white shadow-sm text-fitti-green' : 'text-fitti-text-muted'}`}>Log Progress</button>
       </div>
-      <button onClick={handleSave} disabled={saving} className="mt-6 w-full btn-gradient flex items-center justify-center gap-2 py-3.5 disabled:opacity-50">
-        <Save className="h-4 w-4"/><span className="font-display font-bold">{saving ? 'Saving...' : 'Save Progress Log'}</span>
-      </button>
+
+      {tab === 'stats' ? (
+        <div className="space-y-4">
+          <div className="card-glass p-6 text-center border border-fitti-orange/20 bg-orange-50/50">
+            <Flame className="h-8 w-8 text-fitti-orange mx-auto mb-2" />
+            <p className="font-mono text-xs font-bold text-fitti-text-muted uppercase tracking-widest mb-1">Recent Calories Burned</p>
+            <p className="font-display text-4xl font-black text-fitti-orange">{stats.caloriesBurned} <span className="text-sm">kcal</span></p>
+            <p className="text-[10px] text-fitti-text-muted mt-2">From recent tracked workouts</p>
+          </div>
+          <div className="card-glass p-6 text-center border border-fitti-green/20 bg-fitti-green/5">
+            <ChefHat className="h-8 w-8 text-fitti-green mx-auto mb-2" />
+            <p className="font-mono text-xs font-bold text-fitti-text-muted uppercase tracking-widest mb-1">Recent Calories Consumed</p>
+            <p className="font-display text-4xl font-black text-fitti-green">{stats.caloriesConsumed} <span className="text-sm">kcal</span></p>
+            <p className="text-[10px] text-fitti-text-muted mt-2">From ordered Fitti meals</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="label-spaced block mb-1">Weight (kg)</label><input type="number" step="0.1" value={log.weight} onChange={e=>setLog(p=>({...p,weight:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
+            <div><label className="label-spaced block mb-1">Performance</label><select value={log.workout_performance} onChange={e=>setLog(p=>({...p,workout_performance:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:outline-none transition-colors"><option value="excellent">Excellent</option><option value="good">Good</option><option value="average">Average</option><option value="poor">Poor</option></select></div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="label-spaced block mb-1">Energy (1-10)</label><input type="number" min="1" max="10" value={log.energy_level} onChange={e=>setLog(p=>({...p,energy_level:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
+            <div><label className="label-spaced block mb-1">Diet Adherence (1-10)</label><input type="number" min="1" max="10" value={log.diet_adherence} onChange={e=>setLog(p=>({...p,diet_adherence:e.target.value}))} className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-mono focus:border-fitti-green focus:outline-none transition-colors"/></div>
+          </div>
+          <div><label className="label-spaced block mb-1">Notes</label><textarea value={log.notes} onChange={e=>setLog(p=>({...p,notes:e.target.value}))} rows="3" className="w-full bg-white border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:outline-none resize-none transition-colors"/></div>
+          <button onClick={handleSave} disabled={saving} className="mt-6 w-full btn-gradient flex items-center justify-center gap-2 py-3.5 disabled:opacity-50">
+            <Save className="h-4 w-4"/><span className="font-display font-bold">{saving ? 'Saving...' : 'Save Progress Log'}</span>
+          </button>
+        </div>
+      )}
     </Modal>
   );
 }
 
-function LogWorkoutModal({ customer, trainerId, onClose, onSaved }) {
+function ViewWorkoutsModal({ customer, onClose }) {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      const { data } = await supabase.from('workout_logs').select('*').eq('user_id', customer.id).order('created_at', { ascending: false });
+      setLogs(data || []);
+      setLoading(false);
+    };
+    fetchLogs();
+  }, [customer.id]);
+
   return (
     <Modal onClose={onClose}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-display text-xl font-bold text-fitti-text">Log Workout Session</h3>
-          <p className="font-body text-sm text-fitti-text-muted">Tracking for {customer.name}</p>
+          <h3 className="font-display text-xl font-bold text-fitti-text">Workout History</h3>
+          <p className="font-body text-sm text-fitti-text-muted">Tracked by {customer.name}</p>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
       </div>
-      <WorkoutTracker customerId={customer.id} isTrainerView={true} customerName={customer.name} />
+      
+      {loading ? (
+        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-fitti-bg rounded-xl shimmer"/>)}</div>
+      ) : logs.length === 0 ? (
+        <div className="p-10 text-center card-glass bg-fitti-bg/50">
+           <Activity className="h-12 w-12 text-fitti-text-muted mx-auto mb-3" />
+           <p className="font-bold text-fitti-text-muted">No workouts logged yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+          {logs.map(log => (
+            <div key={log.id} className="bg-fitti-bg/50 rounded-xl p-4 border border-fitti-border/50">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-display font-bold text-fitti-text uppercase">{log.exercises?.[0]?.name || 'Custom Workout'}</span>
+                <span className="font-mono text-[10px] text-fitti-text-muted">{new Date(log.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center gap-4 text-xs font-mono text-fitti-text-muted">
+                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {log.total_time}m</span>
+                <span className="flex items-center gap-1 text-fitti-orange"><Flame className="h-3 w-3" /> {log.total_calories} kcal</span>
+                {log.total_sets > 0 && <span className="flex items-center gap-1"><Target className="h-3 w-3" /> {log.total_sets} sets</span>}
+              </div>
+              {log.notes && <p className="mt-2 text-xs font-body italic text-fitti-text-muted bg-white p-2 rounded-lg border border-fitti-border/30">"{log.notes}"</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </Modal>
   );
 }
@@ -456,7 +534,7 @@ export default function TrainerDashboard() {
       {showWorkout && <CreateWorkoutModal customer={showWorkout} trainerId={user.id} onClose={()=>setShowWorkout(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
       {showDiet && <CreateDietModal customer={showDiet} trainerId={user.id} onClose={()=>setShowDiet(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
       {showProgress && <LogProgressModal customer={showProgress} trainerId={user.id} onClose={()=>setShowProgress(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
-      {showLogWorkout && <LogWorkoutModal customer={showLogWorkout} trainerId={user.id} onClose={()=>setShowLogWorkout(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
+      {showLogWorkout && <ViewWorkoutsModal customer={showLogWorkout} onClose={()=>setShowLogWorkout(null)}/>}
     </div>
   );
 }
