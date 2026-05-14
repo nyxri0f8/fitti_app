@@ -122,7 +122,7 @@ function CreateMealModal({ customer, onClose, onSaved, cookId }) {
       customer_id: customer.id,
       meal_plan: meal.meal_plan || 'Custom Plan',
       calories: Math.round(totalCalories),
-      status: 'pending',
+      status: 'preparing',
       cook_notes: JSON.stringify(meal.meals),
       updated_by: cookId,
     }]);
@@ -444,9 +444,9 @@ function OrdersTab() {
             <div className="space-y-4">
               <div className="flex items-center justify-between px-2">
                 <span className="font-mono text-[10px] font-black text-blue-500 uppercase tracking-widest">In Preparation</span>
-                <span className="h-5 w-5 rounded-full bg-blue-50 text-[10px] font-black text-blue-500 flex items-center justify-center border border-blue-100">{preparingCount}</span>
+                <span className="h-5 w-5 rounded-full bg-blue-50 text-[10px] font-black text-blue-500 flex items-center justify-center border border-blue-100">{preparingCount + pendingCount}</span>
               </div>
-              {orders.filter(o => o.status === 'preparing').map(o => (
+              {orders.filter(o => ['pending', 'preparing'].includes(o.status)).map(o => (
                 <div key={o.id} className="bg-white border-l-4 border-blue-500 rounded-2xl p-6 shadow-xl shadow-blue-500/5 card-hover">
                    <div className="flex justify-between items-start mb-4">
                      <div>
@@ -457,14 +457,25 @@ function OrdersTab() {
                    </div>
                    <div className="flex items-center gap-3 mb-6">
                      <span className="font-mono text-[10px] font-bold bg-fitti-bg px-3 py-1 rounded-full">{o.calories} kcal</span>
-                     <span className="font-mono text-[10px] font-bold bg-fitti-bg px-3 py-1 rounded-full text-fitti-text-muted">Est. 15m</span>
+                     <span className="font-mono text-[10px] font-bold bg-fitti-bg px-3 py-1 rounded-full text-fitti-text-muted">
+                       {o.status === 'pending' ? 'Waiting' : 'Est. 15m'}
+                     </span>
                    </div>
-                   <button 
-                     onClick={() => updateOrderStatus(o.id, 'packed')}
-                     className="w-full py-3 bg-fitti-text text-white font-display font-bold text-xs rounded-xl hover:bg-black transition-all flex items-center justify-center gap-2"
-                   >
-                     <CheckCircle className="h-4 w-4" /> Ready to Ship
-                   </button>
+                   {o.status === 'pending' ? (
+                     <button 
+                       onClick={() => updateOrderStatus(o.id, 'preparing')}
+                       className="w-full py-3 bg-fitti-green text-white font-display font-bold text-xs rounded-xl hover:bg-fitti-green-dark transition-all flex items-center justify-center gap-2"
+                     >
+                       <Flame className="h-4 w-4" /> Start Cooking
+                     </button>
+                   ) : (
+                     <button 
+                       onClick={() => updateOrderStatus(o.id, 'packed')}
+                       className="w-full py-3 bg-fitti-text text-white font-display font-bold text-xs rounded-xl hover:bg-black transition-all flex items-center justify-center gap-2"
+                     >
+                       <CheckCircle className="h-4 w-4" /> Ready to Ship
+                     </button>
+                   )}
                 </div>
               ))}
             </div>
