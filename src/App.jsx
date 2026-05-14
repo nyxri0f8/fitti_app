@@ -13,6 +13,13 @@ import CookDashboard from './pages/cook/CookDashboard';
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
 import TrainerDashboard from './pages/trainer/TrainerDashboard';
 
+// SAFETY NET: Grab the provider_token from the URL before React or Supabase can clear the hash!
+const hashParams = new URLSearchParams(window.location.hash.substring(1));
+const pToken = hashParams.get('provider_token');
+if (pToken) {
+  localStorage.setItem('fitti_google_provider_token', pToken);
+}
+
 function App() {
   const setSession = useAuthStore(state => state.setSession);
   const setProfile = useAuthStore(state => state.setProfile);
@@ -30,6 +37,10 @@ function App() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (newSession?.provider_token) {
+        localStorage.setItem('fitti_google_provider_token', newSession.provider_token);
+        localStorage.setItem('fitti_google_refresh_token', newSession.provider_refresh_token || '');
+      }
       setSession(newSession);
       if (newSession) {
         fetchProfile(newSession.user.id);
