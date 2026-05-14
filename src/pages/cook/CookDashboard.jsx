@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Package, Clock, CheckCircle, ChevronDown, Plus, X, Save, Utensils, Flame } from 'lucide-react';
+import { Package, Clock, CheckCircle, ChevronDown, Plus, X, Save, Utensils, Flame, ChefHat } from 'lucide-react';
 import { supabase, createNotification } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import Sidebar from '../../components/shared/Sidebar';
@@ -9,6 +9,70 @@ import StatusBadge from '../../components/shared/StatusBadge';
 import FloatingBackground from '../../components/shared/FloatingBackground';
 import MessagingView from '../../components/chat/MessagingView';
 import Modal from '../../components/shared/Modal';
+
+/* ── Kitchen Onboarding Modal ──────────────────────────── */
+function KitchenOnboardingModal({ user, onClose }) {
+  const [kitchenName, setKitchenName] = useState('');
+  const [location, setLocation] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!kitchenName || !location) return;
+    setSaving(true);
+    await supabase.auth.updateUser({
+      data: { kitchen_name: kitchenName, kitchen_location: location }
+    });
+    // Update local store user object so it reflects immediately
+    useAuthStore.setState({ user: { ...user, user_metadata: { ...user.user_metadata, kitchen_name: kitchenName, kitchen_location: location } } });
+    setSaving(false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl animate-scale-in">
+        <div className="text-center mb-8">
+          <div className="h-16 w-16 bg-fitti-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Flame className="h-8 w-8 text-fitti-orange" />
+          </div>
+          <h2 className="font-display text-2xl font-black text-fitti-text tracking-tight mb-2">Welcome to the Kitchen</h2>
+          <p className="font-body text-sm text-fitti-text-muted">Set up your cloud kitchen details to get started.</p>
+        </div>
+        
+        <div className="space-y-4 mb-8">
+          <div>
+            <label className="label-spaced block mb-2">Cloud Kitchen Name</label>
+            <input 
+              type="text" 
+              value={kitchenName} 
+              onChange={e => setKitchenName(e.target.value)}
+              placeholder="e.g. Fitti Kitchen Pro"
+              className="w-full bg-fitti-bg border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:bg-white focus:outline-none transition-all"
+            />
+          </div>
+          <div>
+            <label className="label-spaced block mb-2">Location</label>
+            <input 
+              type="text" 
+              value={location} 
+              onChange={e => setLocation(e.target.value)}
+              placeholder="e.g. Downtown Hub, NY"
+              className="w-full bg-fitti-bg border-2 border-fitti-border rounded-xl px-4 py-3 font-body focus:border-fitti-green focus:bg-white focus:outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <button 
+          onClick={handleSave} 
+          disabled={saving || !kitchenName || !location}
+          className="w-full btn-gradient py-4 flex items-center justify-center gap-2 text-lg disabled:opacity-50"
+        >
+          <span className="font-display font-bold">{saving ? 'Setting up...' : 'Start Cooking'}</span>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /* ── Create Meal Modal ─────────────────────────────────── */
 function CreateMealModal({ customer, onClose, onSaved, cookId }) {
@@ -286,12 +350,19 @@ function OrdersTab() {
   const pendingCount = orders.filter(o => o.status === 'pending').length;
   const preparingCount = orders.filter(o => o.status === 'preparing').length;
 
+  const kitchenName = user?.user_metadata?.kitchen_name || 'Kitchen Command';
+  const kitchenLocation = user?.user_metadata?.kitchen_location || 'High-performance fueling station';
+
   return (
     <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
+      {(!user?.user_metadata?.kitchen_name) && <KitchenOnboardingModal user={user} onClose={() => {}} />}
+      
       <div className="flex items-center justify-between mb-10">
         <div>
-          <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter">Kitchen Command</h2>
-          <p className="font-accent text-lg italic text-fitti-text-muted">High-performance fueling station</p>
+          <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter flex items-center gap-3">
+            <ChefHat className="h-8 w-8 text-fitti-green" /> {kitchenName}
+          </h2>
+          <p className="font-accent text-lg italic text-fitti-text-muted mt-1">{kitchenLocation}</p>
         </div>
         <div className="flex gap-4">
            <div className="bg-white px-6 py-3 rounded-2xl border border-fitti-border shadow-sm">
@@ -299,6 +370,33 @@ function OrdersTab() {
              <p className="font-display font-black text-2xl text-fitti-green">{preparingCount + pendingCount}</p>
            </div>
         </div>
+      </div>
+
+      {/* Assigned Clients Horizontal List */}
+      <div className="mb-10">
+        <h3 className="label-spaced mb-4 flex items-center gap-2">
+          <Utensils className="h-4 w-4 text-fitti-green" /> Assigned Clients
+        </h3>
+        {customers.length === 0 ? (
+          <div className="bg-white/50 border border-fitti-border rounded-2xl p-6 text-center text-sm text-fitti-text-muted italic">
+            No clients assigned yet. Wait for an admin to assign clients to your kitchen.
+          </div>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+            {customers.map(c => (
+              <div key={c.id} className="min-w-[280px] bg-white border border-fitti-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex-shrink-0 card-hover">
+                <h4 className="font-display font-bold text-lg text-fitti-text mb-1">{c.name}</h4>
+                <p className="font-mono text-[10px] text-fitti-text-muted mb-4">{c.email}</p>
+                <button 
+                  onClick={() => setShowMealModal(c)}
+                  className="w-full py-2 bg-fitti-green/10 text-fitti-green font-display font-bold text-xs rounded-xl hover:bg-fitti-green hover:text-white transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus className="h-3 w-3" /> Log Meal Plan
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
