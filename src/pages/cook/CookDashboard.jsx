@@ -354,8 +354,8 @@ function OrdersTab() {
   const kitchenLocation = user?.user_metadata?.kitchen_location || 'High-performance fueling station';
 
   return (
-    <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-10">
+    <div className="p-4 md:p-8 animate-fade-in-up max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
         <div>
           <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter flex items-center gap-3">
             <ChefHat className="h-8 w-8 text-fitti-green" /> {kitchenName}
@@ -376,11 +376,11 @@ function OrdersTab() {
           <Utensils className="h-4 w-4 text-fitti-green" /> Assigned Clients
         </h3>
         {customers.length === 0 ? (
-          <div className="bg-white/50 border border-fitti-border rounded-2xl p-6 text-center text-sm text-fitti-text-muted italic">
+          <div className="bg-white/50 border border-fitti-border rounded-2xl p-6 text-center text-sm text-fitti-text-muted italic animate-pulse-soft">
             No clients assigned yet. Wait for an admin to assign clients to your kitchen.
           </div>
         ) : (
-          <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+          <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar stagger-children">
             {customers.map(c => (
               <div key={c.id} className="min-w-[280px] bg-white border border-fitti-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex-shrink-0 card-hover">
                 <h4 className="font-display font-bold text-lg text-fitti-text mb-1">{c.name}</h4>
@@ -401,9 +401,9 @@ function OrdersTab() {
         {/* Left: Daily Schedule / Prep List */}
         <div className="lg:col-span-1">
           <h3 className="label-spaced mb-6 flex items-center gap-2">
-            <Clock className="h-4 w-4 text-fitti-orange" /> Today's Prep Schedule
+            <Clock className="h-4 w-4 text-fitti-orange animate-spin-slow" /> Today's Prep Schedule
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-4 stagger-children">
             {dailySchedule.length === 0 ? (
               <div className="card-glass p-8 text-center border-dashed border-2">
                 <p className="font-body text-sm text-fitti-text-muted">No scheduled meals for today.</p>
@@ -436,12 +436,12 @@ function OrdersTab() {
         {/* Right: Kanban Board (Active Orders) */}
         <div className="lg:col-span-2">
           <h3 className="label-spaced mb-6 flex items-center gap-2">
-            <Utensils className="h-4 w-4 text-fitti-green" /> Kitchen Display System
+            <Utensils className="h-4 w-4 text-fitti-green animate-pulse" /> Kitchen Display System
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Preparing Column */}
-            <div className="space-y-4">
+            <div className="space-y-4 stagger-children">
               <div className="flex items-center justify-between px-2">
                 <span className="font-mono text-[10px] font-black text-blue-500 uppercase tracking-widest">In Preparation</span>
                 <span className="h-5 w-5 rounded-full bg-blue-50 text-[10px] font-black text-blue-500 flex items-center justify-center border border-blue-100">{preparingCount + pendingCount}</span>
@@ -481,7 +481,7 @@ function OrdersTab() {
             </div>
 
             {/* Logistics Column (Packed / Out for Delivery) */}
-            <div className="space-y-4">
+            <div className="space-y-4 stagger-children">
               <div className="flex items-center justify-between px-2">
                 <span className="font-mono text-[10px] font-black text-fitti-green uppercase tracking-widest">Logistics Hub</span>
                 <span className="h-5 w-5 rounded-full bg-fitti-green/10 text-[10px] font-black text-fitti-green flex items-center justify-center border border-fitti-green/20">
