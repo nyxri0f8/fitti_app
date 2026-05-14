@@ -48,6 +48,8 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
   // Saving logs
   const [logs, setLogs] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [workoutName, setWorkoutName] = useState('');
+  const [workoutNotes, setWorkoutNotes] = useState('');
 
   // Fetch weight & past logs
   useEffect(() => {
@@ -139,9 +141,12 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
       logged_by: user.id,
       total_time: Math.floor(time / 60),
       total_calories: caloriesBurned,
-      exercises: mode === 'strength' 
-        ? laps.map((lap, i) => ({ name: `Set ${i+1}`, time: lap.lapTime, sets: 1 }))
-        : [{ name: workoutType, distance: distance.toFixed(2), time: time }],
+      notes: workoutNotes,
+      exercises: [{ 
+        name: workoutName || workoutType,
+        distance: distance > 0 ? distance.toFixed(2) : undefined,
+        sets: mode === 'strength' ? laps.map(l => l.lapTime) : undefined
+      }],
       total_sets: laps.length
     };
 
@@ -198,7 +203,55 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
         </div>
       )}
 
-      {mode !== 'select' && (
+      {mode === 'saving_details' && (
+        <div className="card-glass p-10 relative overflow-hidden animate-fade-in-up">
+          <h3 className="font-display text-3xl font-black text-fitti-text mb-6">Log Session Details</h3>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest mb-2">Workout Name / Focus</label>
+              <input 
+                type="text" 
+                placeholder="e.g., Upper Body Power, Morning Run..."
+                value={workoutName}
+                onChange={(e) => setWorkoutName(e.target.value)}
+                className="w-full bg-fitti-bg/50 border border-fitti-border rounded-2xl px-6 py-4 text-fitti-text focus:border-fitti-green focus:outline-none focus:ring-4 focus:ring-fitti-green/10 transition-all font-bold"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest mb-2">Trainer/Personal Notes</label>
+              <textarea 
+                placeholder="How did the session feel? Any pain points or PRs?"
+                value={workoutNotes}
+                onChange={(e) => setWorkoutNotes(e.target.value)}
+                rows={3}
+                className="w-full bg-fitti-bg/50 border border-fitti-border rounded-2xl px-6 py-4 text-fitti-text focus:border-fitti-green focus:outline-none focus:ring-4 focus:ring-fitti-green/10 transition-all font-bold resize-none"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-fitti-border/50">
+              <div className="bg-fitti-bg p-4 rounded-xl text-center">
+                <p className="font-mono text-[10px] text-fitti-text-muted uppercase mb-1">Duration</p>
+                <p className="font-display font-bold text-lg">{Math.floor(time/60)}m</p>
+              </div>
+              <div className="bg-fitti-bg p-4 rounded-xl text-center">
+                <p className="font-mono text-[10px] text-fitti-text-muted uppercase mb-1">Calories</p>
+                <p className="font-display font-bold text-lg text-fitti-orange">{caloriesBurned}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-8">
+              <button onClick={() => setMode(workoutType === 'Strength' ? 'strength' : 'cardio')} className="flex-1 py-4 font-bold text-fitti-text-muted hover:text-fitti-text bg-fitti-bg hover:bg-fitti-border/50 rounded-2xl transition-all">
+                Cancel
+              </button>
+              <button onClick={handleSave} disabled={saving} className="flex-[2] py-4 bg-fitti-green text-white font-black rounded-2xl hover:bg-fitti-green-dark transition-all shadow-xl shadow-fitti-green/20 uppercase tracking-widest">
+                {saving ? 'Logging...' : 'Confirm & Log Session'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mode !== 'select' && mode !== 'saving_details' && (
         <div className="card-glass p-10 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-fitti-bg">
             <div className={`h-full bg-fitti-green transition-all ${isRunning ? 'w-full duration-[60000ms]' : 'w-0'}`} />
@@ -265,8 +318,8 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
                   <PlayCircle className="h-8 w-8 ml-1" />
                 </button>
                 {time > 0 && (
-                  <button onClick={handleSave} disabled={saving} className="h-20 px-8 rounded-full bg-black text-white font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center gap-2">
-                    {saving ? 'Saving...' : 'Finish & Save'}
+                  <button onClick={() => setMode('saving_details')} className="h-20 px-8 rounded-full bg-black text-white font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center gap-2">
+                    Finish & Log
                   </button>
                 )}
               </>
