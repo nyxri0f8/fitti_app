@@ -3,8 +3,8 @@ import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { supabase } from '../../lib/supabase';
 import { 
-  Home, Users, Package, Activity, MessageSquare,  Bell, 
-  Utensils, CalendarDays, LineChart, Stethoscope, ClipboardList, LogOut, Menu, X 
+  Home, Users, Package, Activity, MessageSquare, 
+  Utensils, CalendarDays, LineChart, Stethoscope, ClipboardList, LogOut, Menu, X, ArrowRight
 } from 'lucide-react';
 
 const ROLES_NAV = {
@@ -18,7 +18,6 @@ const ROLES_NAV = {
   customer: [
     { label: 'Home', to: '/customer', icon: Home, end: true },
     { label: 'My Meals', to: '/customer/meals', icon: Package },
-    { label: 'My Diet Plan', to: '/customer/diet', icon: Utensils },
     { label: 'My Workout', to: '/customer/workout', icon: CalendarDays },
     { label: 'My Progress', to: '/customer/progress', icon: LineChart },
     { label: 'My Health', to: '/customer/health', icon: Stethoscope },
@@ -60,82 +59,95 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Hamburger Toggle */}
+      {/* Mobile Hamburger Toggle - Premium Morph Architecture */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 p-3 bg-white/80 backdrop-blur-md border border-fitti-border rounded-2xl md:hidden shadow-lg shadow-fitti-green/5 animate-scale-in"
+        className="fixed bottom-8 right-8 z-[110] w-14 h-14 bg-fitti-green text-white rounded-full flex items-center justify-center md:hidden shadow-2xl shadow-fitti-green/20 active:scale-90 transition-transform duration-500 ease-vanguard"
       >
-        {isOpen ? <X className="h-6 w-6 text-fitti-green" /> : <Menu className="h-6 w-6 text-fitti-green" />}
+        {isOpen ? <X strokeWidth={2.5} className="h-6 w-6" /> : <Menu strokeWidth={2.5} className="h-6 w-6" />}
       </button>
 
-      {/* Overlay */}
+      {/* Overlay - Staggered Mask Reveal */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden animate-fade-in-up" 
+          className="fixed inset-0 bg-black/80 backdrop-blur-3xl z-[105] md:hidden animate-v-fade-up" 
           onClick={() => setIsOpen(false)}
         />
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-72 sidebar-glass transition-transform duration-500 ease-out md:sticky md:translate-x-0
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        flex flex-col pt-8 pb-6
+        fixed md:sticky top-6 bottom-6 left-6 z-[106] w-72 h-[calc(100vh-3rem)]
+        transition-all duration-700 ease-vanguard
+        ${isOpen ? 'translate-x-0' : '-translate-x-[150%] md:translate-x-0'}
       `}>
-        <div className="px-8 mb-10 stagger-children">
-          <div className="flex flex-col gap-1">
-            <h2 className="logo-fitti text-4xl">Fitti</h2>
-            <p className="motto-fitti text-[11px] uppercase tracking-[0.2em] opacity-60">Evolve Your Fitness</p>
-          </div>
-        </div>
-
-        <nav className="flex-1 space-y-1 px-4 overflow-y-auto stagger-children">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            return (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                onClick={() => setIsOpen(false)}
-                className={({ isActive }) =>
-                  `group flex items-center px-5 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 ${
-                    isActive
-                      ? 'bg-fitti-green text-white shadow-lg shadow-fitti-green/20 scale-[1.02]'
-                      : 'text-fitti-text-muted hover:bg-fitti-green/5 hover:text-fitti-green'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <Icon className={`mr-4 h-5 w-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-fitti-green/60 group-hover:text-fitti-green'}`} />
-                    {link.label}
-                  </>
-                )}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        <div className="px-6 mt-8 space-y-4 stagger-children">
-          <div className="flex items-center px-4 py-4 bg-fitti-green/5 rounded-2xl border border-fitti-green/10">
-            <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-xl bg-fitti-green shadow-lg shadow-fitti-green/20 flex items-center justify-center text-white font-bold animate-pulse-soft">
-                {profile.full_name?.charAt(0) || profile.email?.charAt(0)}
+        {/* Double-Bezel Nested Frame */}
+        <div className="bezel-shell h-full flex flex-col">
+          <div className="bezel-core h-full flex flex-col py-8">
+            <div className="px-8 mb-12">
+              <span className="eyebrow-tag !mb-2">Biological</span>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-4xl font-black tracking-tighter text-fitti-text">Fitti.</h2>
+                <div className="h-2 w-2 bg-fitti-green rounded-full animate-pulse" />
               </div>
             </div>
-            <div className="ml-4 overflow-hidden">
-              <p className="text-sm font-bold text-fitti-text truncate">{profile.full_name || 'User'}</p>
-              <p className="text-[10px] font-bold text-fitti-green uppercase tracking-widest">{profile.role}</p>
+
+            <nav className="flex-1 space-y-2 px-4 overflow-y-auto custom-scrollbar stagger-v-fade">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    end={link.end}
+                    onClick={() => setIsOpen(false)}
+                    className={({ isActive }) =>
+                      `group relative flex items-center px-6 py-4 rounded-2xl transition-all duration-700 ease-vanguard overflow-hidden ${
+                        isActive
+                          ? 'bg-fitti-green text-white shadow-xl shadow-fitti-green/20'
+                          : 'text-fitti-text-muted hover:bg-black/5 dark:hover:bg-white/5 hover:text-fitti-text'
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <Icon strokeWidth={isActive ? 2.5 : 1.5} className={`mr-4 h-5 w-5 transition-transform duration-700 ease-vanguard group-hover:scale-110 group-hover:-rotate-3`} />
+                        <span className="font-display font-bold text-sm tracking-tight">{link.label}</span>
+                        {isActive && (
+                          <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                        )}
+                        {!isActive && (
+                          <ArrowRight strokeWidth={2} className="ml-auto h-4 w-4 opacity-0 -translate-x-4 transition-all duration-700 ease-vanguard group-hover:opacity-100 group-hover:translate-x-0" />
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </nav>
+
+            {/* Profile Island with Nested Architecture */}
+            <div className="mt-auto px-4 pt-6 border-t border-fitti-border/10 space-y-4">
+              <div className="p-3 bg-black/5 dark:bg-white/5 rounded-[1.5rem] ring-1 ring-black/5">
+                <div className="flex items-center gap-4 bg-fitti-bg dark:bg-fitti-bg-alt p-3 rounded-[calc(1.5rem-0.5rem)] shadow-sm">
+                  <div className="h-10 w-10 rounded-full bg-fitti-green/10 flex items-center justify-center text-fitti-green font-black text-xs ring-1 ring-fitti-green/20">
+                    {profile.full_name?.charAt(0)}
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-sm font-black text-fitti-text truncate tracking-tighter">{profile.full_name || 'User'}</p>
+                    <p className="text-[10px] font-bold text-fitti-green uppercase tracking-[0.2em]">{profile.role}</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="btn-vanguard w-full justify-center text-sm text-fitti-text-muted hover:text-red-500 hover:bg-red-500/5 transition-colors"
+              >
+                <LogOut strokeWidth={1.5} className="h-4 w-4" />
+                Logout
+              </button>
             </div>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="group w-full flex items-center px-5 py-4 text-sm font-bold text-fitti-text-muted hover:bg-fitti-bg-alt hover:text-black rounded-2xl transition-all duration-300"
-          >
-            <LogOut className="mr-4 h-5 w-5 text-fitti-green group-hover:text-black transition-transform group-hover:-translate-x-1" />
-            Logout
-          </button>
         </div>
       </aside>
     </>

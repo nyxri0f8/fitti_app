@@ -28,26 +28,39 @@ export default function Navbar({ title }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-fitti-bg/60 backdrop-blur-xl border-b border-fitti-border/30 px-8 py-5 flex items-center justify-between animate-fade-in-down">
-      <div className="flex flex-col">
-        {title && (
-          <>
-            <h1 className="font-display text-xl font-black text-fitti-text tracking-tight uppercase">{title}</h1>
-            <div className="h-1 w-8 bg-fitti-green rounded-full mt-1 animate-scale-in" style={{ animationDelay: '0.3s' }} />
-          </>
-        )}
-      </div>
+    <div className="fixed top-0 left-0 w-full z-[100] px-6 pt-6 pointer-events-none">
+      {/* Atmospheric Background Mesh Glow */}
+      <div className="mesh-glow top-0 left-1/4 w-[400px] h-[200px]" />
+      
+      <header className="nav-island mx-auto flex items-center justify-between gap-8 pointer-events-auto animate-v-fade-up">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col">
+            <span className="eyebrow-tag !mb-0 scale-75 origin-left">Dashboard</span>
+            <h1 className="font-display text-lg font-black text-fitti-text tracking-tighter leading-none">{title || 'Fitti'}</h1>
+          </div>
+        </div>
 
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-fitti-border/50 text-fitti-text-muted transition-colors"
-          title="Toggle Theme"
-        >
-          {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </button>
-        <NotificationBell />
-      </div>
-    </header>
+        <div className="h-8 w-[1px] bg-fitti-border/20" />
+
+        <div className="flex items-center gap-3">
+          {/* Theme Toggle with Double-Bezel nested architecture */}
+          <div className="p-1 bg-black/5 dark:bg-white/5 rounded-full ring-1 ring-black/5 dark:ring-white/10">
+            <button 
+              onClick={toggleTheme}
+              className="w-10 h-10 rounded-full bg-fitti-bg dark:bg-fitti-bg-alt shadow-sm flex items-center justify-center 
+                         text-fitti-text-muted hover:text-fitti-green transition-all duration-700 ease-vanguard 
+                         active:scale-90"
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun strokeWidth={1} className="h-5 w-5" /> : <Moon strokeWidth={1} className="h-5 w-5" />}
+            </button>
+          </div>
+          
+          <div className="p-1 bg-black/5 dark:bg-white/5 rounded-full ring-1 ring-black/5 dark:ring-white/10">
+            <NotificationBell />
+          </div>
+        </div>
+      </header>
+    </div>
   );
 }

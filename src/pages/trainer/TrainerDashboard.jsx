@@ -331,64 +331,92 @@ function ClientsTab({ onOpenWorkout, onOpenDiet, onOpenProgress, onOpenLogWorkou
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="font-display text-3xl font-black text-fitti-text flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-fitti-green/10 flex items-center justify-center">
-              <Flame className="h-5 w-5 text-fitti-green" />
+    <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
+      {/* Header Section */}
+      <section className="animate-v-fade-up">
+        <span className="eyebrow-tag">Command Center: Active</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
+              Biological <br/>
+              <span className="text-fitti-green">Directives</span>.
+            </h2>
+            <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
+              Managing {clients.length} biological units. Every data point is an opportunity for evolution.
+            </p>
+          </div>
+          <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
+            <div className="bezel-core h-full flex flex-col items-center justify-center relative text-center">
+              <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
+              <Users strokeWidth={1} className="h-10 w-10 text-fitti-green mb-2" />
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Active Synchronizations</span>
+              <span className="font-display text-2xl font-black text-fitti-green">{clients.length}</span>
             </div>
-            My Clients
-          </h2>
-          <p className="font-accent text-lg italic text-fitti-text-muted mt-1">Guide their transformation</p>
+          </div>
         </div>
-        <span className="font-mono text-sm text-fitti-text-muted bg-fitti-bg px-4 py-2 rounded-full">{clients.length} assigned</span>
-      </div>
-      {loading ? <div className="space-y-4">{[1,2].map(i=><div key={i} className="h-28 bg-white rounded-2xl shimmer"/>)}</div>
-      : clients.length===0 ? (
-        <div className="card-glass p-12 text-center animate-scale-in">
-          <Users className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/><p className="font-body text-fitti-text-muted font-medium">No clients assigned yet.</p>
+      </section>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[1,2,3,4].map(i=><div key={i} className="bezel-shell h-64 shimmer"/>)}
+        </div>
+      ) : clients.length===0 ? (
+        <div className="bezel-shell min-h-[400px] flex items-center justify-center">
+          <div className="text-center">
+            <Users strokeWidth={1} className="h-20 w-20 text-fitti-border/40 mx-auto mb-6" />
+            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No clients assigned to this protocol.</p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
-          {clients.map(c => (
-            <div key={c.id} className="card-glass p-6 card-hover group">
-              <div className="flex items-center mb-5">
-                <div className="h-14 w-14 rounded-2xl bg-fitti-green/10 flex items-center justify-center text-fitti-green font-display font-black text-lg flex-shrink-0 group-hover:bg-fitti-green group-hover:text-white transition-all duration-300">
-                  {c.name.charAt(0)}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 stagger-v-fade">
+          {clients.map((c, idx) => (
+            <div key={c.id} className={`${idx % 3 === 0 ? 'md:col-span-8' : 'md:col-span-4'} bezel-shell group`}>
+              <div className="bezel-core p-8 h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 mesh-glow opacity-5 group-hover:opacity-20 transition-opacity duration-1000" />
+                
+                <div className="flex items-center gap-6 mb-10">
+                  <div className="h-16 w-16 rounded-2xl bg-fitti-green/10 flex items-center justify-center text-fitti-green font-display font-black text-2xl ring-1 ring-fitti-green/20 group-hover:bg-fitti-green group-hover:text-white transition-all duration-700 ease-vanguard">
+                    {c.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="font-display font-black text-fitti-text text-2xl tracking-tight leading-none mb-1">{c.name}</h3>
+                    <p className="font-mono text-[10px] text-fitti-text-muted uppercase tracking-[0.2em]">{c.email}</p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <h3 className="font-display font-bold text-fitti-text text-lg">{c.name}</h3>
-                  <p className="font-mono text-xs text-fitti-text-muted">{c.email}</p>
+
+                <div className="grid grid-cols-3 gap-4 mb-10">
+                  {[
+                    { label: 'Weight', value: c.weight?`${c.weight}kg`:'—' },
+                    { label: 'Height', value: c.height?`${c.height}cm`:'—' },
+                    { label: 'Primary Goal', value: c.goal?.replace(/_/g,' ')||'—', isGoal: true }
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-black/5 dark:bg-white/5 rounded-2xl p-4 ring-1 ring-black/5 text-center">
+                      <p className="label-spaced !text-[9px] !mb-2 opacity-50">{stat.label}</p>
+                      <p className={`font-display font-bold ${stat.isGoal ? 'text-[10px] text-fitti-green uppercase' : 'text-sm text-fitti-text'}`}>
+                        {stat.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3 text-sm mb-5">
-                <div className="bg-fitti-bg/50 rounded-xl p-3 text-center border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
-                  <p className="label-spaced !text-[9px] !mb-1">Weight</p>
-                  <p className="stat-number text-sm text-fitti-text">{c.weight?`${c.weight}kg`:'—'}</p>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <button onClick={()=>onOpenWorkout(c)} className="btn-vanguard btn-vanguard-secondary text-[10px] py-4 group/btn">
+                    <Dumbbell strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
+                    Workouts
+                  </button>
+                  <button onClick={()=>onOpenDiet(c)} className="btn-vanguard text-[10px] py-4 group/btn bg-fitti-orange/5 text-fitti-orange ring-1 ring-fitti-orange/20">
+                    <ChefHat strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
+                    Nutrition
+                  </button>
+                  <button onClick={()=>onOpenLogWorkout(c)} className="btn-vanguard text-[10px] py-4 group/btn">
+                    <Activity strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
+                    History
+                  </button>
+                  <button onClick={()=>onOpenProgress(c)} className="btn-vanguard btn-vanguard-primary text-[10px] py-4 group/btn">
+                    <TrendingUp strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
+                    Metrics
+                  </button>
                 </div>
-                <div className="bg-fitti-bg/50 rounded-xl p-3 text-center border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
-                  <p className="label-spaced !text-[9px] !mb-1">Height</p>
-                  <p className="stat-number text-sm text-fitti-text">{c.height?`${c.height}cm`:'—'}</p>
-                </div>
-                <div className="bg-fitti-bg/50 rounded-xl p-3 text-center border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
-                  <p className="label-spaced !text-[9px] !mb-1">Goal</p>
-                  <p className="font-body text-xs font-bold text-fitti-green capitalize">{c.goal?.replace(/_/g,' ')||'—'}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                <button onClick={()=>onOpenWorkout(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-fitti-bg/50 border border-fitti-border/50 rounded-xl text-xs font-display font-bold text-fitti-text-muted hover:border-fitti-green/40 hover:text-fitti-green transition-all duration-300">
-                  <Dumbbell className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/>Plan
-                </button>
-                <button onClick={()=>onOpenDiet(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-orange-50 border border-orange-100 rounded-xl text-xs font-display font-bold text-fitti-orange hover:bg-orange-100 transition-all duration-300">
-                  <ChefHat className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/>Diet
-                </button>
-                <button onClick={()=>onOpenLogWorkout(c)} className="group/btn flex items-center justify-center gap-2 py-2.5 bg-fitti-green/10 border border-fitti-green/20 rounded-xl text-xs font-display font-bold text-fitti-green hover:bg-fitti-green/20 transition-all duration-300">
-                  <Activity className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/>Track
-                </button>
-                <button onClick={()=>onOpenProgress(c)} className="group/btn btn-gradient flex items-center justify-center gap-1 py-2.5 text-[10px]">
-                  <TrendingUp className="h-3 w-3 group-hover/btn:scale-110 transition-transform"/><span className="font-display font-bold">Prog.</span>
-                </button>
               </div>
             </div>
           ))}
@@ -515,14 +543,16 @@ export default function TrainerDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const user = useAuthStore(state => state.user);
   
-  
   return (
-    <div className="flex h-screen bg-fitti-bg relative">
+    <div className="flex min-h-[100dvh] bg-fitti-bg relative overflow-hidden">
+      {/* Global Grain Texture Overlay */}
+      <div className="grain-overlay" />
+      
       <FloatingBackground role="trainer"/>
       <Sidebar/>
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col relative z-10">
         <Navbar title="" />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-24">
           <Routes>
             <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenDiet={setShowDiet} onOpenProgress={setShowProgress} onOpenLogWorkout={setShowLogWorkout} />}/>
             <Route path="/workouts" element={<WorkoutsTab key={refreshKey} />}/>

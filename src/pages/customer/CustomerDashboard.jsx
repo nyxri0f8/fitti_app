@@ -12,6 +12,7 @@ import MessagingView from '../../components/chat/MessagingView';
 import WorkoutTracker from '../../components/workout/WorkoutTracker';
 
 /* ── Home Tab ──────────────────────────────────────────── */
+/* ── Home Tab ──────────────────────────────────────────── */
 function HomeTab() {
   const profile = useAuthStore(state => state.profile);
   const user = useAuthStore(state => state.user);
@@ -32,87 +33,130 @@ function HomeTab() {
   const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <div className="p-8 animate-fade-in-up max-w-7xl mx-auto">
-      <div className="card-glass p-10 mb-8 relative overflow-hidden group shadow-2xl shadow-fitti-green/5">
-        <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-all duration-700">
-           <Zap className="h-40 w-40 text-fitti-green fill-fitti-green" />
+    <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
+      {/* Hero Section - Editorial Split Style */}
+      <section className="animate-v-fade-up">
+        <span className="eyebrow-tag">Operational Status: Optimal</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
+              {greeting}, <br/>
+              <span className="text-fitti-green">{profile?.full_name?.split(' ')[0] || 'Champ'}</span>.
+            </h2>
+            <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
+              Your biological systems are performing optimally. Here is your personalized evolution strategy for today.
+            </p>
+          </div>
+          <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
+            <div className="bezel-core h-full flex flex-col items-center justify-center relative">
+              <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
+              <Zap strokeWidth={1} className="h-12 w-12 text-fitti-green mb-2 group-hover:rotate-12 transition-transform duration-700" />
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Cellular Energy</span>
+              <span className="font-display text-2xl font-black text-fitti-green">98%</span>
+            </div>
+          </div>
         </div>
-        <div className="relative z-10">
-          <h2 className="font-display text-5xl font-black text-fitti-text mb-4 tracking-tighter leading-tight">
-            {greeting}, <span className="text-fitti-green">{profile?.full_name?.split(' ')[0] || 'Champ'}</span>.
-          </h2>
-          <p className="font-accent text-xl italic text-fitti-text-muted max-w-lg leading-relaxed">
-            Your biological systems are performing optimally. Here is your personalized evolution strategy for today.
-          </p>
-        </div>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 stagger-children">
-        {/* Logistics Status */}
-        <div className="lg:col-span-2 card-glass p-8 card-hover shadow-xl shadow-fitti-green/5">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="label-spaced flex items-center gap-3">
-              <Package className="h-5 w-5 text-fitti-green" /> Logistics Protocol
+      {/* Asymmetrical Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 stagger-v-fade">
+        
+        {/* Logistics Protocol - Large Card (col-span-8) */}
+        <div className="md:col-span-8 bezel-shell">
+          <div className="bezel-core p-8 md:p-12 h-full relative">
+            <div className="flex items-center justify-between mb-12">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-fitti-green/10 flex items-center justify-center">
+                  <Package strokeWidth={1.5} className="h-5 w-5 text-fitti-green" />
+                </div>
+                <h3 className="label-spaced !mb-0 text-sm">Logistics Protocol</h3>
+              </div>
+              <span className="font-mono text-[10px] font-bold text-fitti-green uppercase tracking-widest px-4 py-1.5 bg-fitti-green/5 rounded-full ring-1 ring-fitti-green/20">Active Stream</span>
+            </div>
+            
+            {latestOrder ? (
+              <div className="space-y-12">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div>
+                    <p className="font-display text-4xl md:text-6xl font-black text-fitti-text mb-4 capitalize tracking-tighter">{latestOrder.status?.replace(/_/g, ' ')}</p>
+                    <p className="font-body text-base text-fitti-text-muted font-medium">Estimated arrival in <span className="text-fitti-text">15-20 minutes</span>.</p>
+                  </div>
+                  <div className="scale-125 origin-right">
+                    <StatusBadge status={latestOrder.status} />
+                  </div>
+                </div>
+                
+                <div className="relative pt-4">
+                  <div className="w-full bg-black/5 dark:bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-black/5">
+                    <div className="bg-fitti-green h-full rounded-full transition-all duration-1000 ease-vanguard shadow-[0_0_20px_rgba(118,185,0,0.5)]" style={{
+                      width: { pending: '10%', preparing: '35%', packed: '60%', out_for_delivery: '85%', delivered: '100%' }[latestOrder.status] || '0%'
+                    }} />
+                  </div>
+                  <div className="grid grid-cols-5 gap-1 font-mono text-[9px] font-bold text-fitti-text-muted/40 uppercase tracking-[0.2em] mt-8">
+                    <span className={latestOrder.status === 'pending' ? 'text-fitti-green' : ''}>Pending</span>
+                    <span className={latestOrder.status === 'preparing' ? 'text-fitti-green' : ''}>Processing</span>
+                    <span className={latestOrder.status === 'packed' ? 'text-fitti-green' : ''}>Secured</span>
+                    <span className={latestOrder.status === 'out_for_delivery' ? 'text-fitti-green' : ''}>Transit</span>
+                    <span className={latestOrder.status === 'delivered' ? 'text-fitti-green' : ''}>Deployed</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="py-24 text-center">
+                <Clock strokeWidth={1} className="h-16 w-16 text-fitti-border/40 mx-auto mb-6" />
+                <p className="font-body text-fitti-text-muted font-bold text-lg">No active deliveries detected.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Biometric Snapshot - Stacked Card (col-span-4) */}
+        <div className="md:col-span-4 bezel-shell">
+          <div className="bezel-core p-8 h-full">
+            <h3 className="label-spaced mb-10 flex items-center gap-3">
+              <Activity strokeWidth={1.5} className="h-5 w-5 text-fitti-orange" /> Biometrics
             </h3>
-            <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-widest bg-fitti-bg px-4 py-2 rounded-full">Active Stream</span>
+            <div className="space-y-3">
+              {[
+                { label: 'Weight', value: customerData?.weight ? `${customerData.weight}kg` : '—', icon: <Scale strokeWidth={1} className="h-5 w-5 text-fitti-green" /> },
+                { label: 'Goal', value: customerData?.goal?.replace(/_/g, ' ') || '—', icon: <Target strokeWidth={1} className="h-5 w-5 text-fitti-orange" /> },
+                { label: 'Height', value: customerData?.height ? `${customerData.height}cm` : '—', icon: <TrendingUp strokeWidth={1} className="h-5 w-5 text-fitti-green" /> },
+                { label: 'Pref', value: customerData?.food_preference?.replace(/_/g, ' ') || '—', icon: <Heart strokeWidth={1} className="h-5 w-5 text-fitti-green" /> }
+              ].map((stat, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 rounded-2xl ring-1 ring-black/5 hover:ring-fitti-green/30 transition-all duration-700 ease-vanguard group">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-white dark:bg-fitti-bg-alt rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-700">{stat.icon}</div>
+                     <span className="label-spaced !text-[10px] !mb-0">{stat.label}</span>
+                  </div>
+                  <span className="font-mono text-sm font-bold text-fitti-text group-hover:text-fitti-green transition-colors">{stat.value}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          
-          {latestOrder ? (
-            <div className="space-y-8">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="font-display text-3xl font-black text-fitti-text mb-2 capitalize">{latestOrder.status?.replace(/_/g, ' ')}</p>
-                  <p className="font-body text-sm font-bold text-fitti-text-muted">Estimated arrival in 15-20 minutes.</p>
-                </div>
-                <StatusBadge status={latestOrder.status} />
-              </div>
-              
-              <div className="relative pt-4">
-                <div className="w-full bg-fitti-bg rounded-full h-4 shadow-inner overflow-hidden">
-                  <div className="bg-gradient-to-r from-fitti-green/80 to-fitti-green h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(118,185,0,0.3)]" style={{
-                    width: { pending: '10%', preparing: '35%', packed: '60%', out_for_delivery: '85%', delivered: '100%' }[latestOrder.status] || '0%'
-                  }} />
-                </div>
-                <div className="grid grid-cols-5 gap-1 font-mono text-[8px] font-bold text-fitti-text-muted uppercase tracking-widest mt-6">
-                  <span className="text-center">Pending</span>
-                  <span className="text-center">Processing</span>
-                  <span className="text-center">Secured</span>
-                  <span className="text-center">Transit</span>
-                  <span className="text-center">Deployed</span>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="py-12 text-center">
-              <div className="h-16 w-16 bg-fitti-bg rounded-2xl flex items-center justify-center mx-auto mb-4 border border-dashed border-fitti-border">
-                <Clock className="h-8 w-8 text-fitti-border" />
-              </div>
-              <p className="font-body text-fitti-text-muted font-bold">No active deliveries detected.</p>
-            </div>
-          )}
         </div>
 
-        {/* Biometric Snapshot */}
-        <div className="card-glass p-8 card-hover shadow-xl shadow-fitti-green/5">
-          <h3 className="label-spaced mb-8 flex items-center gap-3">
-            <Activity className="h-5 w-5 text-fitti-orange" /> Biometrics
-          </h3>
-          <div className="space-y-4">
-            {[
-              { label: 'Weight', value: customerData?.weight ? `${customerData.weight}kg` : '—', icon: <Scale className="h-4 w-4 text-fitti-green" /> },
-              { label: 'Growth Goal', value: customerData?.goal?.replace(/_/g, ' ') || '—', icon: <Target className="h-4 w-4 text-fitti-orange" />, accent: 'text-fitti-orange' },
-              { label: 'Height', value: customerData?.height ? `${customerData.height}cm` : '—', icon: <TrendingUp className="h-4 w-4 text-fitti-green" /> },
-              { label: 'Dietary Pref', value: customerData?.food_preference?.replace(/_/g, ' ') || '—', icon: <Heart className="h-4 w-4 text-fitti-green" /> }
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center justify-between p-5 bg-fitti-bg/50 rounded-2xl border border-fitti-border/30 transition-all hover:border-fitti-green/50 hover:bg-white group duration-300 hover:-translate-x-1">
-                <div className="flex items-center gap-4">
-                   <div className="p-2 bg-white rounded-xl shadow-sm group-hover:shadow-md transition-shadow">{stat.icon}</div>
-                   <span className="label-spaced !text-[10px] !mb-0">{stat.label}</span>
-                </div>
-                <span className={`font-mono text-sm font-bold uppercase tracking-tight ${stat.accent || 'text-fitti-text'}`}>{stat.value}</span>
-              </div>
-            ))}
-          </div>
+        {/* Large Aesthetic Card - (col-span-12) */}
+        <div className="md:col-span-12 bezel-shell min-h-[300px] group overflow-hidden">
+           <div className="bezel-core h-full p-12 flex flex-col md:flex-row items-center justify-between gap-12 relative">
+             <div className="mesh-glow -top-24 -left-24 w-[600px] h-[600px] opacity-10 group-hover:opacity-20 transition-opacity duration-1000" />
+             <div className="max-w-2xl relative z-10">
+               <span className="eyebrow-tag">Weekly Evolution</span>
+               <h3 className="font-display text-4xl md:text-6xl font-black text-fitti-text mb-6 tracking-tighter leading-none">
+                 Your Biological Transformation is <span className="text-fitti-green">84% Complete</span>.
+               </h3>
+               <button className="btn-vanguard btn-vanguard-primary">
+                 View Full Progress Trajectory
+                 <div className="btn-vanguard-icon-wrapper">
+                   <ArrowRight strokeWidth={2} className="h-4 w-4" />
+                 </div>
+               </button>
+             </div>
+             <div className="relative h-64 w-64 flex items-center justify-center">
+                <div className="absolute inset-0 border-[1px] border-fitti-green/20 rounded-full animate-spin-slow" />
+                <div className="absolute inset-4 border-[1px] border-fitti-green/40 rounded-full animate-spin-slow [animation-direction:reverse]" />
+                <Dumbbell strokeWidth={0.5} className="h-32 w-32 text-fitti-green opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-1000" />
+             </div>
+           </div>
         </div>
       </div>
     </div>
@@ -641,17 +685,20 @@ function ProgressTab() {
 }
 
 /* ── Main Dashboard ───────────────────────────────────── */
+/* ── Main Dashboard ───────────────────────────────────── */
 export default function CustomerDashboard() {
   const user = useAuthStore(state => state.user);
   
-  
   return (
-    <div className="flex h-screen bg-fitti-bg relative">
+    <div className="flex min-h-[100dvh] bg-fitti-bg relative overflow-hidden">
+      {/* Global Grain Texture Overlay */}
+      <div className="grain-overlay" />
+      
       <FloatingBackground role="customer" />
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col relative z-10">
         <Navbar title="" />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-24">
           <Routes>
             <Route path="/" element={<HomeTab />} />
             <Route path="/meals" element={<MealsTab />} />
@@ -659,7 +706,7 @@ export default function CustomerDashboard() {
             <Route path="/health" element={<HealthTab />} />
             <Route path="/progress" element={<ProgressTab />} />
             <Route path="/messages" element={<MessagingView />} />
-                      </Routes>
+          </Routes>
         </main>
       </div>
     </div>

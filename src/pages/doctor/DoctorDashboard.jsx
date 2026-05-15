@@ -68,33 +68,80 @@ function PatientsTab({ onOpenRecord }) {
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-display font-bold text-fitti-text flex items-center gap-2"><Heart className="h-6 w-6 text-fitti-green"/>My Patients</h2>
-        <span className="text-sm text-fitti-text-muted">{patients.length} assigned</span>
-      </div>
-      {loading ? <div className="space-y-4">{[1,2].map(i=><div key={i} className="h-28 bg-white rounded-2xl shimmer"/>)}</div>
-      : patients.length===0 ? (
-        <div className="bg-white border border-fitti-border rounded-2xl p-12 text-center animate-scale-in">
-          <Users className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/><p className="text-fitti-text-muted font-medium">No patients assigned yet.</p>
+    <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
+      {/* Header Section */}
+      <section className="animate-v-fade-up">
+        <span className="eyebrow-tag">Diagnostic Interface: Online</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
+              Patient <br/>
+              <span className="text-fitti-green">Bio-Sync</span>.
+            </h2>
+            <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
+              Monitoring cellular integrity and biological compliance for {patients.length} active units.
+            </p>
+          </div>
+          <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
+            <div className="bezel-core h-full flex flex-col items-center justify-center relative text-center">
+              <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
+              <Shield strokeWidth={1} className="h-10 w-10 text-fitti-green mb-2" />
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Secure Data Node</span>
+              <span className="font-display text-2xl font-black text-fitti-green">Active</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[1,2].map(i=><div key={i} className="bezel-shell h-64 shimmer"/>)}
+        </div>
+      ) : patients.length===0 ? (
+        <div className="bezel-shell min-h-[400px] flex items-center justify-center">
+          <div className="text-center">
+            <Heart strokeWidth={1} className="h-20 w-20 text-fitti-border/40 mx-auto mb-6" />
+            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No biological profiles assigned.</p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger-children">
-          {patients.map(p => (
-            <div key={p.id} className="bg-white border border-fitti-border rounded-2xl p-6 shadow-sm card-hover">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg flex-shrink-0">{p.name.charAt(0)}</div>
-                <div className="ml-3"><h3 className="font-bold text-fitti-text">{p.name}</h3><p className="text-xs text-fitti-text-muted">{p.email}</p></div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 stagger-v-fade">
+          {patients.map((p, idx) => (
+            <div key={p.id} className={`${idx % 3 === 0 ? 'md:col-span-8' : 'md:col-span-4'} bezel-shell group`}>
+              <div className="bezel-core p-8 h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 mesh-glow opacity-5 group-hover:opacity-20 transition-opacity duration-1000" />
+                
+                <div className="flex items-center gap-6 mb-10">
+                  <div className="h-16 w-16 rounded-2xl bg-fitti-green/5 flex items-center justify-center text-fitti-green font-display font-black text-2xl ring-1 ring-fitti-green/20 group-hover:bg-fitti-green group-hover:text-white transition-all duration-700 ease-vanguard">
+                    {p.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="font-display font-black text-fitti-text text-2xl tracking-tight leading-none mb-1">{p.name}</h3>
+                    <p className="font-mono text-[10px] text-fitti-text-muted uppercase tracking-[0.2em]">{p.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                  {[
+                    { label: 'Weight', value: p.weight?`${p.weight} kg`:'—' },
+                    { label: 'Condition', value: p.medical_conditions||'Clear' },
+                    { label: 'Goal', value: p.goal?.replace(/_/g,' ')||'—', isTag: true },
+                    { label: 'Preference', value: p.food_preference?.replace(/_/g,' ')||'—', isTag: true }
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-black/5 dark:bg-white/5 rounded-2xl p-4 ring-1 ring-black/5">
+                      <p className="label-spaced !text-[8px] !mb-1 opacity-50">{stat.label}</p>
+                      <p className={`font-display font-bold ${stat.isTag ? 'text-[9px] text-fitti-green uppercase' : 'text-xs text-fitti-text'}`}>
+                        {stat.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <button onClick={()=>onOpenRecord(p)} className="btn-vanguard btn-vanguard-primary w-full py-4 group/btn">
+                  <Plus strokeWidth={2.5} className="h-4 w-4 group-hover/btn:rotate-90 transition-transform" />
+                  Initialize Medical Protocol
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                <div className="bg-fitti-bg rounded-xl p-3"><p className="text-fitti-text-muted text-xs">Weight</p><p className="font-bold text-fitti-text">{p.weight?`${p.weight} kg`:'—'}</p></div>
-                <div className="bg-fitti-bg rounded-xl p-3"><p className="text-fitti-text-muted text-xs">Goal</p><p className="font-bold text-fitti-text capitalize">{p.goal?.replace(/_/g,' ')||'—'}</p></div>
-                <div className="bg-fitti-bg rounded-xl p-3"><p className="text-fitti-text-muted text-xs">Food Pref</p><p className="font-bold text-fitti-text capitalize">{p.food_preference?.replace(/_/g,' ')||'—'}</p></div>
-                <div className="bg-fitti-bg rounded-xl p-3"><p className="text-fitti-text-muted text-xs">Conditions</p><p className="font-bold text-fitti-text">{p.medical_conditions||'None'}</p></div>
-              </div>
-              <button onClick={()=>onOpenRecord(p)} className="w-full flex items-center justify-center gap-2 py-2.5 bg-purple-50 border border-purple-200 rounded-xl text-sm font-semibold text-purple-600 hover:bg-purple-100 transition-colors">
-                <Plus className="h-4 w-4"/>Add Medical Record
-              </button>
             </div>
           ))}
         </div>
@@ -157,16 +204,16 @@ export default function DoctorDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const user = useAuthStore(state => state.user);
   
-
-  
-
   return (
-    <div className="flex h-screen bg-fitti-bg relative">
+    <div className="flex min-h-[100dvh] bg-fitti-bg relative overflow-hidden">
+      {/* Global Grain Texture Overlay */}
+      <div className="grain-overlay" />
+      
       <FloatingBackground role="doctor"/>
       <Sidebar/>
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col relative z-10">
         <Navbar title="" />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-24">
           <Routes>
             <Route path="/" element={<PatientsTab onOpenRecord={setShowRecord} />}/>
             <Route path="/records" element={<RecordsTab key={refreshKey} />}/>
