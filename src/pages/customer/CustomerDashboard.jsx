@@ -36,7 +36,7 @@ function HomeTab() {
     <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
       {/* Hero Section - Editorial Split Style */}
       <section className="animate-v-fade-up">
-        <span className="eyebrow-tag">Operational Status: Optimal</span>
+        <span className="eyebrow-tag">Dashboard Overview</span>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div className="max-w-3xl">
             <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
@@ -44,14 +44,14 @@ function HomeTab() {
               <span className="text-fitti-green">{profile?.full_name?.split(' ')[0] || 'Champ'}</span>.
             </h2>
             <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
-              Your biological systems are performing optimally. Here is your personalized evolution strategy for today.
+              Your health metrics are updated and trackable. Here is your personalized fitness plan for today.
             </p>
           </div>
           <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
             <div className="bezel-core h-full flex flex-col items-center justify-center relative">
               <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
               <Zap strokeWidth={1} className="h-12 w-12 text-fitti-green mb-2 group-hover:rotate-12 transition-transform duration-700" />
-              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Cellular Energy</span>
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Activity Level</span>
               <span className="font-display text-2xl font-black text-fitti-green">98%</span>
             </div>
           </div>
@@ -69,9 +69,9 @@ function HomeTab() {
                 <div className="w-10 h-10 rounded-full bg-fitti-green/10 flex items-center justify-center">
                   <Package strokeWidth={1.5} className="h-5 w-5 text-fitti-green" />
                 </div>
-                <h3 className="label-spaced !mb-0 text-sm">Logistics Protocol</h3>
+                <h3 className="label-spaced !mb-0 text-sm">Delivery Status</h3>
               </div>
-              <span className="font-mono text-[10px] font-bold text-fitti-green uppercase tracking-widest px-4 py-1.5 bg-fitti-green/5 rounded-full ring-1 ring-fitti-green/20">Active Stream</span>
+              <span className="font-mono text-[10px] font-bold text-fitti-green uppercase tracking-widest px-4 py-1.5 bg-fitti-green/5 rounded-full ring-1 ring-fitti-green/20">Active Order</span>
             </div>
             
             {latestOrder ? (
@@ -95,9 +95,9 @@ function HomeTab() {
                   <div className="grid grid-cols-5 gap-1 font-mono text-[9px] font-bold text-fitti-text-muted/40 uppercase tracking-[0.2em] mt-8">
                     <span className={latestOrder.status === 'pending' ? 'text-fitti-green' : ''}>Pending</span>
                     <span className={latestOrder.status === 'preparing' ? 'text-fitti-green' : ''}>Processing</span>
-                    <span className={latestOrder.status === 'packed' ? 'text-fitti-green' : ''}>Secured</span>
-                    <span className={latestOrder.status === 'out_for_delivery' ? 'text-fitti-green' : ''}>Transit</span>
-                    <span className={latestOrder.status === 'delivered' ? 'text-fitti-green' : ''}>Deployed</span>
+                    <span className={latestOrder.status === 'packed' ? 'text-fitti-green' : ''}>Ready</span>
+                    <span className={latestOrder.status === 'out_for_delivery' ? 'text-fitti-green' : ''}>In Transit</span>
+                    <span className={latestOrder.status === 'delivered' ? 'text-fitti-green' : ''}>Delivered</span>
                   </div>
                 </div>
               </div>
@@ -114,7 +114,7 @@ function HomeTab() {
         <div className="md:col-span-4 bezel-shell">
           <div className="bezel-core p-8 h-full">
             <h3 className="label-spaced mb-10 flex items-center gap-3">
-              <Activity strokeWidth={1.5} className="h-5 w-5 text-fitti-orange" /> Biometrics
+              <Activity strokeWidth={1.5} className="h-5 w-5 text-fitti-orange" /> Health Metrics
             </h3>
             <div className="space-y-3">
               {[
@@ -140,12 +140,12 @@ function HomeTab() {
            <div className="bezel-core h-full p-12 flex flex-col md:flex-row items-center justify-between gap-12 relative">
              <div className="mesh-glow -top-24 -left-24 w-[600px] h-[600px] opacity-10 group-hover:opacity-20 transition-opacity duration-1000" />
              <div className="max-w-2xl relative z-10">
-               <span className="eyebrow-tag">Weekly Evolution</span>
+               <span className="eyebrow-tag">Weekly Progress</span>
                <h3 className="font-display text-4xl md:text-6xl font-black text-fitti-text mb-6 tracking-tighter leading-none">
-                 Your Biological Transformation is <span className="text-fitti-green">84% Complete</span>.
+                 Your Health Journey is <span className="text-fitti-green">84% Complete</span>.
                </h3>
                <button className="btn-vanguard btn-vanguard-primary">
-                 View Full Progress Trajectory
+                 View Full Progress Report
                  <div className="btn-vanguard-icon-wrapper">
                    <ArrowRight strokeWidth={2} className="h-4 w-4" />
                  </div>
@@ -189,7 +189,7 @@ function MealsTab() {
     <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
       {/* Header with Switcher */}
       <section className="animate-v-fade-up">
-        <span className="eyebrow-tag">Resource Management Protocol</span>
+        <span className="eyebrow-tag">Nutrition Management</span>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
             <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
@@ -197,7 +197,7 @@ function MealsTab() {
               <span className="text-fitti-green">Vault</span>.
             </h2>
             <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
-              Biological fuel management and caloric synchronization node.
+              Manage your daily nutrition and meal schedule.
             </p>
           </div>
           <div className="bezel-shell p-1 flex items-center gap-1 rounded-full">
@@ -205,13 +205,13 @@ function MealsTab() {
               onClick={() => setActiveTab('live')}
               className={`px-8 py-3 rounded-full text-xs font-black transition-all ${activeTab === 'live' ? 'bg-fitti-green text-white shadow-lg' : 'text-fitti-text-muted hover:text-fitti-text'}`}
             >
-              LIVE STREAM
+              CURRENT ORDER
             </button>
             <button 
               onClick={() => setActiveTab('weekly')}
               className={`px-8 py-3 rounded-full text-xs font-black transition-all ${activeTab === 'weekly' ? 'bg-fitti-green text-white shadow-lg' : 'text-fitti-text-muted hover:text-fitti-text'}`}
             >
-              WEEKLY LOG
+              WEEKLY PLAN
             </button>
           </div>
         </div>
@@ -231,7 +231,7 @@ function MealsTab() {
                   <div className="w-12 h-12 rounded-2xl bg-fitti-green/5 flex items-center justify-center text-fitti-green ring-1 ring-fitti-green/20">
                     <ChefHat strokeWidth={1} className="h-6 w-6" />
                   </div>
-                  <h3 className="label-spaced !mb-0">Active Transmission</h3>
+                  <h3 className="label-spaced !mb-0">Active Status</h3>
                 </div>
                 {latestOrder && <StatusBadge status={latestOrder.status} />}
               </div>
@@ -240,7 +240,7 @@ function MealsTab() {
                 <div className="space-y-16 relative z-10">
                    <div>
                      <h3 className="font-display text-5xl md:text-7xl font-black text-fitti-text mb-4 tracking-tighter leading-none">
-                       Chef is <span className="text-fitti-green">{latestOrder.status === 'preparing' ? 'Preparing' : 'Deploying'}</span>
+                       Chef is <span className="text-fitti-green">{latestOrder.status === 'preparing' ? 'Preparing' : 'Shipping'}</span>
                      </h3>
                      <p className="font-body text-xl text-fitti-text-muted font-bold capitalize tracking-tight">{latestOrder.meal_plan}</p>
                    </div>
@@ -271,7 +271,7 @@ function MealsTab() {
                 <div className="py-32 text-center relative z-10">
                    <Utensils strokeWidth={0.5} className="h-24 w-24 text-fitti-border/40 mx-auto mb-8" />
                    <h3 className="font-display text-3xl font-black text-fitti-text mb-4">Kitchen Standby</h3>
-                   <p className="font-body text-fitti-text-muted font-bold max-w-sm mx-auto">No cellular fuel is currently being processed for deployment.</p>
+                   <p className="font-body text-fitti-text-muted font-bold max-w-sm mx-auto">No meals are currently being prepared for delivery.</p>
                 </div>
               )}
             </div>
@@ -281,11 +281,11 @@ function MealsTab() {
           <div className="md:col-span-4 bezel-shell">
             <div className="bezel-core p-8 md:p-12 h-full">
               <h3 className="label-spaced mb-12 flex items-center gap-4">
-                <Calendar strokeWidth={1.5} className="h-5 w-5 text-fitti-orange" /> Daily Protocol
+                <Calendar strokeWidth={1.5} className="h-5 w-5 text-fitti-orange" /> Daily Schedule
               </h3>
               <div className="space-y-6">
                 {dayMeals.length === 0 ? (
-                  <p className="font-accent italic text-fitti-text-muted">Standard maintenance mode active.</p>
+                  <p className="font-accent italic text-fitti-text-muted">No scheduled meals for today.</p>
                 ) : dayMeals.map((m, i) => (
                   <div key={i} className="flex items-center gap-6 p-6 bg-black/5 dark:bg-white/5 rounded-[2rem] border border-black/5 hover:ring-1 hover:ring-fitti-green/30 transition-all duration-700 group">
                      <div className="h-14 w-14 rounded-2xl bg-fitti-bg flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-700">
@@ -406,7 +406,7 @@ function WorkoutTab() {
     <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
       {/* Workout Hero */}
       <section className="animate-v-fade-up">
-        <span className="eyebrow-tag">Kinetic Protocol: Active</span>
+        <span className="eyebrow-tag">Workout Plan: Active</span>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
             <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
@@ -421,7 +421,7 @@ function WorkoutTab() {
             <div className="bezel-core h-full flex flex-col items-center justify-center relative">
               <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
               <Dumbbell strokeWidth={1} className="h-12 w-12 text-fitti-green mb-2" />
-              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Mechanical Stress</span>
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Intensity Level</span>
               <span className="font-display text-2xl font-black text-fitti-green">Level 4</span>
             </div>
           </div>
@@ -437,7 +437,7 @@ function WorkoutTab() {
             <div className="w-12 h-12 rounded-2xl bg-fitti-green/5 flex items-center justify-center text-fitti-green ring-1 ring-fitti-green/20">
               <Target strokeWidth={1} className="h-6 w-6" />
             </div>
-            <h3 className="label-spaced !mb-0">Today's Directive</h3>
+            <h3 className="label-spaced !mb-0">Today's Exercises</h3>
           </div>
           
           {loading ? (
@@ -446,15 +446,15 @@ function WorkoutTab() {
              <div className="py-24 text-center">
                <Dumbbell strokeWidth={0.5} className="h-24 w-24 text-fitti-border/40 mx-auto mb-8" />
                <h3 className="font-display text-3xl font-black text-fitti-text mb-4">Rest Interval</h3>
-               <p className="font-body text-fitti-text-muted font-bold max-w-sm mx-auto">Enjoy the recovery phase. No physical stressors assigned for {today}.</p>
+               <p className="font-body text-fitti-text-muted font-bold max-w-sm mx-auto">Enjoy your rest day. No exercises assigned for {today}.</p>
              </div>
           ) : isCompleted ? (
              <div className="py-24 text-center animate-v-fade-up">
                <div className="h-32 w-32 bg-fitti-green/10 rounded-full flex items-center justify-center mx-auto mb-8 ring-1 ring-fitti-green/30">
                 <Trophy strokeWidth={1} className="h-16 w-16 text-fitti-green" />
                </div>
-               <h3 className="font-display text-5xl font-black text-fitti-green tracking-tighter mb-4 uppercase">Protocol Secured</h3>
-               <p className="font-body text-xl text-fitti-text-muted font-bold">Physical evolution requirements have been satisfied.</p>
+               <h3 className="font-display text-5xl font-black text-fitti-green tracking-tighter mb-4 uppercase">Workout Complete</h3>
+               <p className="font-body text-xl text-fitti-text-muted font-bold">Your daily fitness goals have been satisfied.</p>
              </div>
           ) : (
             <div className="relative z-10 space-y-12">
@@ -522,7 +522,7 @@ function HealthTab() {
     <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
       {/* Health Hero */}
       <section className="animate-v-fade-up">
-        <span className="eyebrow-tag">Biotic Status: Verified</span>
+        <span className="eyebrow-tag">Health Record: Verified</span>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
             <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
@@ -530,7 +530,7 @@ function HealthTab() {
               <span className="text-fitti-green">Vault</span>.
             </h2>
             <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
-              Biological history and systemic medical telemetry analysis.
+              Access your medical records and professional health summaries.
             </p>
           </div>
           <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
@@ -550,7 +550,7 @@ function HealthTab() {
         <div className="bezel-shell min-h-[400px] flex items-center justify-center text-center">
            <div>
              <Stethoscope strokeWidth={0.5} className="h-20 w-20 text-fitti-border/40 mx-auto mb-8" />
-             <p className="font-body text-xl font-black text-fitti-text-muted uppercase tracking-widest">No biotic telemetry detected.</p>
+             <p className="font-body text-xl font-black text-fitti-text-muted uppercase tracking-widest">No medical records found.</p>
            </div>
         </div>
       ) : (
@@ -566,7 +566,7 @@ function HealthTab() {
                       <ShieldCheck strokeWidth={1} className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className="label-spaced !mb-0 text-xs">Diagnostic Assessment</h3>
+                      <h3 className="label-spaced !mb-0 text-xs">Professional Assessment</h3>
                       <p className="font-mono text-[10px] text-fitti-text-muted font-bold">{new Date(r.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
@@ -630,7 +630,7 @@ function ProgressTab() {
     <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
       {/* Progress Hero */}
       <section className="animate-v-fade-up">
-        <span className="eyebrow-tag">Trajectory: Ascending</span>
+        <span className="eyebrow-tag">Progress: Ascending</span>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
             <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
@@ -638,14 +638,14 @@ function ProgressTab() {
               <span className="text-fitti-green">Metrics</span>.
             </h2>
             <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
-              Visualization of biological transformation data and caloric performance.
+              Track your health improvements and activity data.
             </p>
           </div>
           <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
             <div className="bezel-core h-full flex flex-col items-center justify-center relative">
               <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
               <TrendingUp strokeWidth={1} className="h-12 w-12 text-fitti-green mb-2" />
-              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Success Velocity</span>
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Goal Achievement</span>
               <span className="font-display text-2xl font-black text-fitti-green">+12.4%</span>
             </div>
           </div>
@@ -661,7 +661,7 @@ function ProgressTab() {
           <div className="md:col-span-6 bezel-shell">
             <div className="bezel-core p-8 md:p-12 h-full">
               <h3 className="label-spaced mb-10 flex items-center gap-3">
-                <Zap strokeWidth={1.5} className="h-5 w-5 text-fitti-orange" /> Kinetic Output
+                <Zap strokeWidth={1.5} className="h-5 w-5 text-fitti-orange" /> Activity Level
               </h3>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -687,7 +687,7 @@ function ProgressTab() {
           <div className="md:col-span-6 bezel-shell">
             <div className="bezel-core p-8 md:p-12 h-full">
               <h3 className="label-spaced mb-10 flex items-center gap-3">
-                <Scale strokeWidth={1.5} className="h-5 w-5 text-fitti-green" /> Mass Integrity
+                <Scale strokeWidth={1.5} className="h-5 w-5 text-fitti-green" /> Weight Trend
               </h3>
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -707,7 +707,7 @@ function ProgressTab() {
           <div className="md:col-span-12 bezel-shell">
             <div className="bezel-core p-8 md:p-16">
               <h3 className="label-spaced mb-12 flex items-center gap-3">
-                <ShieldCheck strokeWidth={1.5} className="h-5 w-5 text-fitti-green" /> Evolution History
+                <ShieldCheck strokeWidth={1.5} className="h-5 w-5 text-fitti-green" /> Progress History
               </h3>
               <div className="space-y-6">
                 {[...progressData].reverse().map((log, i) => (

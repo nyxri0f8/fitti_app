@@ -71,22 +71,22 @@ function PatientsTab({ onOpenRecord }) {
     <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
       {/* Header Section */}
       <section className="animate-v-fade-up">
-        <span className="eyebrow-tag">Diagnostic Interface: Online</span>
+        <span className="eyebrow-tag">Medical Overview</span>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div className="max-w-3xl">
             <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
-              Patient <br/>
-              <span className="text-fitti-green">Bio-Sync</span>.
+              Medical <br/>
+              <span className="text-fitti-green">Dashboard</span>.
             </h2>
             <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
-              Monitoring cellular integrity and biological compliance for {patients.length} active units.
+              Monitoring health status and treatment compliance for {patients.length} active patients.
             </p>
           </div>
           <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
             <div className="bezel-core h-full flex flex-col items-center justify-center relative text-center">
               <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
               <Shield strokeWidth={1} className="h-10 w-10 text-fitti-green mb-2" />
-              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Secure Data Node</span>
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Health Network</span>
               <span className="font-display text-2xl font-black text-fitti-green">Active</span>
             </div>
           </div>
@@ -101,13 +101,13 @@ function PatientsTab({ onOpenRecord }) {
         <div className="bezel-shell min-h-[400px] flex items-center justify-center">
           <div className="text-center">
             <Heart strokeWidth={1} className="h-20 w-20 text-fitti-border/40 mx-auto mb-6" />
-            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No biological profiles assigned.</p>
+            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No patient profiles assigned.</p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 stagger-v-fade">
           {patients.map((p, idx) => (
-            <div key={p.id} className={`${idx % 3 === 0 ? 'md:col-span-8' : 'md:col-span-4'} bezel-shell group`}>
+            <div key={p.id} className="md:col-span-6 bezel-shell group">
               <div className="bezel-core p-8 h-full relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 mesh-glow opacity-5 group-hover:opacity-20 transition-opacity duration-1000" />
                 
@@ -139,7 +139,7 @@ function PatientsTab({ onOpenRecord }) {
 
                 <button onClick={()=>onOpenRecord(p)} className="btn-vanguard btn-vanguard-primary w-full py-4 group/btn">
                   <Plus strokeWidth={2.5} className="h-4 w-4 group-hover/btn:rotate-90 transition-transform" />
-                  Initialize Medical Protocol
+                  Create Medical Record
                 </button>
               </div>
             </div>
@@ -171,29 +171,86 @@ function RecordsTab() {
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up">
-      <h2 className="text-2xl font-display font-bold text-fitti-text mb-6 flex items-center gap-2"><FileText className="h-6 w-6 text-fitti-green"/>Medical Records</h2>
+    <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
+      {/* Header Section */}
+      <section className="animate-v-fade-up">
+        <span className="eyebrow-tag">Clinical History</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
+              Medical <br/>
+              <span className="text-fitti-green">Records</span>.
+            </h2>
+            <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
+              Comprehensive health documentation and diagnostic history for your patients.
+            </p>
+          </div>
+          <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
+            <div className="bezel-core h-full flex flex-col items-center justify-center relative text-center">
+              <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
+              <FileText strokeWidth={1} className="h-10 w-10 text-fitti-green mb-2" />
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Total Files</span>
+              <span className="font-display text-2xl font-black text-fitti-green">{records.length}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       {records.length===0 ? (
-        <div className="bg-white border border-fitti-border rounded-2xl p-12 text-center">
-          <Shield className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/><p className="text-fitti-text-muted">No records yet. Go to My Patients to create one.</p>
+        <div className="bezel-shell min-h-[400px] flex items-center justify-center">
+          <div className="text-center">
+            <Shield strokeWidth={1} className="h-20 w-20 text-fitti-border/40 mx-auto mb-6"/>
+            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No medical files discovered.</p>
+          </div>
         </div>
       ) : (
-        <div className="space-y-4 stagger-children">{records.map(r => (
-          <div key={r.id} className="bg-white border border-fitti-border rounded-2xl p-6 card-hover">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-fitti-text">{r.patient_name}</h3>
-              <span className="text-xs text-fitti-text-muted">{new Date(r.created_at).toLocaleDateString()}</span>
+        <div className="space-y-12 stagger-v-fade">
+          {records.map((r, idx) => (
+            <div key={r.id} className="bezel-shell group overflow-hidden">
+              <div className="bezel-core p-8 md:p-12 h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 mesh-glow opacity-5 group-hover:opacity-10 transition-opacity duration-1000" />
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                  <div className="flex items-center gap-6">
+                    <div className="h-16 w-16 rounded-2xl bg-fitti-green/10 flex items-center justify-center text-fitti-green font-display font-black text-2xl ring-1 ring-fitti-green/20">
+                      {r.patient_name.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="font-display font-black text-fitti-text text-3xl tracking-tight leading-none mb-2">{r.patient_name}</h3>
+                      <p className="font-mono text-[10px] text-fitti-text-muted uppercase tracking-[0.2em]">{new Date(r.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  {r.follow_up_date && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-fitti-green/5 rounded-xl border border-fitti-green/10 text-fitti-green font-mono text-[10px] font-black uppercase tracking-widest">
+                      <Calendar className="h-3 w-3"/> Next Review: {new Date(r.follow_up_date).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-10">
+                  <p className="font-mono text-[9px] font-black text-fitti-green uppercase tracking-[0.2em] mb-4 border-b border-fitti-green/10 pb-2">Clinical Assessment</p>
+                  <p className="font-body text-lg text-fitti-text leading-relaxed">{r.health_summary}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Conditions', value: r.conditions, color: 'bg-fitti-bg-alt' },
+                    { label: 'Medications', value: r.medications, color: 'bg-blue-50/50 dark:bg-blue-900/10' },
+                    { label: 'Restrictions', value: r.workout_restrictions, color: 'bg-amber-50/50 dark:bg-amber-900/10' },
+                    { label: 'Dietary', value: r.dietary_restrictions, color: 'bg-green-50/50 dark:bg-green-900/10' }
+                  ].map((field, i) => field.value && (
+                    <div key={i} className={`rounded-2xl p-6 ring-1 ring-black/5 ${field.color}`}>
+                      <p className="label-spaced !text-[9px] !mb-3 opacity-50">{field.label}</p>
+                      <p className="font-display font-bold text-sm text-fitti-text">
+                        {field.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <p className="text-sm text-fitti-text-dark mb-3">{r.health_summary}</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-              {r.conditions && <div className="bg-fitti-bg-alt rounded-lg p-2"><p className="text-fitti-green font-medium">Conditions</p><p className="text-black font-semibold">{r.conditions}</p></div>}
-              {r.medications && <div className="bg-blue-50 rounded-lg p-2"><p className="text-fitti-green font-medium">Medications</p><p className="text-fitti-green font-semibold">{r.medications}</p></div>}
-              {r.workout_restrictions && <div className="bg-amber-50 rounded-lg p-2"><p className="text-amber-400 font-medium">Workout Limits</p><p className="text-amber-600 font-semibold">{r.workout_restrictions}</p></div>}
-              {r.dietary_restrictions && <div className="bg-green-50 rounded-lg p-2"><p className="text-green-400 font-medium">Diet Limits</p><p className="text-green-600 font-semibold">{r.dietary_restrictions}</p></div>}
-            </div>
-            {r.follow_up_date && <div className="mt-3 flex items-center gap-2 text-xs text-fitti-text-muted"><Calendar className="h-3 w-3"/>Follow-up: {new Date(r.follow_up_date).toLocaleDateString()}</div>}
-          </div>
-        ))}</div>
+          ))}
+        </div>
       )}
     </div>
   );

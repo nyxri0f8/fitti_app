@@ -104,7 +104,7 @@ export default function Onboarding() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <h2 className="text-4xl font-display font-black text-fitti-green tracking-tight">Fitti.</h2>
         <h3 className="mt-6 text-3xl font-display font-bold text-fitti-text">Complete Your Profile</h3>
-        <p className="mt-2 text-sm text-fitti-text-muted">Welcome! Please provide a few details to get started.</p>
+        <p className="mt-2 text-sm text-fitti-text-muted">Establish your professional health profile to begin.</p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
@@ -148,7 +148,7 @@ export default function Onboarding() {
                     </select>
                   </div>
                   <div>
-                    <label className="label-spaced block mb-1">Food Pref</label>
+                    <label className="label-spaced block mb-1">Dietary Preference</label>
                     <select name="foodPreference" value={formData.foodPreference} onChange={handleChange} className="w-full bg-white border border-fitti-border rounded-xl px-4 py-3 focus:border-fitti-green focus:outline-none focus:ring-2 focus:ring-fitti-green/20">
                       <option value="veg">Vegetarian</option>
                       <option value="non_veg">Non-Vegetarian</option>
@@ -169,7 +169,7 @@ export default function Onboarding() {
 
             <div>
               <button disabled={loading} type="submit" className="w-full flex justify-center py-3 px-6 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-fitti-green hover:bg-fitti-green-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fitti-green transition-all disabled:opacity-50">
-                {loading ? 'Saving...' : 'Complete Registration'}
+                {loading ? 'Finalizing...' : 'Finalize Profile'}
               </button>
             </div>
           </form>

@@ -19,7 +19,7 @@ export default function MessagingView() {
         <div className="bezel-shell p-12">
           <div className="bezel-core p-12 flex flex-col items-center">
             <div className="h-16 w-16 border-4 border-fitti-green/20 border-t-fitti-green rounded-full animate-spin mb-6" />
-            <p className="font-mono text-[10px] font-black text-fitti-green uppercase tracking-[0.3em] animate-pulse">Initializing Secure Node...</p>
+            <p className="font-mono text-[10px] font-black text-fitti-green uppercase tracking-[0.3em] animate-pulse">Loading Messages...</p>
           </div>
         </div>
       </div>
@@ -58,10 +58,10 @@ export default function MessagingView() {
               ) : (
                 <div className="h-full flex items-center justify-center p-12">
                   <div className="text-center max-w-sm relative z-10">
-                    <span className="eyebrow-tag !mb-8">Encrypted Comms Node</span>
+                    <span className="eyebrow-tag !mb-8">Messaging Hub</span>
                     <h2 className="font-display text-6xl font-black text-fitti-green mb-6 tracking-tighter">Fitti.</h2>
                     <p className="font-accent text-xl italic text-fitti-text-muted leading-relaxed">
-                      Select a secure channel to initiate high-fidelity biological strategy updates.
+                      Select a contact to start a conversation with your health team.
                     </p>
                   </div>
                 </div>

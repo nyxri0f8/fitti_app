@@ -94,11 +94,11 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
     <div className="max-w-6xl mx-auto space-y-12 animate-v-fade-up">
       {/* Editorial Header */}
       <div className="flex flex-col">
-        <span className="eyebrow-tag !mb-2">Movement Protocol</span>
+        <span className="eyebrow-tag !mb-2">Workout Management</span>
         <h2 className="font-display text-6xl font-black text-fitti-text tracking-tighter leading-none">
           Active <span className="text-fitti-green">Session.</span>
         </h2>
-        <p className="font-accent text-xl italic text-fitti-text-muted mt-2">Log real-time performance to refine biological evolution.</p>
+        <p className="font-accent text-xl italic text-fitti-text-muted mt-2">Track your performance data in real-time.</p>
       </div>
 
       {mode === 'select' && (
@@ -111,9 +111,9 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
                 <div className="w-20 h-20 bg-fitti-green/10 rounded-2xl flex items-center justify-center mx-auto mb-8 ring-1 ring-fitti-green/20">
                   <Dumbbell className="h-10 w-10 text-fitti-green" />
                 </div>
-                <h3 className="font-display text-4xl font-black text-fitti-text mb-4 tracking-tighter">Strength Hub</h3>
+                <h3 className="font-display text-4xl font-black text-fitti-text mb-4 tracking-tighter">Strength Training</h3>
                 <p className="font-body font-bold text-fitti-text-muted mb-12 max-w-xs mx-auto leading-relaxed">
-                  Precision stopwatch for muscle-fiber hyper-trophy and rest-period logging.
+                  High-precision tracking for resistance training and rest periods.
                 </p>
                 <button className="btn-vanguard btn-vanguard-primary w-full">
                   Start Lifting
@@ -159,7 +159,7 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
           <div className="bezel-core p-12 relative overflow-hidden">
             <div className="mesh-glow -top-32 left-1/4 opacity-10" />
             <div className="text-center mb-16 relative z-10">
-              <span className="eyebrow-tag !mb-4">{workoutType} Session Active</span>
+              <span className="eyebrow-tag !mb-4">Session In Progress</span>
               <h1 className="font-mono text-[8rem] font-black text-fitti-text tracking-tighter tabular-nums leading-none">
                 {formatTime(time)}
               </h1>
@@ -168,19 +168,19 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 relative z-10">
               <div className="bg-black/5 dark:bg-white/5 p-8 rounded-[2rem] text-center border border-black/5">
                 <Flame className="h-6 w-6 text-fitti-green mx-auto mb-3" />
-                <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Biological Fuel</p>
+                <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Energy Burned</p>
                 <p className="font-display text-3xl font-black">{caloriesBurned} <span className="text-sm opacity-40">kcal</span></p>
               </div>
               {mode === 'cardio' ? (
                 <>
                   <div className="bg-black/5 dark:bg-white/5 p-8 rounded-[2rem] text-center border border-black/5">
                     <MapPin className="h-6 w-6 text-fitti-green mx-auto mb-3" />
-                    <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Spatial Path</p>
+                    <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Distance</p>
                     <p className="font-display text-3xl font-black">{distance.toFixed(2)} <span className="text-sm opacity-40">km</span></p>
                   </div>
                   <div className="bg-black/5 dark:bg-white/5 p-8 rounded-[2rem] text-center border border-black/5">
                     <Activity className="h-6 w-6 text-fitti-green mx-auto mb-3" />
-                    <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Velocity</p>
+                    <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Average Pace</p>
                     <p className="font-display text-3xl font-black">
                       {distance > 0 ? (time / 60 / distance).toFixed(1) : '0'} <span className="text-sm opacity-40">m/km</span>
                     </p>
@@ -189,7 +189,7 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
               ) : (
                 <div className="bg-black/5 dark:bg-white/5 p-8 rounded-[2rem] text-center border border-black/5">
                   <Target className="h-6 w-6 text-fitti-green mx-auto mb-3" />
-                  <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Protocol Sets</p>
+                  <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest mb-1">Total Sets</p>
                   <p className="font-display text-3xl font-black">{laps.length}</p>
                 </div>
               )}
@@ -211,7 +211,7 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
               )}
               {time > 0 && !isRunning && (
                 <button onClick={handleSave} disabled={saving} className="btn-vanguard btn-vanguard-primary px-12 h-24">
-                  Log Artifact
+                  Save Session
                   <div className="btn-vanguard-icon-wrapper">
                     <Plus strokeWidth={2.5} className="h-4 w-4" />
                   </div>
@@ -222,10 +222,10 @@ export default function WorkoutTracker({ customerId, isTrainerView = false, cust
         </div>
       )}
 
-      {/* Historical Artifacts */}
+      {/* Activity History */}
       {logs.length > 0 && mode === 'select' && (
         <div className="space-y-8">
-          <h3 className="font-display text-3xl font-black text-fitti-text tracking-tighter uppercase">Recent History</h3>
+          <h3 className="font-display text-3xl font-black text-fitti-text tracking-tighter uppercase">Recent Records</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-v-fade">
             {logs.map(log => (
               <div key={log.id} className="bezel-shell h-full">

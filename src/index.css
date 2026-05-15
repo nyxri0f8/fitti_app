@@ -80,7 +80,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .bezel-core {
-  @apply bg-fitti-bg dark:bg-fitti-bg-alt rounded-[calc(2.5rem-0.5rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] overflow-hidden;
+  @apply bg-fitti-bg dark:bg-fitti-bg-alt rounded-[calc(2.5rem-0.5rem)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)];
 }
 
 .bezel-card {

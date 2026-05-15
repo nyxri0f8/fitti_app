@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Users, Dumbbell, TrendingUp, Target, Flame, Plus, X, Save, Activity, Clock, Zap, ChefHat } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { Users, Dumbbell, TrendingUp, Target, Flame, Plus, X, Save, Activity, Clock, Zap, ChefHat, Apple, ArrowRight } from 'lucide-react';
+import { supabase, createNotification } from '../../lib/supabase';
 import useAuthStore from '../../store/authStore';
 import Sidebar from '../../components/shared/Sidebar';
 import Navbar from '../../components/shared/Navbar';
@@ -66,124 +66,153 @@ function CreateWorkoutModal({ customer, trainerId, onClose, onSaved }) {
   );
 }
 
-function CreateDietModal({ customer, trainerId, onClose, onSaved }) {
-  const [activeDay, setActiveDay] = useState('Monday');
-  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  
-  const [plan, setPlan] = useState({
-    daily_calories: 2000,
-    protein_grams: 150,
-    carb_grams: 200,
-    fat_grams: 65,
-    weekly_structure: {
-      'Monday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
-      'Tuesday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
-      'Wednesday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
-      'Thursday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
-      'Friday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
-      'Saturday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }],
-      'Sunday': [{ name: 'Breakfast', time: '08:00 AM', protein: 30, carbs: 40, fat: 15 }]
-    }
+/* ── Nutritional Strategy Modal ───────────────────────── */
+function NutritionalStrategyModal({ customer, onClose, onSaved, trainerId }) {
+  const [strategy, setStrategy] = useState({
+    target_calories: 2000,
+    target_protein: 150,
+    target_carbs: 200,
+    target_fat: 60,
+    meal_targets: [
+      { name: 'Breakfast', time: '08:00', calories: 500, protein: 40, carbs: 50, fat: 15 },
+      { name: 'Lunch', time: '13:00', calories: 700, protein: 50, carbs: 70, fat: 20 },
+      { name: 'Dinner', time: '20:00', calories: 600, protein: 40, carbs: 60, fat: 15 }
+    ],
+    notes: ''
   });
   const [saving, setSaving] = useState(false);
 
-  const addMeal = () => setPlan(p => ({
-    ...p, 
-    weekly_structure: {
-      ...p.weekly_structure,
-      [activeDay]: [...(p.weekly_structure[activeDay] || []), { name: '', time: '', protein: 0, carbs: 0, fat: 0 }]
-    }
+  const addMeal = () => setStrategy(s => ({
+    ...s,
+    meal_targets: [...s.meal_targets, { name: '', time: '12:00', calories: 0, protein: 0, carbs: 0, fat: 0 }]
   }));
 
-  const updateMeal = (mi, f, v) => setPlan(p => ({
-    ...p, 
-    weekly_structure: {
-      ...p.weekly_structure,
-      [activeDay]: p.weekly_structure[activeDay].map((m, i) => i === mi ? { ...m, [f]: v } : m)
-    }
+  const updateMeal = (idx, field, val) => setStrategy(s => ({
+    ...s,
+    meal_targets: s.meal_targets.map((m, i) => i === idx ? { ...m, [field]: val } : m)
   }));
+
+  const removeMeal = (idx) => setStrategy(s => ({
+    ...s,
+    meal_targets: s.meal_targets.filter((_, i) => i !== idx)
+  }));
+
+  const totalCals = strategy.meal_targets.reduce((acc, m) => acc + (parseInt(m.calories) || 0), 0);
 
   const handleSave = async () => {
     setSaving(true);
-    await supabase.from('diet_plans').insert([{ 
-      customer_id: customer.id, 
-      created_by: trainerId, 
-      daily_calories: parseInt(plan.daily_calories),
-      protein_grams: parseInt(plan.protein_grams),
-      carb_grams: parseInt(plan.carb_grams),
-      fat_grams: parseInt(plan.fat_grams),
-      meal_structure: plan.weekly_structure,
-      active: true 
+    await supabase.from('nutritional_strategies').update({ active: false }).eq('customer_id', customer.id);
+    
+    const { error } = await supabase.from('nutritional_strategies').insert([{
+      customer_id: customer.id,
+      trainer_id: trainerId,
+      target_calories: totalCals || strategy.target_calories,
+      target_protein: strategy.target_protein,
+      target_carbs: strategy.target_carbs,
+      target_fat: strategy.target_fat,
+      meal_targets: strategy.meal_targets,
+      active: true
     }]);
-    await supabase.from('activity_feed').insert([{ 
-      actor_id: trainerId, 
-      actor_role: 'trainer', 
-      customer_id: customer.id, 
-      event_type: 'diet_plan_created', 
-      event_data: { calories: plan.daily_calories, type: 'weekly' } 
-    }]);
-    setSaving(false); onSaved(); onClose();
+
+    if (!error) {
+      await supabase.from('activity_feed').insert([{
+        actor_id: trainerId,
+        actor_role: 'trainer',
+        customer_id: customer.id,
+        event_type: 'nutritional_strategy_created',
+        event_data: { calories: totalCals, meals: strategy.meal_targets.length }
+      }]);
+      onSaved();
+      onClose();
+    }
+    setSaving(false);
   };
 
   return (
-    <Modal onClose={onClose}>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="font-display text-xl font-bold text-fitti-text uppercase tracking-tight">Weekly Diet Planner</h3>
-          <p className="font-body text-sm text-fitti-text-muted">Personalized fuel for {customer.name}</p>
-        </div>
-        <button onClick={onClose} className="p-2 hover:bg-fitti-bg rounded-full transition-colors"><X className="h-5 w-5 text-fitti-text-muted"/></button>
-      </div>
-
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
-        {dayNames.map(day => (
-          <button 
-            key={day}
-            onClick={() => setActiveDay(day)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${activeDay === day ? 'bg-fitti-green text-white shadow-lg shadow-fitti-green/20' : 'bg-fitti-bg text-fitti-text-muted hover:bg-white'}`}
-          >
-            {day}
-          </button>
-        ))}
-      </div>
-      
-      <div className="grid grid-cols-4 gap-4 mb-6 bg-fitti-bg/50 p-4 rounded-2xl border border-fitti-border/30">
-        <div><label className="label-spaced block mb-1 !text-[9px]">Target Cals</label><input type="number" value={plan.daily_calories} onChange={e=>setPlan(p=>({...p,daily_calories:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-        <div><label className="label-spaced block mb-1 !text-[9px]">Pro (g)</label><input type="number" value={plan.protein_grams} onChange={e=>setPlan(p=>({...p,protein_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-        <div><label className="label-spaced block mb-1 !text-[9px]">Carb (g)</label><input type="number" value={plan.carb_grams} onChange={e=>setPlan(p=>({...p,carb_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-        <div><label className="label-spaced block mb-1 !text-[9px]">Fat (g)</label><input type="number" value={plan.fat_grams} onChange={e=>setPlan(p=>({...p,fat_grams:e.target.value}))} className="w-full bg-white border border-fitti-border rounded-lg px-2 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-      </div>
-
-      <div className="max-h-64 overflow-y-auto custom-scrollbar pr-2 mb-6">
-        <h4 className="label-spaced mb-3 text-fitti-green">{activeDay} Schedule</h4>
-        {(plan.weekly_structure[activeDay] || []).map((meal, mi) => (
-          <div key={mi} className="bg-white rounded-xl p-4 mb-3 border border-fitti-border/50 shadow-sm relative group">
-             <div className="flex gap-3 mb-3">
-               <div className="flex-1">
-                 <label className="text-[9px] font-bold text-fitti-text-muted uppercase tracking-widest block mb-1">Meal Description</label>
-                 <input placeholder="e.g. Grilled Chicken Breast with Quinoa" value={meal.name} onChange={e=>updateMeal(mi,'name',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-body focus:border-fitti-green focus:outline-none"/>
-               </div>
-               <div className="w-28">
-                 <label className="text-[9px] font-bold text-fitti-text-muted uppercase tracking-widest block mb-1">Time</label>
-                 <input placeholder="08:00 AM" value={meal.time} onChange={e=>updateMeal(mi,'time',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-body focus:border-fitti-green focus:outline-none"/>
-               </div>
-             </div>
-             <div className="grid grid-cols-3 gap-3">
-               <div><input placeholder="Pro(g)" type="number" value={meal.protein} onChange={e=>updateMeal(mi,'protein',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-               <div><input placeholder="Carb(g)" type="number" value={meal.carbs} onChange={e=>updateMeal(mi,'carbs',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-               <div><input placeholder="Fat(g)" type="number" value={meal.fat} onChange={e=>updateMeal(mi,'fat',e.target.value)} className="w-full bg-fitti-bg/50 border border-fitti-border rounded-lg px-3 py-2 text-xs font-mono focus:border-fitti-green focus:outline-none"/></div>
-             </div>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-3xl animate-v-fade-up p-4">
+      <div className="bezel-shell max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <div className="bezel-core p-8 md:p-12 relative flex-1 overflow-y-auto custom-scrollbar">
+          <div className="mesh-glow -top-24 -left-24 opacity-20" />
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <span className="eyebrow-tag">Clinical Strategy</span>
+              <h2 className="logo-fitti text-4xl leading-none uppercase tracking-tighter">Nutritional Protocol.</h2>
+              <p className="font-accent text-lg italic text-fitti-text-muted mt-2">Meal distribution schedule for {customer.name}</p>
+            </div>
+            <button onClick={onClose} className="h-12 w-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-white/10 transition-colors">
+              <X className="h-5 w-5" />
+            </button>
           </div>
-        ))}
-        <button onClick={addMeal} className="w-full border-2 border-dashed border-fitti-border rounded-xl py-4 font-mono text-[10px] text-fitti-text-muted font-bold uppercase hover:border-fitti-green/50 hover:text-fitti-green transition-all flex items-center justify-center gap-2">
-          <Plus className="h-4 w-4"/> Add {activeDay} Meal
-        </button>
-      </div>
 
-      <button onClick={handleSave} disabled={saving} className="w-full btn-gradient flex items-center justify-center gap-3 py-4 disabled:opacity-50 shadow-xl shadow-fitti-green/20">
-        <Save className="h-5 w-5"/><span className="font-display font-bold uppercase tracking-widest">{saving ? 'Transmitting Data...' : 'Deploy Weekly Plan'}</span>
-      </button>
-    </Modal>
+          <div className="space-y-8 mb-12">
+            <div className="flex items-center justify-between">
+              <label className="eyebrow-tag !mb-0">Meal Distribution & Targets</label>
+              <button onClick={addMeal} className="btn-vanguard py-2 px-4 text-[10px] !bg-fitti-green/10 !text-fitti-green">
+                <Plus className="h-3 w-3" /> Add Meal Slot
+              </button>
+            </div>
+
+            {strategy.meal_targets.map((m, idx) => (
+              <div key={idx} className="bezel-shell group">
+                <div className="bezel-core p-6 space-y-6 relative">
+                  <button onClick={() => removeMeal(idx)} className="absolute top-4 right-4 p-2 bg-black/5 rounded-full hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100">
+                    <X className="h-3 w-3" />
+                  </button>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="label-spaced !text-[9px] !mb-2">Meal Designation</label>
+                      <input type="text" value={m.name} onChange={e=>updateMeal(idx, 'name', e.target.value)}
+                        placeholder="e.g. Breakfast" className="w-full bg-white/5 border border-fitti-border/20 rounded-xl px-4 py-3 text-sm font-bold focus:ring-1 focus:ring-fitti-green/50 outline-none" />
+                    </div>
+                    <div>
+                      <label className="label-spaced !text-[9px] !mb-2">Scheduled Time</label>
+                      <input type="time" value={m.time} onChange={e=>updateMeal(idx, 'time', e.target.value)}
+                        className="w-full bg-white/5 border border-fitti-border/20 rounded-xl px-4 py-3 text-sm font-bold focus:ring-1 focus:ring-fitti-green/50 outline-none" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { f: 'calories', l: 'Calories', u: 'kcal' },
+                      { f: 'protein', l: 'Protein', u: 'g' },
+                      { f: 'carbs', l: 'Carbs', u: 'g' },
+                      { f: 'fat', l: 'Fat', u: 'g' }
+                    ].map(field => (
+                      <div key={field.f}>
+                        <label className="font-mono text-[8px] font-black text-fitti-text-muted uppercase tracking-widest block mb-1">{field.l} ({field.u})</label>
+                        <input type="number" value={m[field.f]} onChange={e=>updateMeal(idx, field.f, parseInt(e.target.value))}
+                          className="w-full bg-white/5 border border-fitti-border/20 rounded-xl px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-fitti-green/50 outline-none" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="bezel-shell !bg-fitti-green/5">
+              <div className="bezel-core p-8">
+                <span className="label-spaced !text-[10px] !mb-2 block opacity-60">Daily Nutritional Target</span>
+                <p className="font-display font-black text-4xl text-fitti-green">{totalCals} <span className="text-sm uppercase font-mono tracking-widest opacity-40">kcal</span></p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <label className="label-spaced !text-[10px]">Nutritional Directives</label>
+              <textarea value={strategy.notes} onChange={e=>setStrategy({...s, notes: e.target.value})} rows={3}
+                placeholder="Specific clinical directives for the kitchen..."
+                className="w-full bg-white/5 border border-fitti-border/20 rounded-2xl px-6 py-4 font-body text-sm focus:ring-1 focus:ring-fitti-green/50 outline-none resize-none" />
+            </div>
+          </div>
+
+          <button onClick={handleSave} disabled={saving} className="btn-vanguard btn-vanguard-primary w-full py-5 text-lg justify-center shadow-2xl shadow-fitti-green/20">
+            <span className="font-display font-black tracking-tight">{saving ? 'Transmitting Protocol...' : 'Save Nutritional Protocol'}</span>
+            {!saving && <div className="btn-vanguard-icon-wrapper"><ArrowRight strokeWidth={2.5} className="h-4 w-4" /></div>}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -317,7 +346,7 @@ function ViewWorkoutsModal({ customer, onClose }) {
   );
 }
 
-function ClientsTab({ onOpenWorkout, onOpenDiet, onOpenProgress, onOpenLogWorkout }) {
+function ClientsTab({ onOpenWorkout, onOpenStrategy, onOpenProgress, onOpenLogWorkout }) {
   const user = useAuthStore(state => state.user);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -334,22 +363,22 @@ function ClientsTab({ onOpenWorkout, onOpenDiet, onOpenProgress, onOpenLogWorkou
     <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
       {/* Header Section */}
       <section className="animate-v-fade-up">
-        <span className="eyebrow-tag">Command Center: Active</span>
+        <span className="eyebrow-tag">Trainer Overview</span>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div className="max-w-3xl">
             <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
-              Biological <br/>
-              <span className="text-fitti-green">Directives</span>.
+              Trainer <br/>
+              <span className="text-fitti-green">Dashboard</span>.
             </h2>
             <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
-              Managing {clients.length} biological units. Every data point is an opportunity for evolution.
+              Managing {clients.length} active clients. Every data point is an opportunity for progress.
             </p>
           </div>
           <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
             <div className="bezel-core h-full flex flex-col items-center justify-center relative text-center">
               <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
               <Users strokeWidth={1} className="h-10 w-10 text-fitti-green mb-2" />
-              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Active Synchronizations</span>
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Active Clients</span>
               <span className="font-display text-2xl font-black text-fitti-green">{clients.length}</span>
             </div>
           </div>
@@ -364,13 +393,13 @@ function ClientsTab({ onOpenWorkout, onOpenDiet, onOpenProgress, onOpenLogWorkou
         <div className="bezel-shell min-h-[400px] flex items-center justify-center">
           <div className="text-center">
             <Users strokeWidth={1} className="h-20 w-20 text-fitti-border/40 mx-auto mb-6" />
-            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No clients assigned to this protocol.</p>
+            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No clients assigned to your account.</p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 stagger-v-fade">
           {clients.map((c, idx) => (
-            <div key={c.id} className={`${idx % 3 === 0 ? 'md:col-span-8' : 'md:col-span-4'} bezel-shell group`}>
+            <div key={c.id} className="md:col-span-6 bezel-shell group">
               <div className="bezel-core p-8 h-full relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 mesh-glow opacity-5 group-hover:opacity-20 transition-opacity duration-1000" />
                 
@@ -404,9 +433,9 @@ function ClientsTab({ onOpenWorkout, onOpenDiet, onOpenProgress, onOpenLogWorkou
                     <Dumbbell strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
                     Workouts
                   </button>
-                  <button onClick={()=>onOpenDiet(c)} className="btn-vanguard text-[10px] py-4 group/btn bg-fitti-orange/5 text-fitti-orange ring-1 ring-fitti-orange/20">
-                    <ChefHat strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
-                    Nutrition
+                  <button onClick={()=>onOpenStrategy(c)} className="btn-vanguard text-[10px] py-4 group/btn bg-fitti-orange/5 text-fitti-orange ring-1 ring-fitti-orange/20">
+                    <Apple strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
+                    Strategy
                   </button>
                   <button onClick={()=>onOpenLogWorkout(c)} className="btn-vanguard text-[10px] py-4 group/btn">
                     <Activity strokeWidth={2} className="h-3 w-3 group-hover/btn:scale-125 transition-transform" />
@@ -443,41 +472,87 @@ function WorkoutsTab() {
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up max-w-6xl mx-auto">
-      <h2 className="font-display text-3xl font-black text-fitti-text mb-2 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-fitti-green/10 flex items-center justify-center">
-          <Dumbbell className="h-5 w-5 text-fitti-green" />
+    <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
+      {/* Header Section */}
+      <section className="animate-v-fade-up">
+        <span className="eyebrow-tag">Active Programs</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
+              Workout <br/>
+              <span className="text-fitti-green">Schedules</span>.
+            </h2>
+            <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
+              Client workout schedules. Structured programming for optimal progress.
+            </p>
+          </div>
+          <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
+            <div className="bezel-core h-full flex flex-col items-center justify-center relative text-center">
+              <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
+              <Dumbbell strokeWidth={1} className="h-10 w-10 text-fitti-green mb-2" />
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Active Plans</span>
+              <span className="font-display text-2xl font-black text-fitti-green">{plans.length}</span>
+            </div>
+          </div>
         </div>
-        Workout Plans
-      </h2>
-      <p className="font-accent text-lg italic text-fitti-text-muted mb-8">Structured programs for your clients</p>
+      </section>
       
       {plans.length===0 ? (
-        <div className="card-glass p-12 text-center">
-          <Dumbbell className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/>
-          <p className="font-body text-fitti-text-muted">No plans yet. Go to My Clients to create one.</p>
+        <div className="bezel-shell min-h-[400px] flex items-center justify-center">
+          <div className="text-center">
+            <Dumbbell strokeWidth={1} className="h-20 w-20 text-fitti-border/40 mx-auto mb-6"/>
+            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No active programs discovered.</p>
+          </div>
         </div>
       ) : (
-        <div className="space-y-4 stagger-children">{plans.map(p => {
-          const days = Array.isArray(p.weekly_structure) ? p.weekly_structure : [];
-          return (
-            <div key={p.id} className="card-glass p-6 card-hover">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display font-bold text-fitti-text text-lg">{p.customer_name}</h3>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-medium capitalize text-fitti-text-muted">{p.intensity}</span>
-                  <span className={`font-mono text-xs font-bold px-3 py-1 rounded-full ${p.active?'bg-fitti-green/10 text-fitti-green':'bg-fitti-bg text-fitti-text-muted'}`}>{p.active?'Active':'Inactive'}</span>
+        <div className="space-y-12 stagger-v-fade">
+          {plans.map((p, idx) => {
+            const days = Array.isArray(p.weekly_structure) ? p.weekly_structure : [];
+            return (
+              <div key={p.id} className="bezel-shell group overflow-hidden">
+                <div className="bezel-core p-8 md:p-12 h-full relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 mesh-glow opacity-5 group-hover:opacity-10 transition-opacity duration-1000" />
+                  
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                    <div className="flex items-center gap-6">
+                      <div className="h-16 w-16 rounded-2xl bg-fitti-green/10 flex items-center justify-center text-fitti-green font-display font-black text-2xl ring-1 ring-fitti-green/20">
+                        {p.customer_name.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 className="font-display font-black text-fitti-text text-3xl tracking-tight leading-none mb-2">{p.customer_name}</h3>
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-[10px] font-bold px-3 py-1 bg-black/5 dark:bg-white/5 rounded-full text-fitti-text-muted uppercase tracking-widest">{p.intensity}</span>
+                          <span className={`font-mono text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest ${p.active?'bg-fitti-green/10 text-fitti-green':'bg-fitti-bg text-fitti-text-muted'}`}>{p.active?'Active':'Inactive'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {days.map((d,i) => (
+                      <div key={i} className="bg-black/5 dark:bg-white/5 rounded-2xl p-6 ring-1 ring-black/5 hover:ring-fitti-green/30 transition-all duration-500">
+                        <p className="font-display font-black text-fitti-green text-xs uppercase tracking-[0.2em] mb-4 border-b border-fitti-green/10 pb-2">{d.day}</p>
+                        <div className="space-y-3">
+                          {(d.exercises||[]).map((e,j)=>(
+                            <div key={j} className="flex flex-col">
+                              <span className="font-body font-bold text-fitti-text text-sm mb-1">{e.name||'Rest Day'}</span>
+                              {e.name && (
+                                <span className="font-mono text-[9px] text-fitti-text-muted uppercase tracking-widest">
+                                  {e.sets} Sets <span className="mx-1 text-fitti-green opacity-30">|</span> {e.reps} Reps
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                          {(d.exercises||[]).length === 0 && <p className="font-body text-xs italic text-fitti-text-muted">No activities assigned.</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">{days.map((d,i) => (
-                <div key={i} className="bg-fitti-bg/50 rounded-xl p-3 text-xs border border-fitti-border/30 hover:border-fitti-green/30 transition-colors">
-                  <p className="font-display font-bold text-fitti-text mb-1">{d.day}</p>
-                  {(d.exercises||[]).map((e,j)=><p key={j} className="font-body text-fitti-text-muted">{e.name||'—'} <span className="font-mono">{e.sets}×{e.reps}</span></p>)}
-                </div>
-              ))}</div>
-            </div>
-          );
-        })}</div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
@@ -500,36 +575,83 @@ function ProgressTab() {
   }, [user]);
 
   return (
-    <div className="p-8 animate-fade-in-up max-w-6xl mx-auto">
-      <h2 className="font-display text-3xl font-black text-fitti-text mb-2 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-fitti-green/10 flex items-center justify-center">
-          <TrendingUp className="h-5 w-5 text-fitti-green" />
+    <div className="p-6 md:p-12 lg:p-24 max-w-[1600px] mx-auto space-y-12 md:space-y-24">
+      {/* Header Section */}
+      <section className="animate-v-fade-up">
+        <span className="eyebrow-tag">Analytical Insights</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-3xl">
+            <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-fitti-text mb-8 tracking-tighter leading-[0.9]">
+              Progress <br/>
+              <span className="text-fitti-green">Tracking</span>.
+            </h2>
+            <p className="font-accent text-xl md:text-2xl italic text-fitti-text-muted max-w-xl leading-relaxed">
+              Monitor client progress. Data-driven insights for professional health management.
+            </p>
+          </div>
+          <div className="bezel-shell w-full lg:w-72 h-32 md:h-48 group overflow-hidden">
+            <div className="bezel-core h-full flex flex-col items-center justify-center relative text-center">
+              <div className="mesh-glow w-full h-full opacity-40 group-hover:scale-125 transition-transform duration-1000" />
+              <TrendingUp strokeWidth={1} className="h-10 w-10 text-fitti-green mb-2" />
+              <span className="font-mono text-[10px] font-bold text-fitti-text-muted uppercase tracking-[0.2em]">Total Logs</span>
+              <span className="font-display text-2xl font-black text-fitti-green">{logs.length}</span>
+            </div>
+          </div>
         </div>
-        Progress Tracking
-      </h2>
-      <p className="font-accent text-lg italic text-fitti-text-muted mb-8">Monitor client evolution</p>
+      </section>
       
       {logs.length===0 ? (
-        <div className="card-glass p-12 text-center">
-          <Target className="h-12 w-12 text-fitti-text-muted mx-auto mb-4"/>
-          <p className="font-body text-fitti-text-muted">No logs yet. Go to My Clients to log progress.</p>
+        <div className="bezel-shell min-h-[400px] flex items-center justify-center">
+          <div className="text-center">
+            <Target strokeWidth={1} className="h-20 w-20 text-fitti-border/40 mx-auto mb-6"/>
+            <p className="font-body text-fitti-text-muted font-bold text-xl uppercase tracking-widest">No progress metrics discovered.</p>
+          </div>
         </div>
       ) : (
-        <div className="space-y-4 stagger-children">{logs.map(l => (
-          <div key={l.id} className="card-glass p-6 card-hover">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-display font-bold text-fitti-text">{l.customer_name}</h3>
-              <span className="font-mono text-xs text-fitti-text-muted">{new Date(l.logged_at).toLocaleDateString()}</span>
+        <div className="space-y-12 stagger-v-fade">
+          {logs.map((l, idx) => (
+            <div key={l.id} className="bezel-shell group overflow-hidden">
+              <div className="bezel-core p-8 md:p-12 h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 mesh-glow opacity-5 group-hover:opacity-10 transition-opacity duration-1000" />
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                  <div className="flex items-center gap-6">
+                    <div className="h-16 w-16 rounded-2xl bg-fitti-green/10 flex items-center justify-center text-fitti-green font-display font-black text-2xl ring-1 ring-fitti-green/20">
+                      {l.customer_name.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="font-display font-black text-fitti-text text-3xl tracking-tight leading-none mb-2">{l.customer_name}</h3>
+                      <p className="font-mono text-[10px] text-fitti-text-muted uppercase tracking-[0.2em]">{new Date(l.logged_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                  {[
+                    { label: 'Weight', value: l.weight?`${l.weight}kg`:'—' },
+                    { label: 'Energy', value: l.energy_level?`${l.energy_level}/10`:'—' },
+                    { label: 'Diet', value: l.diet_adherence?`${l.diet_adherence}/10`:'—' },
+                    { label: 'Performance', value: l.workout_performance||'—', isHighlight: true }
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-black/5 dark:bg-white/5 rounded-2xl p-6 ring-1 ring-black/5 text-center">
+                      <p className="label-spaced !text-[9px] !mb-3 opacity-50">{stat.label}</p>
+                      <p className={`font-display font-bold ${stat.isHighlight ? 'text-sm text-fitti-green uppercase' : 'text-lg text-fitti-text'}`}>
+                        {stat.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {l.notes && (
+                  <div className="bg-fitti-bg/50 rounded-2xl p-6 border border-fitti-border/30 relative">
+                    <div className="absolute top-4 left-4 font-mono text-[8px] font-black text-fitti-green uppercase tracking-widest opacity-40">Notes</div>
+                    <p className="font-body text-sm text-fitti-text-muted mt-4 leading-relaxed italic">"{l.notes}"</p>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="grid grid-cols-4 gap-2 text-xs text-center">
-              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Weight</p><p className="stat-number text-sm">{l.weight||'—'} kg</p></div>
-              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Energy</p><p className="stat-number text-sm">{l.energy_level||'—'}/10</p></div>
-              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Diet</p><p className="stat-number text-sm">{l.diet_adherence||'—'}/10</p></div>
-              <div className="bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30"><p className="label-spaced !text-[9px] !mb-1">Perf</p><p className="stat-number text-sm text-fitti-green capitalize">{l.workout_performance||'—'}</p></div>
-            </div>
-            {l.notes && <p className="font-body text-sm text-fitti-text-muted mt-3 bg-fitti-bg/50 rounded-xl p-3 border border-fitti-border/30">{l.notes}</p>}
-          </div>
-        ))}</div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -537,7 +659,7 @@ function ProgressTab() {
 
 export default function TrainerDashboard() {
   const [showWorkout, setShowWorkout] = useState(null);
-  const [showDiet, setShowDiet] = useState(null);
+  const [showStrategy, setShowStrategy] = useState(null);
   const [showProgress, setShowProgress] = useState(null);
   const [showLogWorkout, setShowLogWorkout] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -554,7 +676,7 @@ export default function TrainerDashboard() {
         <Navbar title="" />
         <main className="flex-1 overflow-y-auto pb-24">
           <Routes>
-            <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenDiet={setShowDiet} onOpenProgress={setShowProgress} onOpenLogWorkout={setShowLogWorkout} />}/>
+            <Route path="/" element={<ClientsTab onOpenWorkout={setShowWorkout} onOpenStrategy={setShowStrategy} onOpenProgress={setShowProgress} onOpenLogWorkout={setShowLogWorkout} />}/>
             <Route path="/workouts" element={<WorkoutsTab key={refreshKey} />}/>
             <Route path="/progress" element={<ProgressTab key={refreshKey} />}/>
             <Route path="/messages" element={<MessagingView/>}/>
@@ -562,7 +684,7 @@ export default function TrainerDashboard() {
         </main>
       </div>
       {showWorkout && <CreateWorkoutModal customer={showWorkout} trainerId={user.id} onClose={()=>setShowWorkout(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
-      {showDiet && <CreateDietModal customer={showDiet} trainerId={user.id} onClose={()=>setShowDiet(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
+      {showStrategy && <NutritionalStrategyModal customer={showStrategy} trainerId={user.id} onClose={()=>setShowStrategy(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
       {showProgress && <LogProgressModal customer={showProgress} trainerId={user.id} onClose={()=>setShowProgress(null)} onSaved={()=>setRefreshKey(k=>k+1)}/>}
       {showLogWorkout && <ViewWorkoutsModal customer={showLogWorkout} onClose={()=>setShowLogWorkout(null)}/>}
     </div>

@@ -134,7 +134,7 @@ function UsersTab() {
       createNotification(
         selectedCustomer.id,
         'Team Update',
-        'New staff members have been assigned to your evolution strategy.',
+        'New staff members have been assigned to your health plan.',
         'assignment'
       );
 
@@ -296,7 +296,7 @@ function OrdersTab() {
 
   return (
     <div className="p-8 animate-fade-in-up">
-      <h2 className="text-3xl font-display font-black text-fitti-text tracking-tight uppercase mb-8">Fleet Logistics</h2>
+      <h2 className="text-3xl font-display font-black text-fitti-text tracking-tight uppercase mb-8">Order Management</h2>
       {orders.length === 0 ? (
         <div className="bg-white/80 backdrop-blur-md border border-fitti-border rounded-3xl p-16 text-center">
           <Package className="h-16 w-16 text-fitti-border mx-auto mb-6" />
@@ -307,8 +307,8 @@ function OrdersTab() {
           <table className="w-full">
             <thead>
               <tr className="bg-fitti-bg/50 border-b border-fitti-border">
-                <th className="px-8 py-5 text-left label-spaced">Customer Entity</th>
-                <th className="px-8 py-5 text-left label-spaced">Logistics Status</th>
+                <th className="px-8 py-5 text-left label-spaced">Client Name</th>
+                <th className="px-8 py-5 text-left label-spaced">Order Status</th>
                 <th className="px-8 py-5 text-left label-spaced">Timestamp</th>
               </tr>
             </thead>
@@ -345,11 +345,11 @@ function ActivityTab() {
 
   return (
     <div className="p-8 animate-fade-in-up">
-      <h2 className="text-3xl font-display font-black text-fitti-text tracking-tight uppercase mb-8">System Telemetry</h2>
+      <h2 className="text-3xl font-display font-black text-fitti-text tracking-tight uppercase mb-8">Activity Logs</h2>
       {feed.length === 0 ? (
         <div className="bg-white/80 backdrop-blur-md border border-fitti-border rounded-3xl p-16 text-center">
           <ActivityIcon className="h-16 w-16 text-fitti-border mx-auto mb-6" />
-          <p className="text-fitti-text-muted font-bold">Telemetry feed is empty.</p>
+          <p className="text-fitti-text-muted font-bold">Activity feed is empty.</p>
         </div>
       ) : (
         <div className="space-y-4 stagger-children">

@@ -102,7 +102,7 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onB
                 </h2>
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-fitti-green animate-pulse" />
-                  <span className="font-mono text-[9px] font-black text-fitti-green uppercase tracking-[0.2em]">Secure Node Linked</span>
+                  <span className="font-mono text-[9px] font-black text-fitti-green uppercase tracking-[0.2em]">Online</span>
                 </div>
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onB
           <div className="flex justify-center mb-12">
             <div className="bg-fitti-green/5 border border-fitti-green/20 px-6 py-2.5 rounded-full flex items-center gap-3">
               <Lock className="h-3 w-3 text-fitti-green" />
-              <p className="font-mono text-[9px] font-black text-fitti-green uppercase tracking-[0.2em]">End-to-End Encryption Secured</p>
+              <p className="font-mono text-[9px] font-black text-fitti-green uppercase tracking-[0.2em]">End-to-End Encrypted</p>
             </div>
           </div>
           {messages.map((msg, index) => (
@@ -150,13 +150,13 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onB
             {showAttachMenu && (
               <div className="absolute bottom-full left-0 mb-6 w-64 bg-white/95 dark:bg-fitti-bg-alt/95 backdrop-blur-3xl border border-black/5 dark:border-white/5 rounded-[2.5rem] shadow-2xl p-3 animate-v-fade-up z-50 overflow-hidden">
                 <div className="px-5 py-3 border-b border-black/5 mb-2">
-                  <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest">Protocol Actions</p>
+                  <p className="font-mono text-[9px] font-black text-fitti-text-muted uppercase tracking-widest">Chat Actions</p>
                 </div>
                 <button className="w-full flex items-center gap-4 px-4 py-4 hover:bg-fitti-green/5 rounded-[1.5rem] text-left transition-all group">
                   <div className="w-10 h-10 bg-fitti-bg flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
                     <Paperclip className="h-4 w-4 text-fitti-text-muted" />
                   </div>
-                  <span className="font-display font-black text-xs text-fitti-text tracking-tight">Upload Artifact</span>
+                  <span className="font-display font-black text-xs text-fitti-text tracking-tight">Upload File</span>
                 </button>
                 <button 
                   type="button"
@@ -166,7 +166,7 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onB
                   <div className="w-10 h-10 bg-fitti-bg flex items-center justify-center rounded-xl group-hover:scale-110 transition-transform">
                     <Video className="h-4 w-4 text-fitti-green" />
                   </div>
-                  <span className="font-display font-black text-xs text-fitti-green tracking-tight">Schedule Meet Node</span>
+                  <span className="font-display font-black text-xs text-fitti-green tracking-tight">Schedule Meeting</span>
                 </button>
               </div>
             )}
@@ -176,7 +176,7 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onB
             <input
               type="text"
               className="flex-1 bg-transparent border-none px-6 py-4 text-sm font-bold text-fitti-text focus:ring-0 placeholder:text-fitti-text-muted/40"
-              placeholder="Inject secure transmission..."
+              placeholder="Type a message..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
             />
@@ -223,7 +223,7 @@ export default function ChatWindow({ activeContact, messages, onSendMessage, onB
               disabled={generatingMeet}
               className="btn-vanguard btn-vanguard-primary w-full"
             >
-              {generatingMeet ? 'Analyzing Calendars...' : 'Generate Meet Link'}
+              {generatingMeet ? 'Generating link...' : 'Generate Meet Link'}
             </button>
           )}
         </Modal>
