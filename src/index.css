@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
 
@@ -65,7 +66,8 @@ html.dark {
 }
 
 .logo-fitti {
-  @apply font-display font-black text-fitti-green tracking-[-0.06em] leading-none;
+  font-family: 'Archivo Black', sans-serif;
+  @apply text-fitti-green tracking-[-0.08em] leading-none;
 }
 
 h1, h2, h3, h4, h5, h6 {

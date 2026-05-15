@@ -59,8 +59,8 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-24 z-10 border-r border-fitti-border/10">
         <div className="relative animate-v-fade-up">
           <span className="eyebrow-tag !mb-4">Biological Evolution Protocol</span>
-          <h1 className="font-display text-[12vw] font-black text-fitti-text leading-[0.8] tracking-[-0.05em] mb-12">
-            Fitti<span className="text-fitti-green">.</span>
+          <h1 className="logo-fitti text-[12vw] mb-12">
+            Fitti.
           </h1>
           <p className="font-accent text-3xl italic text-fitti-text-muted max-w-lg leading-relaxed">
             The next stage of your physical evolution begins here. Access the encrypted synchronization node.
@@ -89,7 +89,7 @@ export default function Login() {
           
           {/* Mobile Branding */}
           <div className="lg:hidden mb-16 text-center animate-v-fade-up">
-            <h1 className="font-display text-7xl font-black text-fitti-text tracking-tighter mb-2">Fitti.</h1>
+            <h1 className="logo-fitti text-7xl mb-2">Fitti.</h1>
             <span className="eyebrow-tag">Biological Evolution Protocol</span>
           </div>
 
@@ -98,8 +98,8 @@ export default function Login() {
                <div className="mesh-glow opacity-10 group-hover:opacity-20 transition-opacity duration-1000" />
                
                <div className="mb-10 relative z-10">
-                <h2 className="font-display text-4xl font-black text-fitti-text tracking-tighter mb-3 leading-none">
-                  Sync Identity<span className="text-fitti-green">_</span>
+                <h2 className="logo-fitti text-4xl mb-3">
+                  Sync Identity_
                 </h2>
                 <p className="font-body text-sm text-fitti-text-muted font-medium">
                   Enter your encrypted credentials to initialize.
