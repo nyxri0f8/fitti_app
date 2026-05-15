@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
@@ -16,20 +16,25 @@
   --fitti-text: 17 17 17;
   --fitti-text-muted: 107 123 104;
   --fitti-border: 226 234 216;
-  --fitti-orange: 118 185 0;
   
   /* Vanguard Motion Tokens */
   --ease-vanguard: cubic-bezier(0.32, 0.72, 0, 1);
   --duration-vanguard: 700ms;
 }
 
+@layer utilities {
+  .ease-vanguard {
+    transition-timing-function: var(--ease-vanguard);
+  }
+}
+
 html.dark {
   --fitti-green-light: 22 26 18;
-  --fitti-bg: 5 5 5; /* Deepest OLED black */
+  --fitti-bg: 5 5 5;
   --fitti-bg-alt: 12 12 12;
   --fitti-text: 245 245 245;
   --fitti-text-muted: 136 153 166;
-  --fitti-border: 255 255 255 / 0.08; /* Subtle hairlines */
+  --fitti-border: 255 255 255 / 0.08;
 }
 
 @layer base {
@@ -40,20 +45,31 @@ html.dark {
   }
   body {
     @apply bg-fitti-bg text-fitti-text;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     min-height: 100dvh;
     overflow-x: hidden;
+    letter-spacing: -0.01em;
   }
 }
 
 /* ── Typography Orchestration ───────────────────────── */
-.font-display { font-family: 'Outfit', sans-serif; }
-.font-body { font-family: 'Plus Jakarta Sans', sans-serif; }
+.font-display { 
+  font-family: 'Outfit', sans-serif; 
+  letter-spacing: -0.04em;
+}
+.font-body { font-family: 'Inter', sans-serif; }
 .font-mono { font-family: 'JetBrains Mono', monospace; }
-.font-accent { font-family: 'Playfair Display', serif; }
+.font-accent { 
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+}
+
+.logo-fitti {
+  @apply font-display font-black text-fitti-green tracking-[-0.06em] leading-none;
+}
 
 h1, h2, h3, h4, h5, h6 {
-  @apply font-display tracking-[-0.03em];
+  @apply font-display tracking-[-0.04em];
 }
 
 /* ── The Double-Bezel (Doppelrand) Architecture ─────── */
@@ -71,23 +87,23 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── Vanguard Component Architecture ────────────────── */
 .btn-vanguard {
-  @apply relative px-6 py-3 rounded-full font-bold transition-all duration-700 ease-vanguard
-         active:scale-[0.96] flex items-center gap-3 overflow-hidden group;
+  @apply relative px-8 py-4 rounded-full font-display font-black text-sm uppercase tracking-widest transition-all duration-700 ease-vanguard
+         active:scale-[0.96] flex items-center gap-3 overflow-hidden;
 }
 
 .btn-vanguard-primary {
-  @apply bg-fitti-green text-white shadow-lg shadow-fitti-green/20;
+  @apply bg-fitti-green text-white shadow-xl shadow-fitti-green/20;
 }
 
 .btn-vanguard-icon-wrapper {
-  @apply w-8 h-8 rounded-full bg-white/20 flex items-center justify-center 
+  @apply w-10 h-10 rounded-full bg-white/20 flex items-center justify-center 
          transition-transform duration-700 ease-vanguard 
          group-hover:translate-x-1 group-hover:-translate-y-0.5 group-hover:scale-110;
 }
 
 .eyebrow-tag {
-  @apply inline-flex items-center rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] 
-         font-bold bg-fitti-green/10 text-fitti-green mb-4;
+  @apply inline-flex items-center rounded-full px-4 py-1.5 text-[9px] font-mono font-black uppercase tracking-[0.3em] 
+         bg-fitti-green/10 text-fitti-green mb-6;
 }
 
 /* ── Atmospheric Visuals ────────────────────────────── */
@@ -121,22 +137,6 @@ h1, h2, h3, h4, h5, h6 {
 .stagger-v-fade > *:nth-child(3) { animation-delay: 250ms; }
 .stagger-v-fade > *:nth-child(4) { animation-delay: 350ms; }
 .stagger-v-fade > *:nth-child(5) { animation-delay: 450ms; }
-
-/* ── Island Navigation Morph ───────────────────────── */
-.nav-island {
-  @apply fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-max max-w-[90vw]
-         bg-fitti-bg/80 dark:bg-fitti-bg-alt/80 backdrop-blur-2xl px-6 py-3 rounded-full
-         ring-1 ring-white/10 shadow-2xl transition-all duration-700 ease-vanguard;
-}
-
-/* ── Performance Optimizations ──────────────────────── */
-.will-change-vanguard {
-  will-change: transform, opacity;
-}
-
-::selection {
-  @apply bg-fitti-green/30 text-fitti-green;
-}
 
 /* Elegant Scrollbars */
 ::-webkit-scrollbar { width: 4px; }

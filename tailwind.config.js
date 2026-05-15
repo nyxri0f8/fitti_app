@@ -39,6 +39,9 @@ export default {
         'glow': 'glow 2s ease-in-out infinite',
         'spin-slow': 'spinSlow 8s linear infinite',
       },
+      transitionTimingFunction: {
+        'vanguard': 'cubic-bezier(0.32, 0.72, 0, 1)',
+      },
     },
   },
   plugins: [

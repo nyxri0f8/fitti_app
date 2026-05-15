@@ -84,10 +84,9 @@ export default function Sidebar() {
         <div className="bezel-shell h-full flex flex-col">
           <div className="bezel-core h-full flex flex-col py-8">
             <div className="px-8 mb-12">
-              <span className="eyebrow-tag !mb-2">Biological</span>
-              <div className="flex items-center gap-2">
-                <h2 className="font-display text-4xl font-black tracking-tighter text-fitti-text">Fitti.</h2>
-                <div className="h-2 w-2 bg-fitti-green rounded-full animate-pulse" />
+              <div className="flex flex-col">
+                <h2 className="logo-fitti text-5xl">Fitti.</h2>
+                <span className="font-accent text-xs text-fitti-text-muted mt-2">Evolve Your Fitness.</span>
               </div>
             </div>
 
